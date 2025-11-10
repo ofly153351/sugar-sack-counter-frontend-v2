@@ -1,0 +1,15 @@
+{
+  "welcome": "Welcome to our website!",
+  "logout": "Log out",
+  "signIn": "Sign in",
+  "username": "Username",
+  "password": "Password",
+  "required": "*",
+  "forgotPassword": "Forgot your password?",
+  "signingIn": "Signing in...",
+  "dontHaveAccount": "Don't have an account?",
+  "signUp": "Sign up",
+  "usernameError": "Username must be at least 6 characters and contain only English letters or numbers",
+  "passwordError": "Password must be at least 6 characters and contain only English letters or numbers",
+  "loginFailed": "Login failed. Please try again."
+}

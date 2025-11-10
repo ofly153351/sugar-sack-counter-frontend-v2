@@ -1,0 +1,100 @@
+// src/utils/config.ts
+
+/**
+ * Environment Configuration Utility
+ * Centralized configuration for environment variables with fallbacks
+ */
+
+// API Configuration
+export const API_CONFIG = {
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
+  ENDPOINTS: {
+    AUTH: {
+      LOGIN: '/auth/login',
+      REGISTER: '/auth/register',
+      VALIDATE: '/auth/validate',
+      REFRESH: '/auth/refresh',
+      LOGOUT: '/auth/logout',
+      PROFILE: '/auth/profile',
+      CHECK_USERNAME: '/auth/check-username',
+      CHECK_EMAIL: '/auth/check-email',
+      CHECK_EMPLOYEE_CODE: '/auth/check-employee-code',
+    },
+  },
+} as const;
+
+// Authentication Configuration
+export const AUTH_CONFIG = {
+  TOKEN_KEY: process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY || 'authToken',
+  ROLE_KEY: process.env.NEXT_PUBLIC_USER_ROLE_KEY || 'userRole',
+  COOKIE_TOKEN: process.env.NEXT_PUBLIC_COOKIE_AUTH_TOKEN || 'authToken',
+  TOKEN_EXPIRY_DAYS: 1, // 1 day
+} as const;
+
+// Application Configuration
+export const APP_CONFIG = {
+  NAME: process.env.NEXT_PUBLIC_APP_NAME || 'Sugar Sack Counter',
+  VERSION: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+  DEFAULT_LOCALE: process.env.NEXT_PUBLIC_DEFAULT_LOCALE || 'th',
+} as const;
+
+// Feature Flags
+export const FEATURE_FLAGS = {
+  ENABLE_REGISTRATION: process.env.NEXT_PUBLIC_ENABLE_REGISTRATION === 'true' || true,
+  ENABLE_ADMIN_PANEL: process.env.NEXT_PUBLIC_ENABLE_ADMIN_PANEL === 'true' || true,
+} as const;
+
+// Development Configuration
+export const DEV_CONFIG = {
+  DEBUG: process.env.NEXT_PUBLIC_DEBUG === 'true' || false,
+  LOG_LEVEL: process.env.NEXT_PUBLIC_LOG_LEVEL || 'info',
+} as const;
+
+// Validation Patterns
+export const VALIDATION_PATTERNS = {
+  USERNAME: /^[A-Za-z0-9]{6,}$/,
+  PASSWORD: /^[A-Za-z0-9]{6,}$/,
+  EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  PHONE: /^[0-9]{10}$/,
+  EMPLOYEE_CODE: /^[A-Za-z0-9]{4,20}$/,
+} as const;
+
+// Environment Type Guards
+export const isDevelopment = (): boolean => process.env.NODE_ENV === 'development';
+export const isProduction = (): boolean => process.env.NODE_ENV === 'production';
+export const isTest = (): boolean => process.env.NODE_ENV === 'test';
+
+// Configuration Validation
+export const validateConfig = (): void => {
+  const requiredEnvVars = [
+    'NEXT_PUBLIC_API_URL',
+  ] as const;
+
+  const missingVars = requiredEnvVars.filter(
+    (envVar) => !process.env[envVar]
+  );
+
+  if (missingVars.length > 0 && isProduction()) {
+    console.warn(
+      `Missing required environment variables in production: ${missingVars.join(', ')}`
+    );
+  }
+};
+
+// Export all configuration as a single object for convenience
+export const CONFIG = {
+  API: API_CONFIG,
+  AUTH: AUTH_CONFIG,
+  APP: APP_CONFIG,
+  FEATURES: FEATURE_FLAGS,
+  DEV: DEV_CONFIG,
+  VALIDATION: VALIDATION_PATTERNS,
+  ENV: {
+    isDevelopment,
+    isProduction,
+    isTest,
+  },
+} as const;
+
+// Default export for easy importing
+export default CONFIG;
