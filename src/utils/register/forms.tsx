@@ -1,8 +1,8 @@
 // src/utils/register/forms.ts
 
-import { useState, ChangeEvent } from 'react';
-import { RegisterFormData, RegisterFormState, InputFieldProps } from './types';
-import { validateField, validateRegisterForm } from './validation';
+import { useState, ChangeEvent } from "react";
+import { RegisterFormData, RegisterFormState, InputFieldProps } from "./types";
+import { validateField, validateRegisterForm } from "./validation";
 
 /**
  * Initial form data for registration
@@ -10,7 +10,7 @@ import { validateField, validateRegisterForm } from './validation';
 export const initialFormData: RegisterFormData = {
   username: "",
   employeecode: "",
-  prefix: "",
+  title: "",
   firstName: "",
   lastName: "",
   phone: "",
@@ -32,13 +32,14 @@ export const initialFormState: RegisterFormState = {
  * Hook for managing registration form state
  */
 export const useRegisterForm = () => {
-  const [formState, setFormState] = useState<RegisterFormState>(initialFormState);
+  const [formState, setFormState] =
+    useState<RegisterFormState>(initialFormState);
 
   /**
    * Update form field value
    */
   const updateField = (name: string, value: string) => {
-    setFormState(prev => {
+    setFormState((prev) => {
       const newFormData = {
         ...prev.formData,
         [name]: value,
@@ -60,7 +61,9 @@ export const useRegisterForm = () => {
   /**
    * Handle input change event
    */
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     updateField(name, value);
   };
@@ -69,7 +72,7 @@ export const useRegisterForm = () => {
    * Set form loading state
    */
   const setLoading = (isLoading: boolean) => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
       isLoading,
     }));
@@ -79,7 +82,7 @@ export const useRegisterForm = () => {
    * Set form errors
    */
   const setErrors = (errors: Record<string, string>) => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
       errors,
     }));
@@ -106,7 +109,7 @@ export const useRegisterForm = () => {
    */
   const handleSubmit = async (
     onSubmit: (formData: RegisterFormData) => Promise<void>,
-    e?: React.FormEvent
+    e?: React.FormEvent,
   ) => {
     if (e) {
       e.preventDefault();
@@ -121,9 +124,9 @@ export const useRegisterForm = () => {
     try {
       await onSubmit(formState.formData);
     } catch (error) {
-      console.error('Registration form submission error:', error);
+      console.error("Registration form submission error:", error);
       setErrors({
-        submit: error instanceof Error ? error.message : 'Registration failed',
+        submit: error instanceof Error ? error.message : "Registration failed",
       });
     } finally {
       setLoading(false);
@@ -183,7 +186,7 @@ export const getFormProgress = (formData: RegisterFormData): number => {
   const requiredFields = [
     "username",
     "employeecode",
-    "prefix",
+    "title",
     "firstName",
     "lastName",
     "phone",
@@ -192,7 +195,7 @@ export const getFormProgress = (formData: RegisterFormData): number => {
     "confirmPassword",
   ];
 
-  const filledFields = requiredFields.filter(field => {
+  const filledFields = requiredFields.filter((field) => {
     const value = formData[field as keyof RegisterFormData];
     return value && value.trim() !== "";
   });
@@ -215,7 +218,7 @@ export const extractUserProfile = (formData: RegisterFormData) => {
   return {
     username: formData.username,
     employeeCode: formData.employeecode,
-    prefix: formData.prefix,
+    title: formData.title,
     firstName: formData.firstName,
     lastName: formData.lastName,
     fullName: `${formData.firstName} ${formData.lastName}`,

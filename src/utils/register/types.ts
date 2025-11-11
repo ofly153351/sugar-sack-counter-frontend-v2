@@ -5,7 +5,7 @@ import { UserRole } from "../types";
 export interface RegisterFormData {
   username: string;
   employeecode: string;
-  prefix: string;
+  title: string;
   firstName: string;
   lastName: string;
   phone: string;

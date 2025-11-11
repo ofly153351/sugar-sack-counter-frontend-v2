@@ -18,7 +18,7 @@ export default async function LocaleLayout({
 
   return (
     <div className="min-h-screen  flex flex-col">
-      <main className="bg-[#F5F5F5] flex-1 bg-[] flex flex-col justify-center items-center p-6">
+      <main className="bg-[#F5F5F5] flex-1 bg-[] flex flex-col justify-center items-center ">
         {children}
       </main>
     </div>

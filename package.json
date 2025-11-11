@@ -15,7 +15,8 @@
     "next-intl": "^4.5.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-i18next": "^16.2.4"
+    "react-i18next": "^16.2.4",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

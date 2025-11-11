@@ -10,7 +10,6 @@ import {
   useRegisterForm,
   InputField,
   register,
-  storeUserData,
   getRegistrationSuccessUrl,
   RegisterFormData,
 } from "@/utils/register";
@@ -18,7 +17,9 @@ import { Dictionary } from "@/i18n/dictionaries";
 
 export default function RegisterPage() {
   const params = useParams();
-  const locale = params.locale as Locale;
+  const localeParam = params.locale as string;
+  const locale: Locale =
+    localeParam === "en" || localeParam === "th" ? localeParam : "en";
   const router = useRouter();
 
   const [dictionary, setDictionary] = useState<Dictionary | null>(null);
@@ -31,6 +32,13 @@ export default function RegisterPage() {
         setDictionary(dict);
       } catch (error) {
         console.error("Failed to load dictionary:", error);
+        // Fallback to English dictionary
+        try {
+          const fallbackDict = await getDictionary("en");
+          setDictionary(fallbackDict);
+        } catch (fallbackError) {
+          console.error("Failed to load fallback dictionary:", fallbackError);
+        }
       }
     };
     loadDictionary();
@@ -62,7 +70,6 @@ export default function RegisterPage() {
       const result = await register(formData);
 
       if (result.success) {
-        storeUserData(formData, result.token);
         const redirectTo = getRegistrationSuccessUrl("/");
         router.push(redirectTo);
       } else {
@@ -114,8 +121,8 @@ export default function RegisterPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <select
-              name="prefix"
-              value={formState.formData.prefix}
+              name="title"
+              value={formState.formData.title}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >

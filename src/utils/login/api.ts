@@ -1,8 +1,9 @@
 // src/utils/login/api.ts
 
-import { LoginCredentials, LoginResponse, UserRole } from "../types";
+import { LoginCredentials, LoginResponse } from "../types";
 import { api } from "../api-client";
 import { API_CONFIG } from "../config";
+import { storeUserData } from "../../store/user-store";
 
 const LOGIN_ENDPOINT = API_CONFIG.ENDPOINTS.AUTH.LOGIN;
 
@@ -13,25 +14,80 @@ export const login = async (
   credentials: LoginCredentials,
 ): Promise<LoginResponse> => {
   try {
+    console.log("🔐 Login API call:", {
+      endpoint: LOGIN_ENDPOINT,
+      username: credentials.username,
+      baseURL: API_CONFIG.BASE_URL,
+    });
+
     const response = await api.post(LOGIN_ENDPOINT, {
       username: credentials.username,
       password: credentials.password,
     });
 
-    const data = response.data as {
-      token: string;
-      role: string;
-      message?: string;
+    console.log("✅ Login response:", {
+      status: response.status,
+      headers: response.headers,
+      data: response.data,
+    });
+
+    // Backend sets access_token as HttpOnly cookie, so we don't need to store it
+    // The cookie will be automatically sent with subsequent requests
+    console.log(
+      "🍪 Checking for Set-Cookie header:",
+      response.headers["set-cookie"],
+    );
+
+    // Store user data in Zustand store
+    const responseData = response.data as {
+      user?: {
+        id: string;
+        username: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+      };
     };
+    if (responseData.user) {
+      storeUserData(responseData.user);
+      console.log("👤 User data stored in Zustand store:", responseData.user);
+    }
 
     return {
       success: true,
-      token: data.token,
-      role: data.role as UserRole,
-      message: data.message || "Login successful",
+      token: "", // Token is managed by HttpOnly cookie, not stored in frontend
+      message: "Login successful",
     };
   } catch (error: unknown) {
-    console.error("Login API error:", error);
+    console.error("❌ Login API error:", error);
+
+    // Log detailed error information
+    if (typeof error === "object" && error !== null && "response" in error) {
+      const axiosError = error as {
+        response?: {
+          status?: number;
+          statusText?: string;
+          headers?: Record<string, unknown>;
+          data?: Record<string, unknown>;
+        };
+        config?: {
+          url?: string;
+          baseURL?: string;
+          withCredentials?: boolean;
+        };
+      };
+      console.error("🔍 Axios error details:", {
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        headers: axiosError.response?.headers,
+        data: axiosError.response?.data,
+        config: {
+          url: axiosError.config?.url,
+          baseURL: axiosError.config?.baseURL,
+          withCredentials: axiosError.config?.withCredentials,
+        },
+      });
+    }
 
     // Handle axios error response
     if (
@@ -94,13 +150,11 @@ export const refreshToken = async (
 
     const data = response.data as {
       token: string;
-      role: string;
     };
 
     return {
       success: true,
       token: data.token,
-      role: data.role as UserRole,
       message: "Token refreshed successfully",
     };
   } catch (error: unknown) {
@@ -146,6 +200,9 @@ export const logout = async (token: string): Promise<boolean> => {
         },
       },
     );
+    // Clear user data from store on logout
+    const { clearUserData } = await import("../../store/user-store");
+    clearUserData();
     return true;
   } catch (error) {
     console.error("Logout API error:", error);
