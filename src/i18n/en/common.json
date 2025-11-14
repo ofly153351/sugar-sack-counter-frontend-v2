@@ -18,6 +18,28 @@
     "startButton": "Start Using the System",
     "footer": "© 2025 | Mitr Phol Sugar Sack Counting System"
   },
+  "dashboard": {
+    "title": "Dashboard",
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "count": "Count Sugar Sacks",
+      "reports": "Reports",
+      "settings": "Settings"
+    },
+    "metrics": {
+      "vehiclesIn": "Vehicles In",
+      "vehiclesOut": "Vehicles Out",
+      "bagsOut": "Bags Out",
+      "boxesOut": "Boxes Out"
+    },
+    "userInfo": "User Information",
+    "name": "Name",
+    "username": "Username",
+    "email": "Email",
+    "userId": "User ID",
+    "noUserInfo": "No user information available.",
+    "welcomeMessage": "Welcome to the admin dashboard. Only authenticated users can access this page."
+  },
   "count": {
     "title": "Count Sugar Sacks",
     "tabs": {
