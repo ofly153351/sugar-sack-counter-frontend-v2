@@ -53,10 +53,28 @@ export const login = async (
       console.log("👤 User data stored in Zustand store:", responseData.user);
     }
 
+    // Check user role and return appropriate redirect path
+    let userRole = "user"; // default role
+    try {
+      const roleCheckResponse = await api.get("/auth/check-role", {
+        params: { role: "admin" },
+      });
+
+      userRole = roleCheckResponse.data.role || "user";
+      console.log("🎭 User role detected:", userRole);
+    } catch (roleError) {
+      console.warn(
+        "⚠️ Role check API failed, using default user role:",
+        roleError,
+      );
+      // Continue with default user role if role check fails
+    }
+
     return {
       success: true,
       token: "", // Token is managed by HttpOnly cookie, not stored in frontend
       message: "Login successful",
+      role: userRole,
     };
   } catch (error: unknown) {
     console.error("❌ Login API error:", error);

@@ -18,7 +18,8 @@ export async function middleware(req: NextRequest) {
     !pathname.startsWith("/api") &&
     !pathname.startsWith("/_next") &&
     !pathname.startsWith("/static") &&
-    !pathname.startsWith("/favicon.ico")
+    !pathname.startsWith("/favicon.ico") &&
+    !pathname.startsWith("/images/")
   ) {
     // If there's an invalid locale, replace it with default locale
     if (firstSegment && !["en", "th"].includes(firstSegment)) {
@@ -58,26 +59,24 @@ export async function middleware(req: NextRequest) {
       if (checkRoleResponse.ok) {
         const result = await checkRoleResponse.json();
 
-        // ถ้า user ไม่มี role admin → redirect ไปหน้า unauthorized
-        if (!result.hasRole) {
+        // ถ้า user ไม่มี role admin → redirect ไปหน้า home
+        if (result.role !== "admin") {
           const locale = pathname.split("/")[1];
-          return NextResponse.redirect(
-            new URL(`/${locale}/unauthorized`, req.url),
-          );
+          return NextResponse.redirect(new URL(`/${locale}/home`, req.url));
         }
 
         // ถ้ามี role admin → อนุญาตให้เข้าได้
         return NextResponse.next();
       } else {
-        // ถ้า API ตรวจสอบ role ล้มเหลว → redirect ไป login
+        // ถ้า API ตรวจสอบ role ล้มเหลว → redirect ไป home
         const locale = pathname.split("/")[1];
-        return NextResponse.redirect(new URL(`/${locale}/login`, req.url));
+        return NextResponse.redirect(new URL(`/${locale}/home`, req.url));
       }
     } catch (error) {
       console.error("Role check error:", error);
-      // ถ้ามี error ในการตรวจสอบ → redirect ไป login
+      // ถ้ามี error ในการตรวจสอบ → redirect ไป home
       const locale = pathname.split("/")[1];
-      return NextResponse.redirect(new URL(`/${locale}/login`, req.url));
+      return NextResponse.redirect(new URL(`/${locale}/home`, req.url));
     }
   }
 

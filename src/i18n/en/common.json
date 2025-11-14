@@ -11,5 +11,42 @@
   "signUp": "Sign up",
   "usernameError": "Username must be at least 6 characters and contain only English letters or numbers",
   "passwordError": "Password must be at least 6 characters and contain only English letters or numbers",
-  "loginFailed": "Login failed. Please try again."
+  "loginFailed": "Login failed. Please try again.",
+  "home": {
+    "title": "Smart Sugar Sack Counting System",
+    "description": "Enhance inventory inspection efficiency with AI technology",
+    "startButton": "Start Using the System",
+    "footer": "© 2025 | Mitr Phol Sugar Sack Counting System"
+  },
+  "count": {
+    "title": "Count Sugar Sacks",
+    "tabs": {
+      "bags": "Count Bags",
+      "boxes": "Count Boxes"
+    },
+    "transportation": "Transportation",
+    "sugarType": "Sugar Type",
+    "addRow": "Add Row",
+    "save": "Save",
+    "transportationOptions": ["Truck 1", "Truck 2", "Select from list"],
+    "sugarTypeOptions": ["White Sugar", "Brown Sugar", "Select from list"],
+    "bagRow": {
+      "row": "Row",
+      "weight": "Weight",
+      "takePhoto": "Take Photo",
+      "upload": "Upload",
+      "manualCount": "Manual Count",
+      "aiCount": "AI Count",
+      "bags": "bags"
+    },
+    "boxRow": {
+      "row": "Row",
+      "weight": "Weight",
+      "takePhoto": "Take Photo",
+      "upload": "Upload",
+      "manualCount": "Manual Count",
+      "aiCount": "AI Count",
+      "boxes": "boxes"
+    }
+  }
 }

@@ -94,7 +94,20 @@ export default function LoginPage() {
       if (result.success) {
         // Backend sets access_token as HttpOnly cookie automatically
         // No need to store token manually in frontend
-        const redirectTo = getRedirectUrl("/admin/dashboard");
+
+        // Redirect based on user role
+        let redirectPath = "/home"; // default for user role
+        if (result.role === "admin") {
+          redirectPath = "/admin/dashboard";
+        }
+
+        const redirectTo = getRedirectUrl(redirectPath);
+        console.log(
+          "🔄 Redirecting to:",
+          redirectTo,
+          "based on role:",
+          result.role,
+        );
         router.push(redirectTo);
       } else {
         setSubmitError(result.message || t.loginFailed);
