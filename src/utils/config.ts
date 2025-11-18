@@ -19,6 +19,7 @@ export const API_CONFIG = {
       CHECK_USERNAME: "/auth/check-username",
       CHECK_EMAIL: "/auth/check-email",
       CHECK_EMPLOYEE_CODE: "/auth/check-employee-code",
+      CHECK_ROLE: "/auth/check-role",
     },
   },
 } as const;

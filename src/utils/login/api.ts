@@ -54,13 +54,17 @@ export const login = async (
     }
 
     // Check user role and return appropriate redirect path
-    let userRole = "user"; // default role
+    let userRole: "user" | "admin" = "user"; // default role
     try {
-      const roleCheckResponse = await api.get("/auth/check-role", {
-        params: { role: "admin" },
-      });
+      const roleCheckResponse = await api.get(
+        API_CONFIG.ENDPOINTS.AUTH.CHECK_ROLE,
+        {
+          params: { role: "admin" },
+        },
+      );
 
-      userRole = roleCheckResponse.data.role || "user";
+      const roleData = roleCheckResponse.data as { role?: string };
+      userRole = (roleData.role as "user" | "admin") || "user";
       console.log("🎭 User role detected:", userRole);
     } catch (roleError) {
       console.warn(
@@ -119,11 +123,10 @@ export const login = async (
       error.response.data !== null &&
       "message" in error.response.data
     ) {
+      const errorData = error.response.data as { message: string };
       return {
         success: false,
-        message:
-          (error.response.data as { message: string }).message ||
-          "Login failed",
+        message: errorData.message || "Login failed",
       };
     }
 
