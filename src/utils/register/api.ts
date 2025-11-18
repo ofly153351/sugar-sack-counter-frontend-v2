@@ -5,6 +5,9 @@ import { UserRole } from "../types";
 import { api } from "../api-client";
 import { API_CONFIG, AUTH_CONFIG } from "../config";
 
+// Default role for new registrations
+const DEFAULT_ROLE: UserRole = "user";
+
 // API configuration
 const REGISTER_ENDPOINT = API_CONFIG.ENDPOINTS.AUTH.REGISTER;
 const AUTH_TOKEN_KEY = AUTH_CONFIG.TOKEN_KEY;
@@ -19,14 +22,14 @@ export const register = async (
 ): Promise<RegisterResponse> => {
   try {
     const response = await api.post(REGISTER_ENDPOINT, {
-      username: formData.username,
-      employee_code: formData.employeecode,
-      prefix: formData.prefix,
-      first_name: formData.firstName,
-      last_name: formData.lastName,
-      phone: formData.phone,
       email: formData.email,
       password: formData.password,
+      username: formData.username,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      employeeCode: formData.employeecode,
+      phone: formData.phone,
+      title: formData.title,
     });
 
     const data = response.data as {
@@ -145,35 +148,6 @@ export const checkEmployeeCodeAvailability = async (
 };
 
 /**
- * Store user data after successful registration
- */
-export const storeUserData = (
-  userData: RegisterFormData,
-  token?: string,
-): void => {
-  if (typeof window !== "undefined") {
-    if (token) {
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
-    }
-    localStorage.setItem(USER_ROLE_KEY, "user");
-    localStorage.setItem(
-      "userName",
-      `${userData.firstName} ${userData.lastName}`,
-    );
-    localStorage.setItem("userEmail", userData.email);
-    localStorage.setItem("userPhone", userData.phone);
-    localStorage.setItem("userEmployeeCode", userData.employeecode);
-
-    // Set cookie with 1 day expiration
-    const expires = new Date();
-    expires.setDate(expires.getDate() + 1);
-    if (token) {
-      document.cookie = `${COOKIE_AUTH_TOKEN}=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Strict`;
-    }
-  }
-};
-
-/**
  * Clear registration form data from storage
  */
 export const clearRegistrationData = (): void => {
@@ -242,13 +216,13 @@ export const getRegistrationSuccessUrl = (defaultUrl: string = "/"): string => {
  */
 export const formatRegistrationData = (formData: RegisterFormData) => {
   return {
-    username: formData.username,
-    employee_code: formData.employeecode,
-    prefix: formData.prefix,
-    first_name: formData.firstName,
-    last_name: formData.lastName,
-    phone: formData.phone,
     email: formData.email,
     password: formData.password,
+    username: formData.username,
+    firstName: formData.firstName,
+    lastName: formData.lastName,
+    employeeCode: formData.employeecode,
+    phone: formData.phone,
+    title: formData.title,
   };
 };

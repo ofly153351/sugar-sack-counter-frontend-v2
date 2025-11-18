@@ -13,18 +13,14 @@ const createApiClient = (): AxiosInstance => {
     headers: {
       "Content-Type": "application/json",
     },
+    withCredentials: true,
   });
 
   // Request interceptor
   instance.interceptors.request.use(
     (config) => {
-      // Add auth token if available
-      if (typeof window !== "undefined") {
-        const token = localStorage.getItem("authToken");
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      }
+      // Authentication is handled automatically by browser via HttpOnly cookies
+      // The access_token cookie will be sent automatically to same-origin requests
 
       // Log request in development
       if (process.env.NEXT_PUBLIC_DEBUG === "true") {
@@ -65,10 +61,13 @@ const createApiClient = (): AxiosInstance => {
 
       // Handle common error cases
       if (error.response?.status === 401) {
-        // Unauthorized - clear token and redirect to login
+        // Unauthorized - redirect to login and clear user data
+        // Backend will handle cookie clearing on logout
         if (typeof window !== "undefined") {
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("userRole");
+          // Clear user data from store on unauthorized
+          import("../store/user-store").then(({ clearUserData }) => {
+            clearUserData();
+          });
           window.location.href = "/login";
         }
       }

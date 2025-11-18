@@ -11,7 +11,7 @@ import {
   useLoginForm,
   usePasswordVisibility,
   login,
-  storeAuthTokens,
+  storeAuthToken,
   getRedirectUrl,
   validateLoginCredentials,
   Dictionary,
@@ -20,7 +20,9 @@ import {
 
 export default function LoginPage() {
   const params = useParams();
-  const locale = params.locale as Locale;
+  const localeParam = params.locale as string;
+  const locale: Locale =
+    localeParam === "en" || localeParam === "th" ? localeParam : "en";
   const router = useRouter();
 
   const [dictionary, setDictionary] = useState<Dictionary | null>(null);
@@ -34,6 +36,13 @@ export default function LoginPage() {
         setDictionary(dict);
       } catch (error) {
         console.error("Failed to load dictionary:", error);
+        // Fallback to English dictionary
+        try {
+          const fallbackDict = await getDictionary("en");
+          setDictionary(fallbackDict);
+        } catch (fallbackError) {
+          console.error("Failed to load fallback dictionary:", fallbackError);
+        }
       }
     };
     loadDictionary();
@@ -82,9 +91,23 @@ export default function LoginPage() {
     try {
       const result = await login(credentials);
 
-      if (result.success && result.token && result.role) {
-        storeAuthTokens(result.token, result.role);
-        const redirectTo = getRedirectUrl("/admin");
+      if (result.success) {
+        // Backend sets access_token as HttpOnly cookie automatically
+        // No need to store token manually in frontend
+
+        // Redirect based on user role
+        let redirectPath = "/home"; // default for user role
+        if (result.role === "admin") {
+          redirectPath = "/admin/dashboard";
+        }
+
+        const redirectTo = getRedirectUrl(redirectPath);
+        console.log(
+          "🔄 Redirecting to:",
+          redirectTo,
+          "based on role:",
+          result.role,
+        );
         router.push(redirectTo);
       } else {
         setSubmitError(result.message || t.loginFailed);

@@ -1,6 +1,10 @@
 // src/utils/register/validation.ts
 
-import { RegisterFormData, RegisterValidationResult, ValidationRules } from "./types";
+import {
+  RegisterFormData,
+  RegisterValidationResult,
+  ValidationRules,
+} from "./types";
 
 export const validationRules: ValidationRules = {
   username: {
@@ -36,7 +40,11 @@ export const validationRules: ValidationRules = {
 /**
  * Validate individual field based on field name and value
  */
-export const validateField = (name: string, value: string, formData?: RegisterFormData): string => {
+export const validateField = (
+  name: string,
+  value: string,
+  formData?: RegisterFormData,
+): string => {
   let message = "";
 
   switch (name) {
@@ -58,7 +66,7 @@ export const validateField = (name: string, value: string, formData?: RegisterFo
       }
       break;
 
-    case "prefix":
+    case "title":
       if (!value.trim()) {
         message = "กรุณาเลือกคำนำหน้า";
       }
@@ -71,7 +79,9 @@ export const validateField = (name: string, value: string, formData?: RegisterFo
 /**
  * Validate entire registration form
  */
-export const validateRegisterForm = (formData: RegisterFormData): RegisterValidationResult => {
+export const validateRegisterForm = (
+  formData: RegisterFormData,
+): RegisterValidationResult => {
   const errors: Record<string, string> = {};
 
   Object.entries(formData).forEach(([name, value]) => {
@@ -90,11 +100,13 @@ export const validateRegisterForm = (formData: RegisterFormData): RegisterValida
 /**
  * Check if all required fields are filled
  */
-export const areRequiredFieldsFilled = (formData: RegisterFormData): boolean => {
+export const areRequiredFieldsFilled = (
+  formData: RegisterFormData,
+): boolean => {
   const requiredFields = [
     "username",
     "employeecode",
-    "prefix",
+    "title",
     "firstName",
     "lastName",
     "phone",
@@ -103,7 +115,7 @@ export const areRequiredFieldsFilled = (formData: RegisterFormData): boolean => 
     "confirmPassword",
   ];
 
-  return requiredFields.every(field => {
+  return requiredFields.every((field) => {
     const value = formData[field as keyof RegisterFormData];
     return value && value.trim() !== "";
   });
@@ -147,6 +159,9 @@ export const validatePasswordStrength = (password: string): boolean => {
 /**
  * Check if passwords match
  */
-export const validatePasswordMatch = (password: string, confirmPassword: string): boolean => {
+export const validatePasswordMatch = (
+  password: string,
+  confirmPassword: string,
+): boolean => {
   return password === confirmPassword;
 };

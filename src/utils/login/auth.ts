@@ -1,17 +1,6 @@
 // src/utils/login/auth.ts
 
-import {
-  LoginCredentials,
-  LoginResponse,
-  UserRole,
-  AuthTokens,
-} from "../types";
-import { AUTH_CONFIG } from "../config";
-
-// Authentication constants
-export const AUTH_TOKEN_KEY = AUTH_CONFIG.TOKEN_KEY;
-export const USER_ROLE_KEY = AUTH_CONFIG.ROLE_KEY;
-export const COOKIE_AUTH_TOKEN = AUTH_CONFIG.COOKIE_TOKEN;
+import { LoginCredentials, UserRole, AuthTokens } from "../types";
 
 // Authentication regex patterns
 export const AUTH_REGEX = /^[A-Za-z0-9]{6,}$/;
@@ -57,40 +46,26 @@ export const validateLoginCredentials = (
 };
 
 /**
- * Store authentication tokens
+ * Store authentication token (no-op since backend handles via HttpOnly cookie)
  */
-export const storeAuthTokens = (
-  token: string,
-  role: UserRole = "user",
-): void => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(AUTH_TOKEN_KEY, token);
-    localStorage.setItem(USER_ROLE_KEY, role);
-
-    // Set cookie with 1 day expiration
-    const expires = new Date();
-    expires.setDate(expires.getDate() + 1);
-    document.cookie = `${COOKIE_AUTH_TOKEN}=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Strict`;
-  }
+export const storeAuthToken = (): void => {
+  // Backend sets access_token as HttpOnly cookie automatically
+  // No need to store token manually in frontend
 };
 
 /**
- * Get authentication token
+ * Get authentication token (not available in frontend due to HttpOnly cookie)
  */
 export const getAuthToken = (): string | null => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
-  }
+  // Token is stored as HttpOnly cookie by backend
+  // Cannot be accessed via JavaScript for security
   return null;
 };
 
 /**
- * Get user role
+ * Get user role (not used - for compatibility only)
  */
 export const getUserRole = (): UserRole | null => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem(USER_ROLE_KEY) as UserRole | null;
-  }
   return null;
 };
 
@@ -102,23 +77,18 @@ export const isAuthenticated = (): boolean => {
 };
 
 /**
- * Check if user has admin role
+ * Check if user has admin role (not used - for compatibility only)
  */
 export const isAdmin = (): boolean => {
-  return getUserRole() === "admin";
+  return false;
 };
 
 /**
- * Clear authentication tokens
+ * Clear authentication token (no-op since backend handles logout)
  */
-export const clearAuthTokens = (): void => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(USER_ROLE_KEY);
-
-    // Clear cookie
-    document.cookie = `${COOKIE_AUTH_TOKEN}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict`;
-  }
+export const clearAuthToken = (): void => {
+  // Backend handles logout and cookie clearing
+  // Frontend doesn't need to manage HttpOnly cookies
 };
 
 /**
@@ -127,7 +97,21 @@ export const clearAuthTokens = (): void => {
 export const getRedirectUrl = (defaultUrl: string = "/admin"): string => {
   if (typeof window !== "undefined") {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("from") || defaultUrl;
+    const redirectPath = urlParams.get("from") || defaultUrl;
+
+    // Get current locale from URL path
+    const pathSegments = window.location.pathname.split("/").filter(Boolean);
+    const currentLocale =
+      pathSegments[0] === "en" || pathSegments[0] === "th"
+        ? pathSegments[0]
+        : "th";
+
+    // Ensure redirect path includes locale prefix
+    if (!redirectPath.startsWith(`/${currentLocale}`)) {
+      return `/${currentLocale}${redirectPath}`;
+    }
+
+    return redirectPath;
   }
   return defaultUrl;
 };
@@ -136,15 +120,7 @@ export const getRedirectUrl = (defaultUrl: string = "/admin"): string => {
  * Get current authentication state
  */
 export const getAuthState = (): AuthTokens | null => {
-  const token = getAuthToken();
-  const role = getUserRole();
-
-  if (token && role) {
-    return {
-      token,
-      role,
-    };
-  }
-
+  // Authentication state is managed by backend via HttpOnly cookie
+  // Frontend cannot directly access the token
   return null;
 };
