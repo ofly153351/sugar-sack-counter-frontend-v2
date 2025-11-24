@@ -1,7 +1,7 @@
 "use client";
 
-import { useUserStore, getUserFullName } from "@/store/user-store";
 import { Dictionary } from "@/i18n/dictionaries";
+import { getUserFullName, useUserStore } from "@/store/user-store";
 
 interface DashboardClientProps {
   dict: Dictionary;
@@ -141,7 +141,7 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
                 {dict.dashboard.noUserInfo}
               </p>
               <p className="text-yellow-600 text-sm mt-1">
-                Please log in to view user information
+                Please 
               </p>
             </div>
           </div>
