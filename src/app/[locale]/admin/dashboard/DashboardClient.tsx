@@ -22,7 +22,7 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
               {dict.dashboard.metrics.vehiclesIn}
             </h3>
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <span className="text-blue-600 font-bold text-sm">IN</span>
+              <span className="text-blue-600 font-bold text-sm">IN2</span>
             </div>
           </div>
           <p className="text-4xl font-bold text-blue-700 mb-2">24</p>
