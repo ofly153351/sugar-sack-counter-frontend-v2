@@ -1,19 +1,17 @@
 "use client";
 
+import { Dictionary } from "@/i18n/dictionaries";
+import {
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Forklift,
+  LayoutDashboard,
+  UserCog
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Dictionary } from "@/i18n/dictionaries";
-import {
-  LayoutDashboard,
-  Calculator,
-  BarChart3,
-  Settings,
-  ChevronRight,
-  Building2,
-  ChevronLeft,
-  Menu,
-} from "lucide-react";
 
 interface AdminSidebarProps {
   dict: Dictionary;
@@ -31,22 +29,28 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
       icon: LayoutDashboard,
     },
     {
-      key: "count",
-      label: dict.dashboard.sidebar.count,
-      href: "/admin/count",
-      icon: Calculator,
+      key: "SugarBagsInfo",
+      label: dict.dashboard.sidebar.SugarBagsInfo,
+      href: "/admin/SugarBagsInfo",
+      icon: FileText,
     },
     {
-      key: "reports",
-      label: dict.dashboard.sidebar.reports,
-      href: "/admin/reports",
-      icon: BarChart3,
+      key: "SugarBoxsInfo",
+      label: dict.dashboard.sidebar.SugarBoxsInfo,
+      href: "/admin/SugarBoxsInfo",
+      icon: FileText,
     },
     {
-      key: "settings",
-      label: dict.dashboard.sidebar.settings,
-      href: "/admin/settings",
-      icon: Settings,
+      key: "VehicleInfo",
+      label: dict.dashboard.sidebar.VehicleInfo,
+      href: "/admin/VehicleInfo",
+      icon: Forklift,
+    },
+    {
+      key: "Users",
+      label: dict.dashboard.sidebar.Users,
+      href: "/admin/Users",
+      icon: UserCog,
     },
   ];
 

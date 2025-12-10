@@ -23,8 +23,12 @@
     "sidebar": {
       "dashboard": "แดชบอร์ด",
       "count": "นับกระสอบน้ำตาล",
-      "reports": "รายงาน",
-      "settings": "การตั้งค่า"
+      "VehicleInfo": "ข้อมูลรถขนส่ง",
+      "SugarBagsInfo": "ข้อมูลการนับกระสอบน้ำตาล",
+      "SugarBoxsInfo": "ข้อมูลการนับกล่องน้ำตาล",
+      "Users": "จัดการข้อมูลผู้ใช้"
+      
+
     },
     "metrics": {
       "vehiclesIn": "จำนวนรถเข้า",

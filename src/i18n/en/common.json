@@ -23,8 +23,11 @@
     "sidebar": {
       "dashboard": "Dashboard",
       "count": "Count Sugar Sacks",
-      "reports": "Reports",
-      "settings": "Settings"
+      "SugarBagsInfo": "Sugar Bags Information",
+      "SugarBoxsInfo" : "Sugar Boxes Information",
+      "VehicleInfo": "VehicleInfo",
+      "Users": "Users"
+
     },
     "metrics": {
       "vehiclesIn": "Vehicles In",
