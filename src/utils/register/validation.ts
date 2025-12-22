@@ -4,7 +4,7 @@ import {
   RegisterFormData,
   RegisterValidationResult,
   ValidationRules,
-} from "./types";
+} from "../types";
 
 export const validationRules: ValidationRules = {
   username: {
@@ -43,7 +43,7 @@ export const validationRules: ValidationRules = {
 export const validateField = (
   name: string,
   value: string,
-  formData?: RegisterFormData,
+  formData?: RegisterFormData
 ): string => {
   let message = "";
 
@@ -80,7 +80,7 @@ export const validateField = (
  * Validate entire registration form
  */
 export const validateRegisterForm = (
-  formData: RegisterFormData,
+  formData: RegisterFormData
 ): RegisterValidationResult => {
   const errors: Record<string, string> = {};
 
@@ -101,7 +101,7 @@ export const validateRegisterForm = (
  * Check if all required fields are filled
  */
 export const areRequiredFieldsFilled = (
-  formData: RegisterFormData,
+  formData: RegisterFormData
 ): boolean => {
   const requiredFields = [
     "username",
@@ -161,7 +161,7 @@ export const validatePasswordStrength = (password: string): boolean => {
  */
 export const validatePasswordMatch = (
   password: string,
-  confirmPassword: string,
+  confirmPassword: string
 ): boolean => {
   return password === confirmPassword;
 };

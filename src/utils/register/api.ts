@@ -1,7 +1,6 @@
 // src/utils/register/api.ts
 
-import { RegisterFormData, RegisterResponse } from "./types";
-import { UserRole } from "../types";
+import { RegisterFormData, RegisterResponse, UserRole } from "../types";
 import { api } from "../api-client";
 import { API_CONFIG, AUTH_CONFIG } from "../config";
 
@@ -18,7 +17,7 @@ const COOKIE_AUTH_TOKEN = AUTH_CONFIG.COOKIE_TOKEN;
  * Real registration API call using axios
  */
 export const register = async (
-  formData: RegisterFormData,
+  formData: RegisterFormData
 ): Promise<RegisterResponse> => {
   try {
     const response = await api.post(REGISTER_ENDPOINT, {
@@ -94,7 +93,7 @@ export const register = async (
  * Check username availability with backend using axios
  */
 export const checkUsernameAvailability = async (
-  username: string,
+  username: string
 ): Promise<boolean> => {
   try {
     const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.CHECK_USERNAME, {
@@ -112,7 +111,7 @@ export const checkUsernameAvailability = async (
  * Check email availability with backend using axios
  */
 export const checkEmailAvailability = async (
-  email: string,
+  email: string
 ): Promise<boolean> => {
   try {
     const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.CHECK_EMAIL, {
@@ -130,14 +129,14 @@ export const checkEmailAvailability = async (
  * Check employee code availability with backend using axios
  */
 export const checkEmployeeCodeAvailability = async (
-  employeeCode: string,
+  employeeCode: string
 ): Promise<boolean> => {
   try {
     const response = await api.post(
       API_CONFIG.ENDPOINTS.AUTH.CHECK_EMPLOYEE_CODE,
       {
         employee_code: employeeCode,
-      },
+      }
     );
     const data = response.data as { available?: boolean };
     return data.available || false;

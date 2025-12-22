@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 
 interface TabsProps {
-  currentTab: string;
-  setCurrentTab: (tab: string) => void;
+  currentTab: "bags" | "boxes";
+  setCurrentTab: (tab: "bags" | "boxes") => void;
 }
 
 export default function Tabs({ currentTab, setCurrentTab }: TabsProps) {

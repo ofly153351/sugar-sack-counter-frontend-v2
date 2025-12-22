@@ -96,3 +96,339 @@ export interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: UserRole;
 }
+
+// Count Types
+export type SessionType = "sack" | "box";
+export type SessionStatus =
+  | "completed"
+  | "pending"
+  | "cancelled"
+  | "in_progress";
+
+export interface CountingSession {
+  id?: string | number;
+  sessionType: SessionType;
+  userId: string | number;
+  vehicleId: string | number;
+  sugarTypeId: string | number;
+  totalCount?: number;
+  totalWeight?: number; // For sacks only
+  countingDate: string;
+  status: SessionStatus;
+  createdAt?: string;
+  updatedAt?: string;
+
+  // Relations (optional, may be included in API response)
+  user?: User;
+  vehicle?: Vehicle;
+  sugarType?: SugarType;
+  sackSession?: SackCountingSession;
+  boxSession?: BoxCountingSession;
+}
+
+export interface CountingSessionFormData {
+  sessionType: SessionType;
+  userId: string | number;
+  vehicleId: string | number;
+  sugarTypeId: string | number;
+  countingDate: string;
+  status?: SessionStatus;
+  totalCount?: number;
+  sackSessionId?: string | number | null;
+  boxSessionId?: string | number | null;
+}
+
+// ========== Sack Counting Session Types ==========
+
+export interface SackCountingSession {
+  id?: string | number;
+  vehicleId: string | number;
+  sugarTypeId: string | number;
+  userId: string | number;
+  totalSacks?: number;
+  totalWeight?: number;
+  countingDate: string;
+  status: "completed" | "in_progress" | "cancelled";
+  createdAt?: string;
+  updatedAt?: string;
+
+  // Relations
+  vehicle?: Vehicle;
+  sugarType?: SugarType;
+  user?: User;
+  sackRows?: SackRow[];
+  countingSession?: CountingSession;
+}
+
+export interface SackCountingSessionFormData {
+  vehicleId: string | number;
+  sugarTypeId: string | number;
+  userId: string | number;
+  totalSacks?: number;
+  totalWeight?: number;
+  countingDate: string;
+  status?: "completed" | "in_progress" | "cancelled";
+}
+
+// ========== Box Counting Session Types ==========
+
+export interface BoxCountingSession {
+  id?: string | number;
+  vehicleId: string | number;
+  sugarTypeId: string | number;
+  userId: string | number;
+  totalBoxes?: number;
+  countingDate: string;
+  status: "completed" | "in_progress" | "cancelled";
+  createdAt?: string;
+  updatedAt?: string;
+
+  // Relations
+  vehicle?: Vehicle;
+  sugarType?: SugarType;
+  user?: User;
+  boxRows?: BoxRow[];
+  countingSession?: CountingSession;
+}
+
+export interface BoxCountingSessionFormData {
+  vehicleId: string | number;
+  sugarTypeId: string | number;
+  userId: string | number;
+  totalBoxes?: number;
+  countingDate: string;
+  status?: "completed" | "in_progress" | "cancelled";
+}
+
+// ========== Row Types ==========
+
+export interface SackRow {
+  id?: string | number;
+  sessionId: string | number;
+  rowNumber: number;
+  weightType: string; // e.g., "50kg", "100kg"
+  aiCount?: number;
+  finalCount: number;
+  imagePath?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface SackRowFormData {
+  sessionId: string | number;
+  rowNumber: number;
+  weightType: string;
+  aiCount?: number;
+  finalCount: number;
+  imagePath?: string;
+}
+
+export interface BoxRow {
+  id?: string | number;
+  sessionId: string | number;
+  rowNumber: number;
+  aiCount?: number;
+  finalCount: number;
+  imagePath?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BoxRowFormData {
+  sessionId: string | number;
+  rowNumber: number;
+  aiCount?: number;
+  finalCount: number;
+  imagePath?: string;
+}
+
+// ========== Related Data Types ==========
+
+export interface Vehicle {
+  id?: string | number;
+  vehicleCode: string;
+  licensePlate: string;
+  vehicleTypeId: string | number;
+  vehicleType?: VehicleType;
+  driverName: string;
+  status: "active" | "inactive";
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface SugarType {
+  id: string | number;
+  name: string;
+  description?: string;
+}
+
+export interface User {
+  id: string | number;
+  username: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  firstname?: string;
+  lastname?: string;
+  role?: string;
+  phone?: string;
+  employeeCode?: string;
+  empCode?: string;
+  title?: string;
+  no?: number;
+  password?: string;
+}
+
+// Register Types
+export interface RegisterFormData {
+  username: string;
+  employeecode: string;
+  title: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface RegisterValidationResult {
+  isValid: boolean;
+  errors: Record<string, string>;
+}
+
+export interface RegisterResponse {
+  success: boolean;
+  message?: string;
+  token?: string;
+  user?: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: UserRole;
+  };
+}
+
+export interface InputFieldProps {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  error?: string;
+  type?: string;
+}
+
+export interface RegisterFormState {
+  formData: RegisterFormData;
+  errors: Record<string, string>;
+  isLoading: boolean;
+}
+
+export interface ValidationRule {
+  pattern: RegExp;
+  message: string;
+}
+
+export interface ValidationRules {
+  [key: string]: ValidationRule;
+}
+
+// Component Types
+export interface Option {
+  value: string;
+  label: string;
+}
+
+export interface CustomDropdownProps {
+  options: Option[];
+  selected: string;
+  setSelected: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  suppressHydrationWarning?: boolean;
+}
+
+// Admin Types
+export interface UserFormData {
+  email: string;
+  password?: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  employeeCode: string;
+  phone: string;
+  title: string;
+  role?: string;
+}
+
+export interface ApiUser {
+  id: string | number;
+  employeeCode?: string;
+  empCode?: string;
+  firstName?: string;
+  firstname?: string;
+  lastName?: string;
+  lastname?: string;
+  role?: string;
+  phone?: string;
+  email?: string;
+  username?: string;
+  password?: string;
+  no?: number;
+  title?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface VehicleType {
+  id: string | number;
+  name: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface VehicleTypeFormData {
+  name: string;
+  description?: string;
+}
+
+export interface VehicleFormData {
+  vehicleCode: string;
+  licensePlate: string;
+  vehicleTypeId: string | number;
+  driverName: string;
+  status: "active" | "inactive";
+}
+
+export interface ApiVehicle {
+  id: string | number;
+  vehicleCode: string;
+  licensePlate: string;
+  vehicleTypeId: string | number;
+  vehicleType?: VehicleType;
+  driverName: string;
+  status: "active" | "inactive";
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Store Types
+export interface StoreUser {
+  id: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface UserStore {
+  user: StoreUser | null;
+  isAuthenticated: boolean;
+  setUser: (user: StoreUser) => void;
+  clearUser: () => void;
+  updateUser: (updates: Partial<StoreUser>) => void;
+}

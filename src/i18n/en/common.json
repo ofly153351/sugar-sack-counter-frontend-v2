@@ -1,6 +1,11 @@
 {
   "welcome": "Welcome to our website!",
   "logout": "Log out",
+  "loggingOut": "Logging out...",
+  "logoutFailed": "Logout failed. Please try again.",
+  "logoutError": "An error occurred during logout. Please try again.",
+  "profile": "Profile",
+  "settings": "Settings",
   "signIn": "Sign in",
   "username": "Username",
   "password": "Password",
@@ -24,10 +29,9 @@
       "dashboard": "Dashboard",
       "count": "Count Sugar Sacks",
       "SugarBagsInfo": "Sugar Bags Information",
-      "SugarBoxsInfo" : "Sugar Boxes Information",
+      "SugarBoxsInfo": "Sugar Boxes Information",
       "VehicleInfo": "VehicleInfo",
-      "Users": "Users"
-
+      "Users": "Manage Users"
     },
     "metrics": {
       "vehiclesIn": "Vehicles In",
@@ -52,7 +56,8 @@
     "transportation": "Transportation",
     "sugarType": "Sugar Type",
     "addRow": "Add Row",
-    "save": "Save",
+    "saveButton": "Save",
+    "addSugarType": "Add Sugar Type",
     "transportationOptions": ["Truck 1", "Truck 2", "Select from list"],
     "sugarTypeOptions": ["White Sugar", "Brown Sugar", "Select from list"],
     "bagRow": {
@@ -72,6 +77,241 @@
       "manualCount": "Manual Count",
       "aiCount": "AI Count",
       "boxes": "boxes"
+    },
+    "validation": {
+      "requiredFields": "Incomplete information",
+      "selectVehicleAndSugarType": "Please select transportation vehicle and sugar type"
+    },
+    "saveMessages": {
+      "error": "Error",
+      "errorMessage": "Unable to save data",
+      "saving": "Saving..."
+    },
+    "loading": "Loading data...",
+    "errors": {
+      "loadError": "Failed to load data"
+    },
+    "buttons": {
+      "ok": "OK",
+      "retry": "Retry"
+    },
+    "summary": {
+      "title": "Summary Information",
+      "vehicle": "Transportation Vehicle",
+      "sugarType": "Sugar Type",
+      "rowCount": "Number of Rows",
+      "rows": "rows",
+      "sessionType": "Counting Type",
+      "bags": "Count Sacks",
+      "boxes": "Count Boxes",
+      "notSelected": "Not selected"
+    },
+    "selectVehicle": "Select transportation vehicle",
+    "selectSugarType": "Select sugar type",
+    "noVehiclesAvailable": "No available transportation vehicles",
+    "noSugarTypesAvailable": "No sugar types available",
+    "workflow": {
+      "sackCompleteErrorTitle": "Sack Counting Error",
+      "sackCompleteErrorMessage": "Unable to save sack counting",
+      "sackCompleteSuccessTitle": "Sack Counting Successful!",
+      "sackCompleteSuccessMessage": "Successfully counted {totalCount} sacks with total weight of {totalWeight} kilograms",
+      "boxCompleteErrorTitle": "Box Counting Error",
+      "boxCompleteErrorMessage": "Unable to save box counting",
+      "boxCompleteSuccessTitle": "Box Counting Successful!",
+      "boxCompleteSuccessMessage": "Successfully counted {totalCount} boxes",
+      "successTitle": "Saved Successfully",
+      "successMessage": "Counting saved successfully"
+    }
+  },
+  "sugarTypeManagement": {
+    "addSugarType": "Add Sugar Type",
+    "editSugarType": "Edit Sugar Type",
+    "sugarTypeName": "Sugar Type Name",
+    "sugarTypeDescription": "Description",
+    "save": "Save",
+    "cancel": "Cancel",
+    "requiredFields": "Please fill in all required fields",
+    "confirmAdd": "Do you want to add this sugar type?",
+    "confirmEdit": "Do you want to edit this sugar type?",
+    "successTitle": "Success!",
+    "addSuccess": "Sugar type added successfully",
+    "editSuccess": "Sugar type edited successfully",
+    "ok": "OK",
+    "unsavedChangesTitle": "Unsaved changes",
+    "unsavedChangesMessage": "You have unsaved changes. Do you want to close this window?",
+    "yesClose": "Yes, close window",
+    "noStay": "No, stay here",
+    "errorTitle": "Error",
+    "createErrorMessage": "Failed to add sugar type",
+    "updateErrorMessage": "Failed to edit sugar type",
+    "deleteErrorMessage": "Failed to delete sugar type"
+  },
+  "vehicle": {
+    "manage": "Manage Vehicles",
+    "add": "Add Vehicle",
+    "edit": "Edit Vehicle",
+    "loading": "Loading...",
+    "noVehicles": "No vehicles found",
+    "noVehiclesInSystem": "No vehicles in the system",
+    "noVehiclesFound": "No vehicles found",
+    "tryDifferentSearch": "Try a different search term or",
+    "clearFilters": "clear filters",
+    "searchPlaceholder": "Search by vehicle code, license plate, driver...",
+    "filter": {
+      "type": "Vehicle Type",
+      "search": "Search"
+    },
+    "delete": {
+      "confirmTitle": "Confirm Delete",
+      "confirmMessage": "License: {licensePlate}",
+      "confirmButton": "Delete",
+      "cancelButton": "Cancel",
+      "successTitle": "Deleted!",
+      "successMessage": "Data deleted successfully"
+    },
+    "save": {
+      "updateSuccessTitle": "Updated!",
+      "updateSuccessMessage": "Vehicle data updated successfully",
+      "createSuccessTitle": "Added!",
+      "createSuccessMessage": "Vehicle added successfully",
+      "error": "Error",
+      "errorMessage": "Failed to save vehicle"
+    },
+    "errors": {
+      "loadError": "Failed to load vehicles"
+    },
+    "buttons": {
+      "ok": "OK",
+      "cancel": "Cancel",
+      "retry": "Retry"
+    },
+    "form": {
+      "vehicleCode": "Vehicle Code",
+      "licensePlate": "License Plate",
+      "vehicleType": "Vehicle Type",
+      "driver": "Driver",
+      "driverName": "Driver Name",
+      "status": "Status",
+      "selectVehicleType": "Select vehicle type",
+      "loadingVehicleTypes": "Loading vehicle types...",
+      "requiredFields": "Please fill in all required fields",
+      "saveEdit": "Save Changes",
+      "addVehicle": "Add Vehicle",
+      "cancel": "Cancel",
+      "createVehicleType": "Create Vehicle Type",
+      "vehicleTypeName": "Vehicle Type Name",
+      "vehicleTypeDescription": "Description (Optional)",
+      "vehicleTypeNamePlaceholder": "e.g., 12-Wheel Truck, Pickup Truck",
+      "driverNamePlaceholder": "e.g., John Smith",
+      "vehicleTypeDescriptionPlaceholder": "e.g., Extra large truck for sugar transportation",
+      "vehicleTypeNameHint": "Vehicle type name must be unique",
+      "vehicleTypeDescriptionHint": "Additional description about this vehicle type",
+      "createVehicleTypeButton": "Create Vehicle Type",
+      "creatingVehicleType": "Creating..."
+    },
+    "table": {
+      "no": "NO.",
+      "vehicleCode": "Vehicle Code",
+      "licensePlate": "License Plate",
+      "vehicleType": "Vehicle Type",
+      "driver": "Driver",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "bags": {
+    "table": {
+      "no": "NO.",
+      "vehicleCode": "Vehicle Code",
+      "datetime": "Date & Time",
+      "createdBy": "Created By",
+      "sugarType": "Sugar Type",
+      "amount": "Amount",
+      "actions": "Actions"
+    }
+  },
+  "box": {
+    "table": {
+      "no": "NO.",
+      "vehicleCode": "Vehicle Code",
+      "datetime": "Date & Time",
+      "createdBy": "Created By",
+      "sugarType": "Sugar Type",
+      "amount": "Amount",
+      "actions": "Actions"
+    }
+  },
+  "users": {
+    "title": "Manage Users",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "search": "Search...",
+    "noUsers": "No users found",
+    "noUsersInSystem": "No users available in the system",
+    "clearSearch": "Clear search",
+    "refresh": "Refresh",
+    "loading": "Loading users...",
+    "tryDifferentSearch": "Try a different search term or",
+    "table": {
+      "no": "NO.",
+      "empCode": "Employee Code",
+      "firstname": "First Name",
+      "lastname": "Last Name",
+      "role": "Role",
+      "actions": "Actions"
+    },
+    "form": {
+      "username": "Username",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "employeeCode": "Employee Code",
+      "phone": "Phone Number",
+      "email": "Email",
+      "title": "Title",
+      "role": "Role",
+      "save": "Save",
+      "cancel": "Cancel",
+      "requiredFields": "Please fill in all required fields",
+      "passwordRequired": "Please enter password",
+      "passwordMismatch": "Passwords do not match",
+      "invalidEmail": "Invalid email format"
+    },
+    "delete": {
+      "confirm": "Are you sure you want to delete this user?",
+      "confirmButton": "Delete",
+      "success": "User deleted successfully",
+      "error": "Failed to delete user"
+    },
+    "save": {
+      "createSuccess": "User created successfully",
+      "updateSuccess": "User updated successfully",
+      "error": "Failed to save user"
+    },
+    "errors": {
+      "loadError": "Failed to load users"
+    },
+    "buttons": {
+      "ok": "OK",
+      "cancel": "Cancel",
+      "retry": "Retry"
+    }
+  },
+  "buttons": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "retry": "Retry"
+  },
+  "table": {
+    "actions": "Actions",
+    "noData": "— No data found —",
+    "delete": {
+      "confirmButton": "Delete",
+      "confirmTitle": "Confirm Delete",
+      "confirmMessage": "Are you sure you want to delete this item?",
+      "successTitle": "Success",
+      "successMessage": "Data deleted successfully"
     }
   }
 }

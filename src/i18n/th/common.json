@@ -1,6 +1,11 @@
 {
   "welcome": "ยินดีต้อนรับสู่เว็บไซต์ของเรา",
   "logout": "ออกจากระบบ",
+  "loggingOut": "กำลังออกจากระบบ...",
+  "logoutFailed": "ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง",
+  "logoutError": "เกิดข้อผิดพลาดในการออกจากระบบ กรุณาลองอีกครั้ง",
+  "profile": "โปรไฟล์",
+  "settings": "ตั้งค่า",
   "signIn": "เข้าสู่ระบบ",
   "username": "ชื่อผู้ใช้",
   "password": "รหัสผ่าน",
@@ -27,8 +32,6 @@
       "SugarBagsInfo": "ข้อมูลการนับกระสอบน้ำตาล",
       "SugarBoxsInfo": "ข้อมูลการนับกล่องน้ำตาล",
       "Users": "จัดการข้อมูลผู้ใช้"
-      
-
     },
     "metrics": {
       "vehiclesIn": "จำนวนรถเข้า",
@@ -53,7 +56,8 @@
     "transportation": "รถขนส่ง",
     "sugarType": "ชนิดน้ำตาล",
     "addRow": "เพิ่มแถว",
-    "save": "บันทึก",
+    "saveButton": "บันทึก",
+    "addSugarType": "เพิ่มชนิดน้ำตาล",
     "transportationOptions": ["รถบรรทุก 1", "รถบรรทุก 2", "เลือกจากรายการ"],
     "sugarTypeOptions": ["น้ำตาลทรายขาว", "น้ำตาลทรายแดง", "เลือกจากรายการ"],
     "bagRow": {
@@ -73,6 +77,236 @@
       "manualCount": "จำนวนกล่องแถวที่",
       "aiCount": "จำนวนที่ Ai นับได้",
       "boxes": "กล่อง"
+    },
+    "validation": {
+      "requiredFields": "ข้อมูลไม่ครบถ้วน",
+      "selectVehicleAndSugarType": "กรุณาเลือกรถขนส่งและประเภทน้ำตาล"
+    },
+    "saveMessages": {
+      "error": "เกิดข้อผิดพลาด",
+      "errorMessage": "ไม่สามารถบันทึกข้อมูลได้",
+      "saving": "กำลังบันทึก..."
+    },
+    "loading": "กำลังโหลดข้อมูล...",
+    "errors": {
+      "loadError": "ไม่สามารถโหลดข้อมูลได้"
+    },
+    "buttons": {
+      "ok": "ตกลง",
+      "retry": "ลองใหม่"
+    },
+    "summary": {
+      "title": "สรุปข้อมูล",
+      "vehicle": "รถขนส่ง",
+      "sugarType": "ประเภทน้ำตาล",
+      "rowCount": "จำนวนแถว",
+      "rows": "แถว",
+      "sessionType": "ประเภทการนับ",
+      "bags": "นับกระสอบ",
+      "boxes": "นับกล่อง",
+      "notSelected": "ไม่ได้เลือก"
+    },
+    "selectVehicle": "เลือกรถขนส่ง",
+    "selectSugarType": "เลือกประเภทน้ำตาล",
+    "noVehiclesAvailable": "ไม่มีรถขนส่งที่ใช้งานได้",
+    "noSugarTypesAvailable": "ไม่มีประเภทน้ำตาล",
+    "workflow": {
+      "sackCompleteErrorTitle": "เกิดข้อผิดพลาดในการนับกระสอบ",
+      "sackCompleteErrorMessage": "ไม่สามารถบันทึกการนับกระสอบได้",
+      "sackCompleteSuccessTitle": "นับกระสอบสำเร็จ!",
+      "sackCompleteSuccessMessage": "นับกระสอบสำเร็จทั้งหมด {totalCount} กระสอบ น้ำหนักรวม {totalWeight} กิโลกรัม",
+      "boxCompleteErrorTitle": "เกิดข้อผิดพลาดในการนับกล่อง",
+      "boxCompleteErrorMessage": "ไม่สามารถบันทึกการนับกล่องได้",
+      "boxCompleteSuccessTitle": "นับกล่องสำเร็จ!",
+      "boxCompleteSuccessMessage": "นับกล่องสำเร็จทั้งหมด {totalCount} กล่อง",
+      "successTitle": "บันทึกสำเร็จ",
+      "successMessage": "บันทึกการนับเรียบร้อยแล้ว"
+    }
+  },
+  "sugarTypeManagement": {
+    "addSugarType": "เพิ่มชนิดน้ำตาล",
+    "editSugarType": "แก้ไขชนิดน้ำตาล",
+    "sugarTypeName": "ชื่อชนิดน้ำตาล",
+    "sugarTypeDescription": "คำอธิบาย",
+    "save": "บันทึก",
+    "cancel": "ยกเลิก",
+    "requiredFields": "กรุณากรอกข้อมูลให้ครบ",
+    "confirmAdd": "คุณต้องการเพิ่มชนิดน้ำตาลนี้ใช่หรือไม่?",
+    "confirmEdit": "คุณต้องการแก้ไขชนิดน้ำตาลนี้ใช่หรือไม่?",
+    "successTitle": "สำเร็จ!",
+    "addSuccess": "เพิ่มชนิดน้ำตาลเรียบร้อยแล้ว",
+    "editSuccess": "แก้ไขชนิดน้ำตาลเรียบร้อยแล้ว",
+    "ok": "ตกลง",
+    "unsavedChangesTitle": "มีข้อมูลที่ยังไม่ได้บันทึก",
+    "unsavedChangesMessage": "คุณมีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างนี้ใช่หรือไม่?",
+    "yesClose": "ใช่, ปิดหน้าต่าง",
+    "noStay": "ไม่, อยู่ต่อ",
+    "errorTitle": "เกิดข้อผิดพลาด",
+    "createErrorMessage": "ไม่สามารถเพิ่มชนิดน้ำตาลได้",
+    "updateErrorMessage": "ไม่สามารถแก้ไขชนิดน้ำตาลได้",
+    "deleteErrorMessage": "ไม่สามารถลบชนิดน้ำตาลได้"
+  },
+  "vehicle": {
+    "manage": "จัดการข้อมูลรถขนส่ง",
+    "add": "เพิ่มรถขนส่ง",
+    "edit": "แก้ไขรถขนส่ง",
+    "loading": "กำลังโหลด...",
+    "noVehicles": "ไม่พบข้อมูลรถ",
+    "noVehiclesInSystem": "ไม่มีข้อมูลรถในระบบ",
+    "noVehiclesFound": "ไม่พบข้อมูลรถ",
+    "tryDifferentSearch": "ลองใช้คำค้นหาอื่นหรือ",
+    "clearFilters": "ล้างตัวกรอง",
+    "searchPlaceholder": "ค้นหาด้วยรหัสรถ, ทะเบียน, คนขับ...",
+    "filter": {
+      "type": "ประเภทรถ",
+      "search": "ค้นหา"
+    },
+    "delete": {
+      "confirmTitle": "ต้องการลบข้อมูลนี้?",
+      "confirmMessage": "ทะเบียน: {licensePlate}",
+      "confirmButton": "ลบ",
+      "cancelButton": "ยกเลิก",
+      "successTitle": "ลบแล้ว!",
+      "successMessage": "ข้อมูลถูกลบเรียบร้อย"
+    },
+    "save": {
+      "updateSuccessTitle": "อัปเดตสำเร็จ!",
+      "updateSuccessMessage": "ข้อมูลรถถูกอัปเดตเรียบร้อย",
+      "createSuccessTitle": "เพิ่มสำเร็จ!",
+      "createSuccessMessage": "รถถูกเพิ่มเรียบร้อย",
+      "error": "เกิดข้อผิดพลาด",
+      "errorMessage": "ไม่สามารถบันทึกรถได้"
+    },
+    "errors": {
+      "loadError": "ไม่สามารถโหลดข้อมูลรถได้"
+    },
+    "buttons": {
+      "ok": "ตกลง",
+      "cancel": "ยกเลิก",
+      "retry": "ลองใหม่"
+    },
+    "form": {
+      "vehicleCode": "รหัสรถ",
+      "licensePlate": "ทะเบียนรถ",
+      "vehicleType": "ประเภทรถ",
+      "driver": "คนขับ",
+      "driverName": "ชื่อคนขับ",
+      "status": "สถานะ",
+      "selectVehicleType": "เลือกประเภทรถ",
+      "loadingVehicleTypes": "กำลังโหลดข้อมูลประเภทรถ...",
+      "requiredFields": "กรุณากรอกข้อมูลให้ครบ",
+      "saveEdit": "บันทึกการแก้ไข",
+      "addVehicle": "เพิ่มรถ",
+      "cancel": "ยกเลิก",
+      "createVehicleType": "สร้างประเภทรถใหม่",
+      "vehicleTypeName": "ชื่อประเภทรถ",
+      "vehicleTypeDescription": "คำอธิบาย (ไม่จำเป็น)",
+      "vehicleTypeNamePlaceholder": "เช่น รถบรรทุก 12 ล้อ, รถกระบะ",
+      "driverNamePlaceholder": "เช่น สมชาย ใจดี",
+      "vehicleTypeDescriptionPlaceholder": "เช่น รถบรรทุกขนาดใหญ่พิเศษสำหรับขนส่งน้ำตาล",
+      "vehicleTypeNameHint": "ชื่อประเภทรถต้องไม่ซ้ำกับที่มีอยู่ในระบบ",
+      "vehicleTypeDescriptionHint": "คำอธิบายเพิ่มเติมเกี่ยวกับประเภทรถนี้",
+      "createVehicleTypeButton": "สร้างประเภทรถ",
+      "creatingVehicleType": "กำลังสร้าง..."
+    },
+    "table": {
+      "no": "NO.",
+      "vehicleCode": "รหัสรถ",
+      "licensePlate": "ทะเบียนรถ",
+      "vehicleType": "ประเภทรถ",
+      "driver": "คนขับ",
+      "status": "สถานะ",
+      "actions": "จัดการ"
+    }
+  },
+  "bags": {
+    "table": {
+      "no": "NO.",
+      "vehicleCode": "รหัสรถ",
+      "datetime": "วันที่เวลา",
+      "createdBy": "ผู้บันทึก",
+      "sugarType": "ชนิดน้ำตาล",
+      "amount": "จำนวน",
+      "actions": "จัดการ"
+    }
+  },
+  "box": {
+    "table": {
+      "no": "NO.",
+      "vehicleCode": "รหัสรถ",
+      "datetime": "วันที่เวลา",
+      "createdBy": "ผู้บันทึก",
+      "sugarType": "ชนิดน้ำตาล",
+      "amount": "จำนวน",
+      "actions": "จัดการ"
+    }
+  },
+  "users": {
+    "title": "จัดการผู้ใช้งาน",
+    "addUser": "เพิ่มผู้ใช้งาน",
+    "editUser": "แก้ไขผู้ใช้งาน",
+    "search": "ค้นหา...",
+    "noUsers": "ไม่พบผู้ใช้งาน",
+    "noUsersInSystem": "ไม่มีผู้ใช้งานในระบบ",
+    "clearSearch": "ล้างการค้นหา",
+    "refresh": "รีเฟรช",
+    "loading": "กำลังโหลดข้อมูลผู้ใช้งาน...",
+    "tryDifferentSearch": "ลองใช้คำค้นหาอื่นหรือ",
+    "table": {
+      "no": "NO.",
+      "empCode": "รหัสพนักงาน",
+      "firstname": "ชื่อ",
+      "lastname": "นามสกุล",
+      "role": "ตำแหน่ง",
+      "actions": "จัดการ"
+    },
+    "form": {
+      "username": "ชื่อผู้ใช้",
+      "password": "รหัสผ่าน",
+      "confirmPassword": "ยืนยันรหัสผ่าน",
+      "firstName": "ชื่อ",
+      "lastName": "นามสกุล",
+      "employeeCode": "รหัสพนักงาน",
+      "phone": "เบอร์โทรศัพท์",
+      "email": "อีเมล",
+      "title": "คำนำหน้า",
+      "role": "ตำแหน่ง",
+      "save": "บันทึก",
+      "cancel": "ยกเลิก",
+      "requiredFields": "กรุณากรอกข้อมูลให้ครบ",
+      "passwordRequired": "กรุณากรอกรหัสผ่าน",
+      "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
+      "invalidEmail": "รูปแบบอีเมลไม่ถูกต้อง"
+    },
+    "delete": {
+      "confirm": "ต้องการลบผู้ใช้งานนี้หรือไม่?",
+      "confirmButton": "ลบ",
+      "success": "ข้อมูลถูกลบเรียบร้อย",
+      "error": "ไม่สามารถลบผู้ใช้งานได้"
+    },
+    "save": {
+      "createSuccess": "ผู้ใช้งานถูกสร้างเรียบร้อย",
+      "updateSuccess": "ข้อมูลผู้ใช้งานถูกอัปเดตเรียบร้อย",
+      "error": "ไม่สามารถบันทึกผู้ใช้งานได้"
+    },
+    "errors": {
+      "loadError": "ไม่สามารถโหลดข้อมูลผู้ใช้งานได้"
+    },
+    "buttons": {
+      "ok": "ตกลง",
+      "cancel": "ยกเลิก",
+      "retry": "ลองใหม่"
+    }
+  },
+  "table": {
+    "actions": "จัดการ",
+    "noData": "— ไม่พบข้อมูล —",
+    "delete": {
+      "confirmButton": "ลบข้อมูล",
+      "confirmTitle": "ยืนยันการลบข้อมูล",
+      "confirmMessage": "คุณต้องการลบข้อมูลนี้ใช่ไหม?",
+      "successTitle": "สำเร็จ",
+      "successMessage": "ข้อมูลถูกลบเรียบร้อยแล้ว"
     }
   }
 }

@@ -1,7 +1,7 @@
 // src/utils/register/forms.ts
 
 import { useState, ChangeEvent } from "react";
-import { RegisterFormData, RegisterFormState, InputFieldProps } from "./types";
+import { RegisterFormData, RegisterFormState, InputFieldProps } from "../types";
 import { validateField, validateRegisterForm } from "./validation";
 
 /**
@@ -62,7 +62,7 @@ export const useRegisterForm = () => {
    * Handle input change event
    */
   const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     updateField(name, value);
@@ -109,7 +109,7 @@ export const useRegisterForm = () => {
    */
   const handleSubmit = async (
     onSubmit: (formData: RegisterFormData) => Promise<void>,
-    e?: React.FormEvent,
+    e?: React.FormEvent
   ) => {
     if (e) {
       e.preventDefault();

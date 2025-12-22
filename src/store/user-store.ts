@@ -2,21 +2,14 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-}
+import { StoreUser } from "@/utils/types";
 
 interface UserStore {
-  user: User | null;
+  user: StoreUser | null;
   isAuthenticated: boolean;
-  setUser: (user: User) => void;
+  setUser: (user: StoreUser) => void;
   clearUser: () => void;
-  updateUser: (updates: Partial<User>) => void;
+  updateUser: (updates: Partial<StoreUser>) => void;
 }
 
 export const useUserStore = create<UserStore>()(
@@ -25,7 +18,7 @@ export const useUserStore = create<UserStore>()(
       user: null,
       isAuthenticated: false,
 
-      setUser: (user: User) => {
+      setUser: (user: StoreUser) => {
         set({
           user,
           isAuthenticated: true,
@@ -39,7 +32,7 @@ export const useUserStore = create<UserStore>()(
         });
       },
 
-      updateUser: (updates: Partial<User>) => {
+      updateUser: (updates: Partial<StoreUser>) => {
         const { user } = get();
         if (user) {
           set({
@@ -51,17 +44,17 @@ export const useUserStore = create<UserStore>()(
     {
       name: "user-storage",
       skipHydration: true,
-    },
-  ),
+    }
+  )
 );
 
 // Helper functions for common operations
-export const getUserFullName = (user: User | null): string => {
+export const getUserFullName = (user: StoreUser | null): string => {
   if (!user) return "";
   return `${user.firstName} ${user.lastName}`.trim();
 };
 
-export const getUserInitials = (user: User | null): string => {
+export const getUserInitials = (user: StoreUser | null): string => {
   if (!user) return "";
   const first = user.firstName.charAt(0).toUpperCase();
   const last = user.lastName.charAt(0).toUpperCase();
@@ -69,7 +62,7 @@ export const getUserInitials = (user: User | null): string => {
 };
 
 // Helper function to store user data (can be used outside React components)
-export const storeUserData = (userData: User): void => {
+export const storeUserData = (userData: StoreUser): void => {
   const { setUser } = useUserStore.getState();
   setUser(userData);
 };

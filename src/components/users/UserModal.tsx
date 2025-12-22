@@ -2,13 +2,13 @@
 
 import { X } from "lucide-react";
 import { UserForm, type User } from "./UserForm";
+import { useTranslations } from "next-intl";
 
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: User | null;
   onSave: (user: User) => void;
-  title?: string;
 }
 
 export function UserModal({
@@ -16,11 +16,12 @@ export function UserModal({
   onClose,
   initialData,
   onSave,
-  title,
 }: UserModalProps) {
+  const t = useTranslations("users");
+
   if (!isOpen) return null;
 
-  const modalTitle = title || (initialData ? "แก้ไขผู้ใช้งาน" : "เพิ่มผู้ใช้งาน");
+  const modalTitle = initialData ? t("editUser") : t("addUser");
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

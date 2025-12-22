@@ -7,19 +7,19 @@
 
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api",
+  BASE_URL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001",
   ENDPOINTS: {
     AUTH: {
-      LOGIN: "/auth/login",
-      REGISTER: "/auth/register",
-      VALIDATE: "/auth/validate",
-      REFRESH: "/auth/refresh",
-      LOGOUT: "/auth/logout",
-      PROFILE: "/auth/profile",
-      CHECK_USERNAME: "/auth/check-username",
-      CHECK_EMAIL: "/auth/check-email",
-      CHECK_EMPLOYEE_CODE: "/auth/check-employee-code",
-      CHECK_ROLE: "/auth/check-role",
+      LOGIN: "/api/auth/login",
+      REGISTER: "/api/auth/register",
+      VALIDATE: "/api/auth/validate",
+      REFRESH: "/api/auth/refresh",
+      LOGOUT: "/api/auth/logout",
+      PROFILE: "/api/auth/profile",
+      CHECK_USERNAME: "/api/auth/check-username",
+      CHECK_EMAIL: "/api/auth/check-email",
+      CHECK_EMPLOYEE_CODE: "/api/auth/check-employee-code",
+      CHECK_ROLE: "/api/auth/check-role",
     },
   },
 } as const;
@@ -63,13 +63,15 @@ export const isTest = (): boolean => process.env.NODE_ENV === "test";
 
 // Configuration Validation
 export const validateConfig = (): void => {
-  const requiredEnvVars = ["NEXT_PUBLIC_API_URL"] as const;
+  const requiredEnvVars = ["NEXT_PUBLIC_BACKEND_URL"] as const;
 
   const missingVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
   if (missingVars.length > 0 && isProduction()) {
     console.warn(
-      `Missing required environment variables in production: ${missingVars.join(", ")}`,
+      `Missing required environment variables in production: ${missingVars.join(
+        ", "
+      )}`
     );
   }
 };

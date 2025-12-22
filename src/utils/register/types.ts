@@ -1,59 +1,15 @@
 // src/utils/register/types.ts
 
-import { UserRole } from "../types";
+// Types have been moved to src/utils/types.ts
+// This file is kept for backward compatibility
 
-export interface RegisterFormData {
-  username: string;
-  employeecode: string;
-  title: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
-export interface RegisterValidationResult {
-  isValid: boolean;
-  errors: Record<string, string>;
-}
-
-export interface RegisterResponse {
-  success: boolean;
-  message?: string;
-  token?: string;
-  user?: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    role: UserRole;
-  };
-}
-
-export interface InputFieldProps {
-  label: string;
-  name: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  error?: string;
-  type?: string;
-}
-
-export interface RegisterFormState {
-  formData: RegisterFormData;
-  errors: Record<string, string>;
-  isLoading: boolean;
-}
-
-export interface ValidationRule {
-  pattern: RegExp;
-  message: string;
-}
-
-export interface ValidationRules {
-  [key: string]: ValidationRule;
-}
+// Re-export types from main types.ts for backward compatibility
+export type {
+  RegisterFormData,
+  RegisterValidationResult,
+  RegisterResponse,
+  InputFieldProps,
+  RegisterFormState,
+  ValidationRule,
+  ValidationRules,
+} from "../types";

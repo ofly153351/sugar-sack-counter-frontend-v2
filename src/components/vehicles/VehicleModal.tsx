@@ -1,0 +1,73 @@
+"use client";
+
+import { VehicleForm } from "./VehicleForm";
+import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+interface VehicleType {
+  id: string | number;
+  name: string;
+  description?: string;
+}
+
+interface Vehicle {
+  no?: number;
+  id?: string | number;
+  vehicleCode: string;
+  licensePlate: string;
+  vehicleType: string;
+  vehicleTypeId: string | number;
+  driverName: string;
+  status: "active" | "inactive";
+}
+
+interface VehicleModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialData?: Vehicle | null;
+  onSave: (vehicle: Vehicle) => void;
+  vehicleTypes?: VehicleType[];
+}
+
+export function VehicleModal({
+  isOpen,
+  onClose,
+  initialData,
+  onSave,
+  vehicleTypes = [],
+}: VehicleModalProps) {
+  const t = useTranslations();
+
+  if (!isOpen) return null;
+
+  const handleSave = (vehicle: Vehicle) => {
+    onSave(vehicle);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
+        >
+          <X size={20} />
+        </button>
+
+        <h2 className="text-xl font-bold mb-4">
+          {initialData
+            ? t("vehicle.edit", { defaultValue: "แก้ไขรถขนส่ง" })
+            : t("vehicle.add", { defaultValue: "เพิ่มรถขนส่ง" })}
+        </h2>
+
+        <VehicleForm
+          initialData={initialData}
+          onCancel={onClose}
+          onSave={handleSave}
+          vehicleTypes={vehicleTypes}
+        />
+      </div>
+    </div>
+  );
+}

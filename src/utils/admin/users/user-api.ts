@@ -2,46 +2,9 @@
 
 import { api } from "../../api-client";
 import { API_CONFIG } from "../../config";
+import { User, UserFormData, ApiUser } from "../../types";
 
-export interface User {
-  id?: string | number;
-  no: number;
-  empCode: string;
-  firstname: string;
-  lastname: string;
-  role: string;
-  phone?: string;
-  email?: string;
-  username?: string;
-  password?: string;
-}
-
-export interface UserFormData {
-  username: string;
-  employeeCode: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  phone: string;
-  email: string;
-  password?: string;
-}
-
-export interface ApiUser {
-  id: string | number;
-  employeeCode?: string;
-  empCode?: string;
-  firstName?: string;
-  firstname?: string;
-  lastName?: string;
-  lastname?: string;
-  role?: string;
-  phone?: string;
-  email?: string;
-  username?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// Types are now imported from src/utils/types.ts
 
 /**
  * Fetch all users from API
@@ -50,7 +13,7 @@ export const fetchUsers = async (): Promise<User[]> => {
   try {
     console.log("📡 Fetching users from API...");
     const response = await api.get("/users");
-    console.log("✅ Users API response:", response.data);
+    console.log("✅ Users API response received");
 
     const apiUsers = response.data as ApiUser[];
 
@@ -59,7 +22,8 @@ export const fetchUsers = async (): Promise<User[]> => {
       empCode: user.employeeCode || user.empCode || `EMP${user.id}`,
       firstname: user.firstName || user.firstname || "",
       lastname: user.lastName || user.lastname || "",
-      role: user.role || "พนักงาน",
+      role: user.role || "user", // Keep role for compatibility but use backend value
+      title: user.title || "Mr.", // Add title field
       phone: user.phone || "",
       email: user.email || "",
       username: user.username || "",
@@ -103,12 +67,40 @@ export const updateUser = async (
   userData: Partial<UserFormData>
 ): Promise<ApiUser> => {
   try {
-    console.log(`✏️ Updating user with ID: ${userId}`, userData);
-    const response = await api.patch(`/users/${userId}`, userData);
-    console.log("✅ User updated successfully:", response.data);
+    // Filter out empty string fields before sending
+    const filteredData: Partial<UserFormData> = {};
+
+    for (const [key, value] of Object.entries(userData)) {
+      // Only include non-empty values
+      if (value !== undefined && value !== null && value !== "") {
+        filteredData[key as keyof UserFormData] = value;
+      }
+    }
+
+    console.log(`✏️ Updating user with ID: ${userId}`);
+    console.log(`🔍 Original data:`, userData);
+    console.log(`🔍 Filtered data (to send):`, filteredData);
+    console.log(`🔍 Full API URL: ${API_CONFIG.BASE_URL}/users/${userId}`);
+    console.log(`🔍 Request method: PATCH`);
+
+    const response = await api.patch(`/users/${userId}`, filteredData);
+
+    console.log("✅ User updated successfully");
+    console.log(`🔍 Response status: ${response.status}`);
+    console.log(`🔍 Response data:`, response.data);
     return response.data;
   } catch (error: any) {
     console.error("❌ Error updating user:", error);
+    console.error(`🔍 Error details:`, {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        baseURL: error.config?.baseURL,
+      },
+    });
 
     let errorMessage = "Failed to update user";
     if (error.response?.data?.message) {
@@ -127,10 +119,25 @@ export const updateUser = async (
 export const deleteUser = async (userId: string | number): Promise<void> => {
   try {
     console.log(`🗑️ Deleting user with ID: ${userId}`);
-    await api.delete(`/users/${userId}`);
+    console.log(`🔍 Full API URL: ${API_CONFIG.BASE_URL}/users/${userId}`);
+    console.log(`🔍 Request method: DELETE`);
+
+    const response = await api.delete(`/users/${userId}`);
     console.log("✅ User deleted successfully");
+    console.log(`🔍 Response status: ${response.status}`);
+    console.log(`🔍 Response data:`, response.data);
   } catch (error: any) {
     console.error("❌ Error deleting user:", error);
+    console.error(`🔍 Error details:`, {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        baseURL: error.config?.baseURL,
+      },
+    });
 
     let errorMessage = "Failed to delete user";
     if (error.response?.data?.message) {
@@ -184,16 +191,22 @@ export const getUserById = async (userId: string | number): Promise<User> => {
  * Convert User to UserFormData for API submission
  */
 export const convertToUserFormData = (user: User): UserFormData => {
-  return {
+  const formData: UserFormData = {
+    email: user.email || "",
     username: user.username || "",
-    employeeCode: user.empCode,
     firstName: user.firstname,
     lastName: user.lastname,
-    role: user.role,
+    employeeCode: user.empCode,
     phone: user.phone || "",
-    email: user.email || "",
-    password: user.password,
+    title: user.title || "Mr.",
   };
+
+  // Only include password if it's not empty (for new users or password changes)
+  if (user.password && user.password.trim() !== "") {
+    formData.password = user.password;
+  }
+
+  return formData;
 };
 
 /**

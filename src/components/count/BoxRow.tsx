@@ -1,19 +1,30 @@
 "use client";
 
 import { Camera, CloudDownload, Image as ImageIcon, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 interface BoxRowProps {
   rowNumber: number;
   onDelete: () => void;
+  vehicleId?: string | number;
+  sugarTypeId?: string | number;
+  disabled?: boolean;
 }
 
-export default function BoxRow({ rowNumber, onDelete }: BoxRowProps) {
+export default function BoxRow({
+  rowNumber,
+  onDelete,
+  vehicleId,
+  sugarTypeId,
+  disabled,
+}: BoxRowProps) {
   const t = useTranslations("count.boxRow");
   const [boxWeight, setBoxWeight] = useState("10");
-  const [manualCount, setManualCount] = useState(5);
-  const aiCount = 5;
+  const [manualCount, setManualCount] = useState(0);
+  const [aiCount, setAiCount] = useState<number | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-4 p-4 border rounded-lg bg-white shadow-sm">
@@ -38,16 +49,26 @@ export default function BoxRow({ rowNumber, onDelete }: BoxRowProps) {
       <div className="flex flex-col md:flex-1 space-y-2 w-full">
         <div className="flex flex-wrap gap-2">
           <button
-            className={`px-3 py-1 text-sm font-medium rounded-lg ${boxWeight === "10" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`}
+            className={`px-3 py-1 text-sm font-medium rounded-lg ${
+              boxWeight === "10"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
             onClick={() => setBoxWeight("10")}
+            disabled={disabled}
           >
-            {t("weight")} 25
+            {t("weight")} 10
           </button>
           <button
-            className={`px-3 py-1 text-sm font-medium rounded-lg ${boxWeight === "20" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`}
+            className={`px-3 py-1 text-sm font-medium rounded-lg ${
+              boxWeight === "20"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
             onClick={() => setBoxWeight("20")}
+            disabled={disabled}
           >
-            {t("weight")} 50
+            {t("weight")} 20
           </button>
         </div>
 

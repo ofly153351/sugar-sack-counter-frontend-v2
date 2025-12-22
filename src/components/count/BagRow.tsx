@@ -1,19 +1,30 @@
 "use client";
 
 import { Camera, CloudDownload, Image as ImageIcon, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 interface BagRowProps {
   rowNumber: number;
   onDelete: () => void;
+  vehicleId?: string | number;
+  sugarTypeId?: string | number;
+  disabled?: boolean;
 }
 
-export default function BagRow({ rowNumber, onDelete }: BagRowProps) {
+export default function BagRow({
+  rowNumber,
+  onDelete,
+  vehicleId,
+  sugarTypeId,
+  disabled,
+}: BagRowProps) {
   const t = useTranslations("count.bagRow");
-  const [bagWeight, setBagWeight] = useState("25");
-  const [manualCount, setManualCount] = useState(20);
-  const aiCount = 20;
+  const [bagWeight, setBagWeight] = useState("50");
+  const [manualCount, setManualCount] = useState(0);
+  const [aiCount, setAiCount] = useState<number | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-4 p-4 border rounded-lg bg-white shadow-sm">
@@ -38,13 +49,21 @@ export default function BagRow({ rowNumber, onDelete }: BagRowProps) {
       <div className="flex flex-col md:flex-1 space-y-2 w-full">
         <div className="flex flex-wrap gap-2">
           <button
-            className={`px-3 py-1 text-sm font-medium rounded-lg ${bagWeight === "25" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`}
+            className={`px-3 py-1 text-sm font-medium rounded-lg ${
+              bagWeight === "25"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
             onClick={() => setBagWeight("25")}
           >
             {t("weight")} 25
           </button>
           <button
-            className={`px-3 py-1 text-sm font-medium rounded-lg ${bagWeight === "50" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`}
+            className={`px-3 py-1 text-sm font-medium rounded-lg ${
+              bagWeight === "50"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
             onClick={() => setBagWeight("50")}
           >
             {t("weight")} 50
