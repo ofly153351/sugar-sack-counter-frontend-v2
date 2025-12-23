@@ -123,6 +123,28 @@
       "successMessage": "Counting saved successfully"
     }
   },
+  "bags": {
+    "table": {
+      "no": "NO.",
+      "vehicleCode": "Vehicle Code",
+      "datetime": "Date & Time",
+      "createdBy": "Created By",
+      "sugarType": "Sugar Type",
+      "amount": "Amount",
+      "actions": "Actions"
+    }
+  },
+  "box": {
+    "table": {
+      "no": "NO.",
+      "vehicleCode": "Vehicle Code",
+      "datetime": "Date & Time",
+      "createdBy": "Created By",
+      "sugarType": "Sugar Type",
+      "amount": "Amount",
+      "actions": "Actions"
+    }
+  },
   "sugarTypeManagement": {
     "addSugarType": "Add Sugar Type",
     "editSugarType": "Edit Sugar Type",

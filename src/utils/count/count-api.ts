@@ -280,9 +280,9 @@ export const fetchCountingSessionsByType = async (
   sessionType: SessionType
 ): Promise<CountingSession[]> => {
   try {
-    const response = await api.get<CountingSession[]>("/counting-sessions", {
-      params: { sessionType },
-    });
+    const response = await api.get<CountingSession[]>(
+      `/counting-sessions/type/${sessionType}`
+    );
     return response.data;
   } catch (error) {
     console.error(`Error fetching ${sessionType} sessions:`, error);
