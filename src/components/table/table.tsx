@@ -1,15 +1,19 @@
 "use client";
 
-import { PencilLine, Trash2 } from "lucide-react";
+import { PencilLine, Trash2, Upload } from "lucide-react";
 import Swal from "sweetalert2";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
+import { ImageUploadModal } from "../image-upload/ImageUploadModal";
+import { uploadCountingSessionImage } from "@/utils/count/count-api";
+import { processImageWithAI } from "@/utils/ai/ai-api";
 
 interface TableProps {
   type: "vehicle" | "bags" | "box" | "users";
-  data?: any[];
-  onEdit?: (item: any) => void;
-  onDelete?: (item: any) => void;
+  data?: Record<string, any>[];
+  onEdit?: (item: Record<string, any>) => void;
+  onDelete?: (item: Record<string, any>) => void;
+  onUploadImage?: (item: Record<string, any>) => void;
 }
 
 export default function Table({
@@ -17,9 +21,15 @@ export default function Table({
   data = [],
   onEdit,
   onDelete,
+  onUploadImage,
 }: TableProps) {
   const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Record<string, any> | null>(
+    null
+  );
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -139,12 +149,110 @@ export default function Table({
 
   const headers = getTableHeaders();
 
-  const handleDelete = (item: any) => {
+  const handleOpenUploadModal = (item: Record<string, any>) => {
+    setSelectedItem(item);
+    setIsUploadModalOpen(true);
+  };
+
+  const handleUploadImage = async (file: File, description?: string) => {
+    if (!selectedItem) return;
+
+    setIsUploading(true);
+    try {
+      // เรียกใช้ฟังก์ชันจาก parent หรือใช้ฟังก์ชัน API โดยตรง
+      if (onUploadImage) {
+        await onUploadImage({ ...selectedItem, file, description });
+      } else {
+        // ถ้าไม่มี onUploadImage prop, ใช้ฟังก์ชัน API โดยตรง
+        // ต้องมี sessionId ใน selectedItem
+        if (selectedItem.id || selectedItem.sessionId) {
+          const sessionId = selectedItem.id || selectedItem.sessionId;
+          await uploadCountingSessionImage(sessionId, file, description);
+        }
+      }
+
+      // แสดงข้อความสำเร็จ
+      Swal.fire({
+        title: "สำเร็จ!",
+        text: "อัปโหลดรูปภาพเรียบร้อยแล้ว",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+    } catch (error: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: error.message || "ไม่สามารถอัปโหลดรูปภาพได้",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleAIDetection = async (file: File) => {
+    try {
+      Swal.fire({
+        title: "กำลังตรวจจับบุคคล...",
+        text: "AI กำลังวิเคราะห์ภาพ กรุณารอสักครู่",
+        icon: "info",
+        showConfirmButton: false,
+        allowOutsideClick: false,
+      });
+
+      const result = await processImageWithAI(file);
+
+      Swal.close();
+
+      // แสดงผลการตรวจจับใน modal ใหม่
+      Swal.fire({
+        title: `ตรวจจับบุคคลสำเร็จ!`,
+        html: `
+          <div class="text-left">
+            <p class="mb-2">พบบุคคลทั้งหมด: <strong>${
+              result.personCount
+            } คน</strong></p>
+            <p class="mb-4">ความเชื่อมั่นเฉลี่ย: <strong>${
+              result.detections.length > 0
+                ? (
+                    (result.detections.reduce(
+                      (sum, d) => sum + d.confidence,
+                      0
+                    ) /
+                      result.detections.length) *
+                    100
+                  ).toFixed(1)
+                : 0
+            }%</strong></p>
+            <div class="mt-4">
+              <img src="${
+                result.annotatedImage
+              }" alt="Annotated Image" class="w-full h-auto rounded-lg border" />
+            </div>
+          </div>
+        `,
+        icon: "success",
+        confirmButtonText: "ตกลง",
+        width: 600,
+      });
+    } catch (error: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text:
+          "ไม่สามารถตรวจจับบุคคลได้: " + (error.message || "เกิดข้อผิดพลาด"),
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
+  const handleDelete = (item: Record<string, any>) => {
     console.log("🔄 Table: Delete button clicked for item:", item);
     console.log("🔍 Table: onDelete function exists:", !!onDelete);
     console.log("🔍 Table: Item details:", {
       id: item.id,
       no: item.no,
+      vehicleCode: item.vehicleCode,
       empCode: item.empCode,
       firstname: item.firstname,
       lastname: item.lastname,
@@ -219,90 +327,209 @@ export default function Table({
         </table>
       </div>
     );
+
+    return (
+      <>
+        <div className="overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-blue-500/10">
+              <tr>
+                {headers.map((h) => (
+                  <th
+                    key={h.key}
+                    className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide"
+                  >
+                    {h.label}
+                  </th>
+                ))}
+
+                <th className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide">
+                  {t("table.actions", { defaultValue: "Actions" })}
+                </th>
+              </tr>
+            </thead>
+
+            <tbody className="bg-white divide-y divide-slate-100">
+              {data.map((row, i) => (
+                <tr
+                  key={i}
+                  className="hover:bg-blue-50/40 transition-colors duration-150"
+                >
+                  {headers.map((h) => (
+                    <td
+                      key={h.key}
+                      className="px-6 py-4 whitespace-nowrap text-[15px] text-slate-700"
+                    >
+                      {type === "vehicle" && h.key === "status" ? (
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            row.status === "active"
+                              ? "bg-green-100 text-green-700 border border-green-200"
+                              : "bg-red-100 text-red-700 border border-red-200"
+                          }`}
+                        >
+                          {row.status === "active" ? "Active" : "Inactive"}
+                        </span>
+                      ) : (
+                        row[h.key]
+                      )}
+                    </td>
+                  ))}
+
+                  <td className="px-6 py-4 flex gap-2">
+                    <button
+                      onClick={() => onEdit?.(row)}
+                      className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition shadow-sm"
+                    >
+                      <PencilLine className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      onClick={() => handleOpenUploadModal(row)}
+                      className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
+                      title="อัปโหลดรูปภาพ"
+                    >
+                      <Upload className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(row)}
+                      className="p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+              {data.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={headers.length + 1}
+                    className="text-center py-8 text-slate-500 italic"
+                  >
+                    {t("table.noData", { defaultValue: "— No data found —" })}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ImageUploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => {
+            setIsUploadModalOpen(false);
+            setSelectedItem(null);
+          }}
+          onUpload={handleUploadImage}
+          title={`อัปโหลดรูปภาพสำหรับ ${selectedItem?.vehicleCode || "รายการ"}`}
+          description="เลือกรูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้"
+          enableAIDetection={true}
+        />
+      </>
+    );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white">
-      <table className="min-w-full divide-y divide-slate-200">
-        {/* HEADER */}
-        <thead className="bg-blue-500/10">
-          <tr>
-            {headers.map((h) => (
-              <th
-                key={h.key}
-                className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide"
-              >
-                {h.label}
-              </th>
-            ))}
-
-            <th className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide">
-              {t("table.actions", { defaultValue: "Actions" })}
-            </th>
-          </tr>
-        </thead>
-
-        {/* BODY */}
-        <tbody className="bg-white divide-y divide-slate-100">
-          {data.map((row, i) => (
-            <tr
-              key={i}
-              className="hover:bg-blue-50/40 transition-colors duration-150"
-            >
+    <>
+      <div className="overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white">
+        <table className="min-w-full divide-y divide-slate-200">
+          <thead className="bg-blue-500/10">
+            <tr>
               {headers.map((h) => (
-                <td
+                <th
                   key={h.key}
-                  className="px-6 py-4 whitespace-nowrap text-[15px] text-slate-700"
+                  className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide"
                 >
-                  {type === "vehicle" && h.key === "status" ? (
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        row.status === "active"
-                          ? "bg-green-100 text-green-700 border border-green-200"
-                          : "bg-red-100 text-red-700 border border-red-200"
-                      }`}
-                    >
-                      {row.status === "active" ? "Active" : "Inactive"}
-                    </span>
-                  ) : (
-                    row[h.key]
-                  )}
-                </td>
+                  {h.label}
+                </th>
               ))}
 
-              {/* ACTION BUTTONS */}
-              <td className="px-6 py-4 flex gap-2">
-                {/* EDIT */}
-                <button
-                  onClick={() => onEdit?.(row)}
-                  className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition shadow-sm"
-                >
-                  <PencilLine className="w-4 h-4" />
-                </button>
-
-                {/* DELETE */}
-                <button
-                  onClick={() => handleDelete(row)}
-                  className="p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </td>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide">
+                {t("table.actions", { defaultValue: "Actions" })}
+              </th>
             </tr>
-          ))}
+          </thead>
 
-          {data.length === 0 && (
-            <tr>
-              <td
-                colSpan={headers.length + 1}
-                className="text-center py-8 text-slate-500 italic"
+          <tbody className="bg-white divide-y divide-slate-100">
+            {data.map((row, i) => (
+              <tr
+                key={i}
+                className="hover:bg-blue-50/40 transition-colors duration-150"
               >
-                {t("table.noData", { defaultValue: "— No data found —" })}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+                {headers.map((h) => (
+                  <td
+                    key={h.key}
+                    className="px-6 py-4 whitespace-nowrap text-[15px] text-slate-700"
+                  >
+                    {type === "vehicle" && h.key === "status" ? (
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          row.status === "active"
+                            ? "bg-green-100 text-green-700 border border-green-200"
+                            : "bg-red-100 text-red-700 border border-red-200"
+                        }`}
+                      >
+                        {row.status === "active" ? "Active" : "Inactive"}
+                      </span>
+                    ) : (
+                      row[h.key]
+                    )}
+                  </td>
+                ))}
+
+                <td className="px-6 py-4 flex gap-2">
+                  <button
+                    onClick={() => onEdit?.(row)}
+                    className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition shadow-sm"
+                  >
+                    <PencilLine className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => handleOpenUploadModal(row)}
+                    className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
+                    title="อัปโหลดรูปภาพ"
+                  >
+                    <Upload className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(row)}
+                    className="p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+
+            {data.length === 0 && (
+              <tr>
+                <td
+                  colSpan={headers.length + 1}
+                  className="text-center py-8 text-slate-500 italic"
+                >
+                  {t("table.noData", { defaultValue: "— No data found —" })}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <ImageUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => {
+          setIsUploadModalOpen(false);
+          setSelectedItem(null);
+        }}
+        onUpload={handleUploadImage}
+        title={`อัปโหลดรูปภาพสำหรับ ${selectedItem?.vehicleCode || "รายการ"}`}
+        description="เลือกรูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้"
+        enableAIDetection={true}
+      />
+    </>
   );
 }

@@ -6,7 +6,7 @@ import CustomDropdown from "@/components/count/CustomDropdown";
 import Tabs from "@/components/count/Tabs";
 import { Plus, Loader2, Bug } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useCountManager } from "@/hooks/useCount";
 import Swal from "sweetalert2";
 import type {
@@ -23,17 +23,24 @@ export default function CountPage() {
   const [selectedSugarTypeId, setSelectedSugarTypeId] = useState<string>("");
   const [rows, setRows] = useState<number[]>([1]);
   const [isSaving, setIsSaving] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [sackRowsData, setSackRowsData] = useState<{
+    [key: number]: SackRowFormData;
+  }>({});
+  const [boxRowsData, setBoxRowsData] = useState<{
+    [key: number]: BoxRowFormData;
+  }>({});
+  const [countingSessionId, setCountingSessionId] = useState<string>("");
+  const [tempSessionId, setTempSessionId] = useState<string>("");
+  const [resetTrigger, setResetTrigger] = useState<number>(0);
   const vehicleInitializedRef = useRef(false);
   const sugarTypeInitializedRef = useRef(false);
 
   // Use count manager hook
   const countManager = useCountManager();
 
-  // Set mounted and isClient state on client only
+  // Set isClient state on client only
   useEffect(() => {
-    setMounted(true);
     setIsClient(true);
   }, []);
 
@@ -66,10 +73,132 @@ export default function CountPage() {
     }
   }, [isClient, countManager.sugarTypes.length]);
 
+  // Reset countingSessionId when tab changes
+  useEffect(() => {
+    if (isClient && countingSessionId) {
+      console.log("🔄 [DEBUG] Tab changed, resetting counting session ID");
+      setCountingSessionId("");
+      setTempSessionId("");
+    }
+  }, [isClient, currentTab]);
+
+  // Create counting session when vehicle and sugar type are selected
+  useEffect(() => {
+    const createCountingSessionIfReady = async () => {
+      if (
+        isClient &&
+        selectedVehicleId &&
+        selectedSugarTypeId &&
+        countManager.currentUser &&
+        !countingSessionId
+      ) {
+        try {
+          console.log("🔍 [DEBUG] Creating counting session with:", {
+            vehicleId: selectedVehicleId,
+            sugarTypeId: selectedSugarTypeId,
+            userId: countManager.currentUser.id,
+            sessionType: currentTab === "bags" ? "sack" : "box",
+          });
+
+          // Debug: Check all values
+          console.log("🔍 [DEBUG] Value types and content:", {
+            selectedVehicleId: {
+              value: selectedVehicleId,
+              type: typeof selectedVehicleId,
+              isEmpty: !selectedVehicleId,
+            },
+            selectedSugarTypeId: {
+              value: selectedSugarTypeId,
+              type: typeof selectedSugarTypeId,
+              isEmpty: !selectedSugarTypeId,
+            },
+            userId: {
+              value: countManager.currentUser.id,
+              type: typeof countManager.currentUser.id,
+              isEmpty: !countManager.currentUser.id,
+            },
+            sessionType: {
+              value: currentTab === "bags" ? "sack" : "box",
+              type: typeof (currentTab === "bags" ? "sack" : "box"),
+            },
+          });
+
+          const sessionData = {
+            sessionType: currentTab === "bags" ? "sack" : "box",
+            userId: countManager.currentUser.id,
+            vehicleId: selectedVehicleId,
+            sugarTypeId: selectedSugarTypeId,
+            countingDate: new Date().toISOString(),
+            status: "in_progress" as const,
+          };
+
+          // Debug: Log full session data
+          console.log("🔍 [DEBUG] Full session data to send:", sessionData);
+          console.log(
+            "🔍 [DEBUG] JSON stringified:",
+            JSON.stringify(sessionData)
+          );
+
+          // Import the createCountingSession function
+          const { createCountingSession } = await import(
+            "@/utils/count/count-api"
+          );
+          const createdSession = await createCountingSession(sessionData);
+
+          console.log("✅ [DEBUG] Counting session created:", createdSession);
+          setCountingSessionId(createdSession.id?.toString() || "");
+        } catch (error) {
+          console.error("❌ [DEBUG] Failed to create counting session:", error);
+          // Don't set countingSessionId if backend creation fails
+          // We'll use tempSessionId for AI calls but keep trying to get real ID
+        }
+      }
+    };
+
+    createCountingSessionIfReady();
+  }, [
+    isClient,
+    selectedVehicleId,
+    selectedSugarTypeId,
+    countManager.currentUser,
+    currentTab,
+    countingSessionId,
+  ]);
+
+  // Generate temporary session ID for AI calls (always generate if not exists)
+  useEffect(() => {
+    if (isClient && !tempSessionId) {
+      const tempId = `temp_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      setTempSessionId(tempId);
+    }
+  }, [isClient, tempSessionId]);
+
   const addRow = () =>
     setRows((prev) => [...prev, (prev[prev.length - 1] || 0) + 1]);
-  const deleteRow = (rowNumber: number) =>
+  const deleteRow = (rowNumber: number) => {
     setRows((prev) => prev.filter((r) => r !== rowNumber));
+    // Remove data for deleted row
+    if (currentTab === "bags") {
+      setSackRowsData((prev) => {
+        const newData = { ...prev };
+        delete newData[rowNumber];
+        return newData;
+      });
+    } else {
+      setBoxRowsData((prev) => {
+        const newData = { ...prev };
+        delete newData[rowNumber];
+        return newData;
+      });
+    }
+  };
+
+  // Get session ID for AI calls (use real countingSessionId if available, otherwise temp)
+  const getSessionIdForAI = () => {
+    return countingSessionId || tempSessionId;
+  };
 
   const handleSave = async () => {
     if (
@@ -90,6 +219,43 @@ export default function CountPage() {
       return;
     }
 
+    // Check if all rows have data
+    if (currentTab === "bags") {
+      const missingRows = rows.filter((rowNumber) => !sackRowsData[rowNumber]);
+      if (missingRows.length > 0) {
+        Swal.fire({
+          title: t("validation.missingData", {
+            defaultValue: "ข้อมูลไม่ครบถ้วน",
+          }),
+          text: t("validation.missingRowData", {
+            defaultValue: `กรุณากรอกข้อมูลสำหรับแถวที่ ${missingRows.join(
+              ", "
+            )}`,
+          }),
+          icon: "warning",
+          confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+        });
+        return;
+      }
+    } else {
+      const missingRows = rows.filter((rowNumber) => !boxRowsData[rowNumber]);
+      if (missingRows.length > 0) {
+        Swal.fire({
+          title: t("validation.missingData", {
+            defaultValue: "ข้อมูลไม่ครบถ้วน",
+          }),
+          text: t("validation.missingRowData", {
+            defaultValue: `กรุณากรอกข้อมูลสำหรับแถวที่ ${missingRows.join(
+              ", "
+            )}`,
+          }),
+          icon: "warning",
+          confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+        });
+        return;
+      }
+    }
+
     setIsSaving(true);
 
     try {
@@ -100,42 +266,73 @@ export default function CountPage() {
         sugarTypeId: selectedSugarTypeId,
         countingDate: new Date().toISOString(),
         status: "in_progress",
-        totalCount: 0,
       };
 
-      // Collect row data from components (this would need to be implemented)
-      // For now, we'll use mock data
+      // Use real data from components
       if (currentTab === "bags") {
-        const sackRows: SackRowFormData[] = rows.map((rowNumber) => ({
-          sessionId: 0, // Will be set by workflow
-          rowNumber,
-          weightType: "50kg",
-          aiCount: 20,
-          finalCount: 20,
-          imagePath: "",
-        }));
+        const sackRows: SackRowFormData[] = rows.map((rowNumber) => {
+          const rowData = sackRowsData[rowNumber];
+          return {
+            ...rowData,
+            sessionId: 0, // Will be set by workflow
+          };
+        });
 
         await countManager.completeSackCountingAsync({
           sessionData,
           sackRows,
+          existingCountingSessionId: countingSessionId,
         });
       } else {
-        const boxRows: BoxRowFormData[] = rows.map((rowNumber) => ({
-          sessionId: 0, // Will be set by workflow
-          rowNumber,
-          aiCount: 5,
-          finalCount: 5,
-          imagePath: "",
-        }));
+        const boxRows: BoxRowFormData[] = rows.map((rowNumber) => {
+          const rowData = boxRowsData[rowNumber];
+          return {
+            ...rowData,
+            sessionId: 0, // Will be set by workflow
+          };
+        });
 
         await countManager.completeBoxCountingAsync({
           sessionData,
           boxRows,
+          existingCountingSessionId: countingSessionId,
         });
       }
 
-      // Reset form after successful save
+      // Reset form after successful save and create new counting session
       setRows([1]);
+      setSackRowsData({});
+      setBoxRowsData({});
+      setCountingSessionId(""); // Reset to create new counting session
+      setTempSessionId(""); // Reset temp session ID too
+      setResetTrigger((prev) => prev + 1); // Trigger reset in BagRow/BoxRow
+
+      // Clear localStorage for all rows to reset BagRow/BoxRow state
+      if (typeof window !== "undefined") {
+        // Clear bag rows localStorage
+        for (let i = 1; i <= 20; i++) {
+          localStorage.removeItem(`bagRow_${i}_sessionId`);
+          localStorage.removeItem(`bagRow_${i}_autoDetect`);
+          localStorage.removeItem(`bagRow_${i}_detectionType`);
+        }
+        // Clear box rows localStorage
+        for (let i = 1; i <= 20; i++) {
+          localStorage.removeItem(`boxRow_${i}_sessionId`);
+          localStorage.removeItem(`boxRow_${i}_autoDetect`);
+          localStorage.removeItem(`boxRow_${i}_detectionType`);
+        }
+        console.log("🧹 Cleared localStorage for all rows");
+      }
+
+      // Show success message
+      Swal.fire({
+        title: t("saveMessages.success", { defaultValue: "บันทึกสำเร็จ" }),
+        text: t("saveMessages.successMessage", {
+          defaultValue: "บันทึกข้อมูลการนับสำเร็จแล้ว",
+        }),
+        icon: "success",
+        confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+      });
     } catch (error: unknown) {
       console.error("❌ Error saving counting session:", error);
       Swal.fire({
@@ -152,6 +349,55 @@ export default function CountPage() {
       setIsSaving(false);
     }
   };
+
+  // Handler for updating sack row data
+  const handleSackRowDataChange = useCallback(
+    (rowNumber: number, data: SackRowFormData) => {
+      setSackRowsData((prev) => {
+        // Check if data actually changed to prevent unnecessary updates
+        const existingData = prev[rowNumber];
+        if (
+          existingData &&
+          existingData.aiCount === data.aiCount &&
+          existingData.finalCount === data.finalCount &&
+          existingData.weightType === data.weightType &&
+          existingData.originalImagePath === data.originalImagePath &&
+          existingData.annotatedImagePath === data.annotatedImagePath
+        ) {
+          return prev; // No change, return same object
+        }
+        return {
+          ...prev,
+          [rowNumber]: data,
+        };
+      });
+    },
+    []
+  );
+
+  // Handler for updating box row data
+  const handleBoxRowDataChange = useCallback(
+    (rowNumber: number, data: BoxRowFormData) => {
+      setBoxRowsData((prev) => {
+        // Check if data actually changed to prevent unnecessary updates
+        const existingData = prev[rowNumber];
+        if (
+          existingData &&
+          existingData.aiCount === data.aiCount &&
+          existingData.finalCount === data.finalCount &&
+          existingData.originalImagePath === data.originalImagePath &&
+          existingData.annotatedImagePath === data.annotatedImagePath
+        ) {
+          return prev; // No change, return same object
+        }
+        return {
+          ...prev,
+          [rowNumber]: data,
+        };
+      });
+    },
+    []
+  );
 
   // Show loading while fetching essential data or waiting for client
   if (!isClient) {
@@ -368,8 +614,13 @@ export default function CountPage() {
                 key={rowNumber}
                 rowNumber={rowNumber}
                 onDelete={() => deleteRow(rowNumber)}
+                onDataChange={(data) =>
+                  handleSackRowDataChange(rowNumber, data)
+                }
                 vehicleId={selectedVehicleId}
                 sugarTypeId={selectedSugarTypeId}
+                countingSessionId={getSessionIdForAI()}
+                resetTrigger={resetTrigger}
                 disabled={!selectedVehicleId || !selectedSugarTypeId}
               />
             ) : (
@@ -377,8 +628,11 @@ export default function CountPage() {
                 key={rowNumber}
                 rowNumber={rowNumber}
                 onDelete={() => deleteRow(rowNumber)}
+                onDataChange={(data) => handleBoxRowDataChange(rowNumber, data)}
                 vehicleId={selectedVehicleId}
                 sugarTypeId={selectedSugarTypeId}
+                countingSessionId={getSessionIdForAI()}
+                resetTrigger={resetTrigger}
                 disabled={!selectedVehicleId || !selectedSugarTypeId}
               />
             )
@@ -387,24 +641,27 @@ export default function CountPage() {
           <button
             onClick={addRow}
             className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!selectedVehicleId || !selectedSugarTypeId}
+            disabled={
+              !selectedVehicleId || !selectedSugarTypeId || !getSessionIdForAI()
+            }
           >
             <Plus className="w-4 h-4" />
-            {t("addRow")}
+            {t("addRow", { defaultValue: "เพิ่มแถว" })}
           </button>
         </div>
 
         {/* ปุ่มบันทึก */}
-        <div className="mt-10 flex justify-center">
+        <div className="mt-8 flex justify-center">
           <button
             onClick={handleSave}
             disabled={
               isSaving ||
               !selectedVehicleId ||
               !selectedSugarTypeId ||
+              !countingSessionId ||
               rows.length === 0
             }
-            className="w-full sm:w-56 py-3 text-lg font-medium text-white bg-indigo-700 rounded-xl hover:bg-indigo-800 transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex items-center justify-center gap-2 px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? (
               <>
@@ -416,83 +673,7 @@ export default function CountPage() {
             )}
           </button>
         </div>
-
-        {/* Debug button - hidden in production */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={testMinimalSession}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition flex items-center gap-2"
-            >
-              <Bug className="w-4 h-4" />
-              Test Minimal Session
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
-}
-
-// Debug function for testing minimal session creation
-async function testMinimalSession() {
-  try {
-    console.log("🔍 [DEBUG] Testing minimal session creation...");
-
-    // Get current user ID from localStorage or mock
-    const userId =
-      localStorage.getItem("userId") || "011fc9ce-43b1-473a-8f57-8920a5936be8";
-
-    const testData = {
-      sessionType: "sack",
-      userId: userId,
-      vehicleId: "cb137af7-19cf-4ee9-9e47-9357ed8e41c8",
-      sugarTypeId: "18833fd3-2151-4763-bec8-17e10833be33",
-      countingDate: new Date().toISOString(),
-      status: "in_progress",
-      totalCount: 0,
-    };
-
-    console.log("🔍 [DEBUG] Test payload:", testData);
-
-    const response = await fetch(
-      "http://localhost:3001/api/counting-sessions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(testData),
-        credentials: "include",
-      }
-    );
-
-    const result = await response.json();
-    console.log("🔍 [DEBUG] Response:", {
-      status: response.status,
-      statusText: response.statusText,
-      data: result,
-    });
-
-    if (response.ok) {
-      Swal.fire({
-        title: "Test Successful",
-        text: `Session created with ID: ${result.id}`,
-        icon: "success",
-      });
-    } else {
-      Swal.fire({
-        title: "Test Failed",
-        text: `Error ${response.status}: ${JSON.stringify(result)}`,
-        icon: "error",
-      });
-    }
-  } catch (error) {
-    console.error("❌ [DEBUG] Test error:", error);
-    Swal.fire({
-      title: "Test Error",
-      text: error instanceof Error ? error.message : String(error),
-      icon: "error",
-    });
-  }
 }

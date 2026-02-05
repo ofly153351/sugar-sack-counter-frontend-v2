@@ -26,7 +26,7 @@ const createApiClient = (): AxiosInstance => {
       if (process.env.NEXT_PUBLIC_DEBUG === "true") {
         console.log(
           `🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`,
-          config.data,
+          config.data
         );
       }
 
@@ -35,7 +35,7 @@ const createApiClient = (): AxiosInstance => {
     (error) => {
       console.error("API Request Error:", error);
       return Promise.reject(error);
-    },
+    }
   );
 
   // Response interceptor
@@ -55,7 +55,7 @@ const createApiClient = (): AxiosInstance => {
       if (process.env.NEXT_PUBLIC_DEBUG === "true") {
         console.error(
           `❌ API Error: ${error.response?.status} ${error.config?.url}`,
-          error.response?.data,
+          error.response?.data
         );
       }
 
@@ -73,7 +73,7 @@ const createApiClient = (): AxiosInstance => {
       }
 
       return Promise.reject(error);
-    },
+    }
   );
 
   return instance;
@@ -86,30 +86,30 @@ export const apiClient = createApiClient();
 export const api = {
   get: <T = unknown>(
     url: string,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => apiClient.get(url, config),
 
   post: <T = unknown>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => apiClient.post(url, data, config),
 
   put: <T = unknown>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => apiClient.put(url, data, config),
 
   patch: <T = unknown>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => apiClient.patch(url, data, config),
 
   delete: <T = unknown>(
     url: string,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => apiClient.delete(url, config),
 };
 

@@ -11,7 +11,7 @@ const LOGIN_ENDPOINT = API_CONFIG.ENDPOINTS.AUTH.LOGIN;
  * Real login API call using axios
  */
 export const login = async (
-  credentials: LoginCredentials,
+  credentials: LoginCredentials
 ): Promise<LoginResponse> => {
   try {
     console.log("🔐 Login API call:", {
@@ -35,7 +35,7 @@ export const login = async (
     // The cookie will be automatically sent with subsequent requests
     console.log(
       "🍪 Checking for Set-Cookie header:",
-      response.headers["set-cookie"],
+      response.headers["set-cookie"]
     );
 
     // Store user data in Zustand store
@@ -53,6 +53,46 @@ export const login = async (
       console.log("👤 User data stored in Zustand store:", responseData.user);
     }
 
+    // After successful login, fetch complete user data from /api/users/me
+    try {
+      const userResponse = await fetch("http://localhost:3001/api/users/me", {
+        credentials: "include",
+      });
+
+      if (userResponse.ok) {
+        const completeUserData = await userResponse.json();
+        console.log("👤 Complete user data fetched:", completeUserData);
+
+        // Store complete user data in Zustand store
+        const { setUser } = await import("../../store/user-store");
+        const storeUser = {
+          id: completeUserData.id || responseData.user?.id || "",
+          email: completeUserData.email || responseData.user?.email || "",
+          username:
+            completeUserData.username || responseData.user?.username || "",
+          firstName:
+            completeUserData.firstName || responseData.user?.firstName || "",
+          lastName:
+            completeUserData.lastName || responseData.user?.lastName || "",
+          title: completeUserData.title || "",
+          phone: completeUserData.phone || "",
+          employeeCode: completeUserData.employeeCode || "",
+          role: completeUserData.role || "user",
+        };
+
+        setUser(storeUser);
+        console.log(
+          "👤 Complete user data stored in Zustand store:",
+          storeUser
+        );
+      }
+    } catch (error) {
+      console.warn(
+        "⚠️ Failed to fetch complete user data, using basic info:",
+        error
+      );
+    }
+
     // Check user role and return appropriate redirect path
     let userRole: "user" | "admin" = "user"; // default role
     try {
@@ -60,7 +100,7 @@ export const login = async (
         API_CONFIG.ENDPOINTS.AUTH.CHECK_ROLE,
         {
           params: { role: "admin" },
-        },
+        }
       );
 
       const roleData = roleCheckResponse.data as { role?: string };
@@ -69,7 +109,7 @@ export const login = async (
     } catch (roleError) {
       console.warn(
         "⚠️ Role check API failed, using default user role:",
-        roleError,
+        roleError
       );
       // Continue with default user role if role check fails
     }
@@ -149,7 +189,7 @@ export const validateToken = async (token: string): Promise<boolean> => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      },
+      }
     );
     return true;
   } catch (error) {
@@ -162,7 +202,7 @@ export const validateToken = async (token: string): Promise<boolean> => {
  * Refresh authentication token using axios
  */
 export const refreshToken = async (
-  refreshToken: string,
+  refreshToken: string
 ): Promise<LoginResponse> => {
   try {
     const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.REFRESH, {
@@ -219,7 +259,7 @@ export const logout = async (token: string): Promise<boolean> => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      },
+      }
     );
     // Clear user data from store on logout
     const { clearUserData } = await import("../../store/user-store");
@@ -233,18 +273,38 @@ export const logout = async (token: string): Promise<boolean> => {
 
 /**
  * Get user profile from backend using axios
+ * Returns null if user is not authenticated (401/403)
  */
 export const getUserProfile = async (token: string) => {
   try {
-    const response = await api.get(API_CONFIG.ENDPOINTS.AUTH.PROFILE, {
+    // ตรวจสอบว่ามี token หรือไม่ก่อนเรียก API
+    if (!token || token.trim() === "") {
+      console.log("No token provided, returning null");
+      return null;
+    }
+
+    const response = await fetch("http://localhost:3001/api/users/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      credentials: "include",
     });
-    return response.data;
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        // User is not authenticated, return null instead of throwing error
+        console.log("User not authenticated, returning null");
+        return null;
+      }
+      throw new Error(`Failed to fetch user data: ${response.status}`);
+    }
+
+    const userData = await response.json();
+    return userData;
   } catch (error) {
     console.error("Get user profile error:", error);
-    throw error;
+    // Return null for any error (network error, etc.)
+    return null;
   }
 };
 
@@ -252,7 +312,7 @@ export const getUserProfile = async (token: string) => {
  * Check if username exists using axios
  */
 export const checkUsernameExists = async (
-  username: string,
+  username: string
 ): Promise<boolean> => {
   try {
     const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.CHECK_USERNAME, {

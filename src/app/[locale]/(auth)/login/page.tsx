@@ -17,6 +17,7 @@ import {
   Dictionary,
   LoginCredentials,
 } from "@/utils/login";
+import { getCurrentUser } from "@/utils/count/count-api";
 
 export default function LoginPage() {
   const params = useParams();
@@ -27,6 +28,7 @@ export default function LoginPage() {
 
   const [dictionary, setDictionary] = useState<Dictionary | null>(null);
   const [submitError, setSubmitError] = useState("");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Load dictionary on component mount
   useEffect(() => {
@@ -46,7 +48,35 @@ export default function LoginPage() {
       }
     };
     loadDictionary();
-  }, [locale]);
+
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          // User is already logged in, redirect based on role
+          const redirectTo =
+            currentUser.role === "admin"
+              ? `/${locale}/admin`
+              : `/${locale}/home`;
+          router.push(redirectTo);
+        } else {
+          // User is not authenticated, stay on login page
+          console.log("User not authenticated, showing login page");
+        }
+      } catch (error: any) {
+        // Error occurred, stay on login page
+        console.log(
+          "Error checking authentication, showing login page:",
+          error
+        );
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, [locale, router]);
 
   // Form management
   const { formState, handleInputChange, setLoading, handleSubmit } =
@@ -106,7 +136,7 @@ export default function LoginPage() {
           "🔄 Redirecting to:",
           redirectTo,
           "based on role:",
-          result.role,
+          result.role
         );
         router.push(redirectTo);
       } else {

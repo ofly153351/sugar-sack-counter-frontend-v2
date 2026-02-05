@@ -6,6 +6,27 @@
   "logoutError": "An error occurred during logout. Please try again.",
   "profile": "Profile",
   "settings": "Settings",
+  "nav": {
+    "editProfile": "Edit Profile",
+    "editProfileTitle": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "user": "User",
+    "admin": "Administrator",
+    "employeeCode": "Employee Code",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "username": "Username",
+    "title": "Title",
+    "employeeCodePlaceholder": "Enter employee code",
+    "firstNamePlaceholder": "Enter first name",
+    "lastNamePlaceholder": "Enter last name",
+    "emailPlaceholder": "Enter email",
+    "phonePlaceholder": "Enter phone number"
+  },
   "signIn": "Sign in",
   "username": "Username",
   "password": "Password",
@@ -85,7 +106,9 @@
     "saveMessages": {
       "error": "Error",
       "errorMessage": "Unable to save data",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "success": "Save Successful",
+      "successMessage": "Counting data saved successfully"
     },
     "loading": "Loading data...",
     "errors": {
@@ -120,7 +143,13 @@
       "boxCompleteSuccessTitle": "Box Counting Successful!",
       "boxCompleteSuccessMessage": "Successfully counted {totalCount} boxes",
       "successTitle": "Saved Successfully",
-      "successMessage": "Counting saved successfully"
+      "successMessage": "Counting saved successfully",
+      "validation": {
+        "requiredFields": "Incomplete information",
+        "selectVehicleAndSugarType": "Please select vehicle and sugar type",
+        "missingData": "Incomplete information",
+        "missingRowData": "Please enter data for row(s) {missingRows}"
+      }
     }
   },
   "bags": {

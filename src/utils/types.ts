@@ -133,7 +133,6 @@ export interface CountingSessionFormData {
   sugarTypeId: string | number;
   countingDate: string;
   status?: SessionStatus;
-  totalCount?: number;
   sackSessionId?: string | number | null;
   boxSessionId?: string | number | null;
 }
@@ -142,6 +141,7 @@ export interface CountingSessionFormData {
 
 export interface SackCountingSession {
   id?: string | number;
+  counting_session_id?: string | number;
   vehicleId: string | number;
   sugarTypeId: string | number;
   userId: string | number;
@@ -174,6 +174,7 @@ export interface SackCountingSessionFormData {
 
 export interface BoxCountingSession {
   id?: string | number;
+  counting_session_id?: string | number;
   vehicleId: string | number;
   sugarTypeId: string | number;
   userId: string | number;
@@ -220,7 +221,8 @@ export interface SackRowFormData {
   weightType: string;
   aiCount?: number;
   finalCount: number;
-  imagePath?: string;
+  originalImagePath?: string;
+  annotatedImagePath?: string;
 }
 
 export interface BoxRow {
@@ -239,7 +241,8 @@ export interface BoxRowFormData {
   rowNumber: number;
   aiCount?: number;
   finalCount: number;
-  imagePath?: string;
+  originalImagePath?: string;
+  annotatedImagePath?: string;
 }
 
 // ========== Related Data Types ==========
@@ -423,6 +426,10 @@ export interface StoreUser {
   email: string;
   firstName: string;
   lastName: string;
+  title: string;
+  phone: string;
+  employeeCode: string;
+  role: string;
 }
 
 export interface UserStore {

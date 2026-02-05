@@ -526,10 +526,17 @@ export const useCompleteSackCountingWorkflow = () => {
     mutationFn: ({
       sessionData,
       sackRows,
+      existingCountingSessionId,
     }: {
       sessionData: CountingSessionFormData;
       sackRows: SackRowFormData[];
-    }) => completeSackCountingWorkflow(sessionData, sackRows),
+      existingCountingSessionId?: string | number;
+    }) =>
+      completeSackCountingWorkflow(
+        sessionData,
+        sackRows,
+        existingCountingSessionId
+      ),
     onSuccess: (data: CountingSession, variables) => {
       // อัปเดต cache สำหรับ counting sessions ทั้งหมด
       queryClient.invalidateQueries({ queryKey: ["countingSessions"] });
@@ -599,10 +606,17 @@ export const useCompleteBoxCountingWorkflow = () => {
     mutationFn: ({
       sessionData,
       boxRows,
+      existingCountingSessionId,
     }: {
       sessionData: CountingSessionFormData;
       boxRows: BoxRowFormData[];
-    }) => completeBoxCountingWorkflow(sessionData, boxRows),
+      existingCountingSessionId?: string | number;
+    }) =>
+      completeBoxCountingWorkflow(
+        sessionData,
+        boxRows,
+        existingCountingSessionId
+      ),
     onSuccess: (data: CountingSession, variables) => {
       // อัปเดต cache สำหรับ counting sessions ทั้งหมด
       queryClient.invalidateQueries({ queryKey: ["countingSessions"] });

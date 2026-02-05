@@ -3,13 +3,16 @@ import type { NextRequest } from "next/server";
 import { i18nSettings } from "./src/i18n/settings";
 import createIntlMiddleware from "next-intl/middleware";
 
+// API base URL for role checking
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
 // Create next-intl middleware
 const intlMiddleware = createIntlMiddleware({
   locales: i18nSettings.locales,
   defaultLocale: i18nSettings.defaultLocale,
 });
 
-export default function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip middleware for static files and API routes
@@ -25,24 +28,60 @@ export default function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle authentication for admin routes
+  // Get access token from cookies
   const token = request.cookies.get("access_token");
+  const locale = pathname.split("/")[1] || i18nSettings.defaultLocale;
 
-  if (pathname.includes("/admin") && !token) {
-    const locale = pathname.split("/")[1];
-    return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+  // Handle login page - redirect if already authenticated
+  if (pathname.includes("/login") && token) {
+    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
-  if (pathname.includes("/admin") && token) {
+  // Handle admin routes - require admin role
+  if (pathname.includes("/admin")) {
+    if (!token) {
+      // No token, redirect to login
+      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    }
+
     try {
-      // Role check logic would go here
-      // For now, allow access if token exists
+      // Call API to check user role
+      // Forward all cookies from the request
+      const cookieHeader = request.headers.get("cookie") || "";
+      const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+        headers: {
+          Cookie: cookieHeader,
+        },
+      });
+
+      if (!response.ok) {
+        // User not found or unauthorized, redirect to login
+        return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+      }
+
+      const userData = await response.json();
+
+      // Check if user has admin role
+      const userRole = userData.role || userData.user?.role;
+
+      if (userRole !== "admin") {
+        // Not an admin, redirect to home
+        return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+      }
+
+      // User is admin, allow access
       return intlMiddleware(request);
     } catch (error) {
-      console.error("Role check error:", error);
-      const locale = pathname.split("/")[1];
+      console.error("Admin access error:", error);
+      // Redirect to home if error
       return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
     }
+  }
+
+  // Handle other authenticated routes (optional)
+  if (pathname.includes("/count") && !token) {
+    // Redirect to login for protected counting pages
+    return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
   // Use next-intl middleware for all other routes

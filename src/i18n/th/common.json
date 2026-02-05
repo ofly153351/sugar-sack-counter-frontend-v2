@@ -6,6 +6,7 @@
   "logoutError": "เกิดข้อผิดพลาดในการออกจากระบบ กรุณาลองอีกครั้ง",
   "profile": "โปรไฟล์",
   "settings": "ตั้งค่า",
+
   "signIn": "เข้าสู่ระบบ",
   "username": "ชื่อผู้ใช้",
   "password": "รหัสผ่าน",
@@ -47,6 +48,27 @@
     "noUserInfo": "ไม่มีข้อมูลผู้ใช้",
     "welcomeMessage": "ยินดีต้อนรับสู่แดชบอร์ดผู้ดูแลระบบ เฉพาะผู้ใช้ที่เข้าสู่ระบบเท่านั้นที่สามารถเข้าถึงหน้านี้ได้"
   },
+  "nav": {
+    "editProfile": "แก้ไขโปรไฟล์",
+    "editProfileTitle": "แก้ไขโปรไฟล์",
+    "saveChanges": "บันทึกการเปลี่ยนแปลง",
+    "cancel": "ยกเลิก",
+    "loading": "กำลังโหลด...",
+    "user": "ผู้ใช้",
+    "admin": "ผู้ดูแลระบบ",
+    "employeeCode": "รหัสพนักงาน",
+    "firstName": "ชื่อ",
+    "lastName": "นามสกุล",
+    "email": "อีเมล",
+    "phone": "เบอร์โทรศัพท์",
+    "username": "ชื่อผู้ใช้",
+    "title": "คำนำหน้า",
+    "employeeCodePlaceholder": "กรอกรหัสพนักงาน",
+    "firstNamePlaceholder": "กรอกชื่อ",
+    "lastNamePlaceholder": "กรอกนามสกุล",
+    "emailPlaceholder": "กรอกอีเมล",
+    "phonePlaceholder": "กรอกเบอร์โทรศัพท์"
+  },
   "count": {
     "title": "นับจำนวนกระสอบน้ำตาล",
     "tabs": {
@@ -85,7 +107,9 @@
     "saveMessages": {
       "error": "เกิดข้อผิดพลาด",
       "errorMessage": "ไม่สามารถบันทึกข้อมูลได้",
-      "saving": "กำลังบันทึก..."
+      "saving": "กำลังบันทึก...",
+      "success": "บันทึกสำเร็จ",
+      "successMessage": "บันทึกข้อมูลการนับสำเร็จแล้ว"
     },
     "loading": "กำลังโหลดข้อมูล...",
     "errors": {
@@ -120,7 +144,13 @@
       "boxCompleteSuccessTitle": "นับกล่องสำเร็จ!",
       "boxCompleteSuccessMessage": "นับกล่องสำเร็จทั้งหมด {totalCount} กล่อง",
       "successTitle": "บันทึกสำเร็จ",
-      "successMessage": "บันทึกการนับเรียบร้อยแล้ว"
+      "successMessage": "บันทึกการนับเรียบร้อยแล้ว",
+      "validation": {
+        "requiredFields": "ข้อมูลไม่ครบถ้วน",
+        "selectVehicleAndSugarType": "กรุณาเลือกรถขนส่งและประเภทน้ำตาล",
+        "missingData": "ข้อมูลไม่ครบถ้วน",
+        "missingRowData": "กรุณากรอกข้อมูลสำหรับแถวที่ {missingRows}"
+      }
     }
   },
   "sugarTypeManagement": {

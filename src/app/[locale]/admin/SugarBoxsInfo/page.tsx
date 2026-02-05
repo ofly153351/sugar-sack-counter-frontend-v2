@@ -6,7 +6,10 @@ import { Locale } from "@/i18n/settings";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { SugarTypeModal } from "@/components/sugar-types/SugarTypeModal";
-import { createSugarType } from "@/utils/count/count-api";
+import {
+  createSugarType,
+  uploadCountingSessionImage,
+} from "@/utils/count/count-api";
 import Swal from "sweetalert2";
 import { useCountingSessionsByType } from "@/hooks/useCount";
 import { API_CONFIG } from "@/utils/config";
@@ -46,6 +49,9 @@ export default function Page({ params }: PageProps) {
   const [searchCode, setSearchCode] = useState("");
   const [isSugarTypeModalOpen, setIsSugarTypeModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [uploadingSessionId, setUploadingSessionId] = useState<
+    string | number | null
+  >(null);
 
   // Fetch counting sessions for boxes
   const {
@@ -97,6 +103,7 @@ export default function Page({ params }: PageProps) {
         createdBy: getUserDisplayName(session.user),
         sugarType: session.sugarType?.name || "ไม่ทราบชนิดน้ำตาล",
         amount: `${session.totalCount || 0} กล่อง`,
+        id: session.id, // Add session ID for image upload
       };
     }) || [];
 
@@ -112,6 +119,85 @@ export default function Page({ params }: PageProps) {
     isLoading,
     error: error ? error.message : null,
   });
+
+  // Handle image upload for a session
+  const handleUploadImage = async (item: Record<string, any>) => {
+    try {
+      console.log("📤 Handling image upload for item:", item);
+
+      // Extract session ID from the item
+      const sessionId = item.id || item.sessionId;
+
+      if (!sessionId) {
+        Swal.fire({
+          title: "ข้อผิดพลาด",
+          text: "ไม่พบรหัสเซสชันสำหรับอัปโหลดรูปภาพ",
+          icon: "error",
+          confirmButtonText: "ตกลง",
+        });
+        return;
+      }
+
+      setUploadingSessionId(sessionId);
+
+      // Note: The actual file upload will be handled by the Table component
+      // This function just prepares the session ID
+      return { sessionId };
+    } catch (error: any) {
+      console.error("❌ Error in handleUploadImage:", error);
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: error.message || "ไม่สามารถเตรียมอัปโหลดรูปภาพได้",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
+  // Function to actually upload the image (called from Table component)
+  const handleImageUpload = async (data: {
+    file: File;
+    description?: string;
+    sessionId?: string | number;
+  }) => {
+    try {
+      const sessionId = data.sessionId || uploadingSessionId;
+      if (!sessionId) {
+        throw new Error("ไม่พบรหัสเซสชันสำหรับอัปโหลด");
+      }
+
+      Swal.fire({
+        title: "กำลังอัปโหลด...",
+        text: "กรุณารอสักครู่",
+        icon: "info",
+        showConfirmButton: false,
+        allowOutsideClick: false,
+      });
+
+      const result = await uploadCountingSessionImage(
+        sessionId,
+        data.file,
+        data.description
+      );
+
+      Swal.fire({
+        title: "สำเร็จ!",
+        text: result.message || "อัปโหลดรูปภาพเรียบร้อยแล้ว",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+
+      return result;
+    } catch (error: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: error.message || "ไม่สามารถอัปโหลดรูปภาพได้",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+      throw error;
+    }
+  };
 
   return (
     <div className="p-6">
@@ -194,7 +280,11 @@ export default function Page({ params }: PageProps) {
               <p className="text-gray-500">ไม่พบข้อมูลการนับกล่อง</p>
             </div>
           ) : (
-            <Table type="box" data={filteredData} />
+            <Table
+              type="box"
+              data={filteredData}
+              onUploadImage={handleUploadImage}
+            />
           )}
         </>
       )}
