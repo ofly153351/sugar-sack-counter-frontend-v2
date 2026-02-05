@@ -943,42 +943,42 @@ export const getCurrentUser = async (): Promise<User | null> => {
       return storeUser as User;
     }
 
-    console.log(
-      "🔍 getCurrentUser: No user in store, initializing from token..."
+    console.log("🔍 getCurrentUser: No user in store, checking auth status...");
+    // Use the new checkAuthStatus helper instead of initializeUserFromToken
+    const { checkAuthStatus, refreshAuthToken } = await import(
+      "@/store/user-store"
     );
-    // If not in store, try to initialize from token
-    const { initializeUserFromToken } = await import("@/store/user-store");
-    const user = await initializeUserFromToken();
 
-    if (user) {
-      console.log("✅ getCurrentUser: User initialized from token:", user);
-      return user as User;
+    // First try to check auth status
+    const authResult = await checkAuthStatus();
+
+    if (authResult.isAuthenticated && authResult.user) {
+      console.log(
+        "✅ getCurrentUser: User authenticated via checkAuthStatus:",
+        authResult.user
+      );
+      return authResult.user as User;
     }
 
-    console.log(
-      "🔍 getCurrentUser: No user in store or token, trying direct API call..."
-    );
-    // Fallback: try direct API call (for backward compatibility)
-    const response = await fetch("http://localhost:3001/api/users/me", {
-      credentials: "include",
-    });
+    // If auth failed, try to refresh token first
+    console.log("🔍 getCurrentUser: Auth failed, trying token refresh...");
+    const refreshSuccess = await refreshAuthToken();
 
-    console.log(
-      "🔍 getCurrentUser: API response status:",
-      response.status,
-      response.statusText
-    );
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        console.log("User not authenticated, returning null");
-        return null;
+    if (refreshSuccess) {
+      console.log("✅ getCurrentUser: Token refreshed, checking auth again...");
+      // Try auth again after refresh
+      const retryAuthResult = await checkAuthStatus();
+      if (retryAuthResult.isAuthenticated && retryAuthResult.user) {
+        console.log(
+          "✅ getCurrentUser: User authenticated after token refresh:",
+          retryAuthResult.user
+        );
+        return retryAuthResult.user as User;
       }
-      throw new Error(`Failed to fetch user data: ${response.status}`);
     }
 
-    const userData = await response.json();
-    console.log("✅ getCurrentUser: User data from direct API call:", userData);
-    return userData as User;
+    console.log("🔍 getCurrentUser: All auth attempts failed, returning null");
+    return null;
   } catch (error) {
     console.error("Error getting current user:", error);
     return null;

@@ -3,8 +3,20 @@ import type { NextRequest } from "next/server";
 import { i18nSettings } from "./src/i18n/settings";
 import createIntlMiddleware from "next-intl/middleware";
 
-// API base URL for role checking
+// API base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+// Allow list for users who can access admin dashboard even if role is "user"
+// This is a temporary solution for development/testing
+const ADMIN_ALLOW_LIST = [
+  // Email allow list
+  "peel2aput@gmail.com",
+
+  // Username allow list
+  "ofly153351",
+
+  // Add more emails or usernames as needed
+];
 
 // Create next-intl middleware
 const intlMiddleware = createIntlMiddleware({
@@ -12,10 +24,119 @@ const intlMiddleware = createIntlMiddleware({
   defaultLocale: i18nSettings.defaultLocale,
 });
 
+// Helper function to fetch user data with retry logic
+async function fetchUserData(cookieHeader: string, retries = 2): Promise<any> {
+  // Development bypass - allow admin access without API calls
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "🔧 Middleware: Development mode - bypassing API check for admin access"
+    );
+    return {
+      id: "dev-bypass-id",
+      email: "dev@example.com",
+      username: "devadmin",
+      role: "admin",
+      firstName: "Development",
+      lastName: "Bypass",
+      position: "Admin",
+    };
+  }
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      console.log(
+        `🔍 Middleware: Fetching user data (attempt ${attempt + 1}/${
+          retries + 1
+        })`
+      );
+
+      const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+        headers: {
+          Cookie: cookieHeader,
+        },
+        // Add timeout to prevent hanging
+        signal: AbortSignal.timeout(5000),
+      });
+
+      console.log(
+        `🔍 Middleware: API response status: ${response.status} ${response.statusText}`
+      );
+
+      if (response.ok) {
+        const userData = await response.json();
+        console.log("✅ Middleware: User data fetched successfully");
+        return userData;
+      }
+
+      // If 401/403, no need to retry
+      if (response.status === 401 || response.status === 403) {
+        console.log(
+          `❌ Middleware: Authentication failed (${response.status}), not retrying`
+        );
+        return null;
+      }
+
+      // For other errors, retry after delay
+      if (attempt < retries) {
+        console.log(
+          `⚠️ Middleware: API error ${response.status}, retrying in 500ms...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    } catch (error) {
+      console.error(
+        `❌ Middleware: Error fetching user data (attempt ${attempt + 1}):`,
+        error
+      );
+
+      if (attempt < retries) {
+        console.log(`⚠️ Middleware: Retrying in 500ms...`);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      } else {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const pathSegments = pathname.split("/").filter(Boolean);
 
-  // Skip middleware for static files and API routes
+  // Check if the first segment is a valid locale
+  const firstSegment = pathSegments[0];
+  const isValidLocale =
+    firstSegment && i18nSettings.locales.includes(firstSegment as any);
+
+  // Handle paths without locale prefix
+  if (!isValidLocale) {
+    const defaultLocale = i18nSettings.defaultLocale;
+
+    // Skip redirect for API and static files
+    if (
+      pathname.startsWith("/_next") ||
+      pathname.startsWith("/api") ||
+      pathname.startsWith("/static") ||
+      pathname.startsWith("/favicon.ico") ||
+      pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp|css|js)$/) ||
+      pathname === "/Logistic.png" ||
+      pathname.startsWith("/images/")
+    ) {
+      return NextResponse.next();
+    }
+
+    // Redirect to default locale for all other paths
+    const newPathname = `/${defaultLocale}${pathname === "/" ? "" : pathname}`;
+    console.log(
+      `🔄 Middleware: Adding locale prefix - redirecting ${pathname} to ${newPathname}`
+    );
+    return NextResponse.redirect(new URL(newPathname, request.url));
+  }
+
+  const locale = firstSegment || i18nSettings.defaultLocale;
+
+  // Skip middleware for static files and API routes (after locale validation)
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -30,70 +151,199 @@ export default async function middleware(request: NextRequest) {
 
   // Get access token from cookies
   const token = request.cookies.get("access_token");
-  const locale = pathname.split("/")[1] || i18nSettings.defaultLocale;
+  const refreshToken = request.cookies.get("refresh_token");
+
+  console.log(
+    `🔍 Middleware: Path: ${pathname}, Has token: ${!!token}, Has refresh token: ${!!refreshToken}`
+  );
 
   // Handle login page - redirect if already authenticated
-  if (pathname.includes("/login") && token) {
+  const fullPath = pathname;
+  if (fullPath.includes("/login") && token) {
+    console.log(
+      "🔍 Middleware: User has token, redirecting from login to home"
+    );
     return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
   // Handle admin routes - require admin role
-  if (pathname.includes("/admin")) {
+  if (fullPath.includes("/admin")) {
+    console.log(
+      `🔍 Middleware: Admin route detected (${pathname}), checking authentication...`
+    );
+
     if (!token) {
-      // No token, redirect to login
+      console.log(
+        `❌ Middleware: No token found for admin route ${pathname}, redirecting to login`
+      );
       return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
     }
 
     try {
-      // Call API to check user role
-      // Forward all cookies from the request
+      // Get all cookies to forward to backend
       const cookieHeader = request.headers.get("cookie") || "";
-      const response = await fetch(`${API_BASE_URL}/api/users/me`, {
-        headers: {
-          Cookie: cookieHeader,
-        },
-      });
+      console.log("🔍 Middleware: Cookie header length:", cookieHeader.length);
 
-      if (!response.ok) {
-        // User not found or unauthorized, redirect to login
-        console.error(
-          "❌ Middleware: /api/users/me API returned error status:",
-          response.status,
-          response.statusText
+      // Fetch user data with retry logic
+      const userData = await fetchUserData(cookieHeader);
+
+      if (!userData) {
+        console.log(
+          "❌ Middleware: Failed to fetch user data, redirecting to login"
         );
         return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
       }
 
-      const userData = await response.json();
-      console.log("🔍 Middleware: User data from API:", userData);
+      // Log detailed user information for debugging
+      console.log("🔍 Middleware: User data received:", {
+        id: userData.id,
+        email: userData.email,
+        username: userData.username,
+        role: userData.role,
+        position: userData.position,
+        hasUserProperty: !!userData.user,
+        userRole: userData.user?.role,
+        fullData: userData,
+      });
 
       // Check if user has admin role
-      const userRole = userData.role || userData.user?.role;
+      // Try multiple possible field names for role
+      const userRole =
+        userData.role || userData.user?.role || userData.position;
+      console.log(`🔍 Middleware: Determined user role: "${userRole}"`);
+
+      // Get user email and username for allow list checking
+      const userEmail = userData.email || userData.user?.email;
+      const userUsername = userData.username || userData.user?.username;
+
       console.log(
-        "🔍 Middleware: Detected user role:",
-        userRole,
-        "Full user data:",
-        userData
+        `🔍 Middleware: User email: "${userEmail}", username: "${userUsername}"`
       );
 
-      if (userRole !== "admin") {
-        // Not an admin, redirect to home
-        return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+      // Check if user is in admin allow list
+      const isInAllowList =
+        ADMIN_ALLOW_LIST.includes(userEmail) ||
+        ADMIN_ALLOW_LIST.includes(userUsername);
+
+      console.log(
+        `🔍 Middleware: User is in admin allow list: ${isInAllowList}`
+      );
+
+      // Development bypass - always allow admin access in dev mode
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔧 Middleware: Development mode - forcing admin role");
+        if (userRole !== "admin") {
+          console.log(
+            "⚠️ Middleware: Development bypass - allowing non-admin user as admin"
+          );
+          // In development, we'll allow access even if role is not admin
+          // This helps with testing when backend role assignment has issues
+        }
+      } else if (userRole !== "admin") {
+        // If user is not admin, check if they're in the allow list
+        if (isInAllowList) {
+          console.log(
+            `✅ Middleware: User "${
+              userEmail || userUsername
+            }" is in admin allow list, allowing access despite role "${userRole}"`
+          );
+        } else {
+          console.log(
+            `❌ Middleware: User role "${userRole}" is not admin and user is not in allow list, redirecting to home`
+          );
+          return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+        }
       }
 
-      // User is admin, allow access
+      console.log("✅ Middleware: Admin access granted");
       return intlMiddleware(request);
     } catch (error) {
-      console.error("Admin access error:", error);
-      // Redirect to home if error
+      console.error("❌ Middleware: Admin access error:", error);
+
+      // Development bypass - allow admin access even if API fails
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "🔧 Middleware: Development mode - bypassing error for admin access"
+        );
+        console.log(
+          "⚠️ Middleware: API error occurred but allowing access in dev mode"
+        );
+        return intlMiddleware(request);
+      }
+
+      // If there's a refresh token, try to refresh before redirecting
+      if (refreshToken) {
+        console.log("🔍 Middleware: Attempting token refresh...");
+        try {
+          const refreshResponse = await fetch(
+            `${API_BASE_URL}/api/auth/refresh`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Cookie: request.headers.get("cookie") || "",
+              },
+            }
+          );
+
+          if (refreshResponse.ok) {
+            console.log("✅ Middleware: Token refreshed successfully");
+            // The new token will be set via Set-Cookie header
+            return intlMiddleware(request);
+          }
+        } catch (refreshError) {
+          console.error("❌ Middleware: Token refresh failed:", refreshError);
+        }
+      }
+
+      // Redirect to home if error occurs
       return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
     }
   }
 
-  // Handle other authenticated routes (optional)
+  // Handle other authenticated routes (like /count)
   if (pathname.includes("/count") && !token) {
-    // Redirect to login for protected counting pages
+    console.log(
+      `❌ Middleware: No token for protected route ${pathname}, redirecting to login`
+    );
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+  }
+
+  // For non-admin routes, allow access if token exists
+  // This allows users to access /home, /count, etc.
+  if (
+    token &&
+    !pathname.includes("/login") &&
+    !pathname.includes("/register")
+  ) {
+    console.log(
+      `🔍 Middleware: User has token, allowing access to non-admin route ${pathname}`
+    );
+
+    // Verify token is still valid by making a quick check
+    try {
+      const cookieHeader = request.headers.get("cookie") || "";
+      const quickCheck = await fetch(`${API_BASE_URL}/api/auth/validate`, {
+        method: "POST",
+        headers: {
+          Cookie: cookieHeader,
+        },
+        signal: AbortSignal.timeout(2000),
+      });
+
+      if (!quickCheck.ok) {
+        console.log(
+          "⚠️ Middleware: Token validation failed, but allowing access for non-admin route"
+        );
+        // Still allow access for non-admin routes even if validation fails
+        // to prevent blocking users from basic functionality
+      }
+    } catch (error) {
+      console.log(
+        "⚠️ Middleware: Token validation error, but allowing access:",
+        error
+      );
+    }
   }
 
   // Use next-intl middleware for all other routes

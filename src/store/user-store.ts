@@ -151,36 +151,44 @@ export const getUserInfoFromToken = (
   };
 };
 
-// Initialize user store from token
-export const initializeUserFromToken = async (): Promise<StoreUser | null> => {
-  // ตรวจสอบว่าเราอยู่ใน browser environment
+// Auth helper functions
+export const checkAuthStatus = async (): Promise<{
+  isAuthenticated: boolean;
+  user: StoreUser | null;
+  error?: string;
+}> => {
   if (typeof window === "undefined") {
-    console.log("🔄 initializeUserFromToken: Skipping on server side");
-    return null;
+    return { isAuthenticated: false, user: null };
   }
 
-  console.log("🔄 initializeUserFromToken: Starting...");
+  // Development mock - return admin user for testing
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔧 Development mock: Returning admin user for testing");
+    const mockUser: StoreUser = {
+      id: "b92d20d0-77c6-4c31-840f-4aeda8086232",
+      email: "peel2aput@gmail.com",
+      username: "ofly153351",
+      firstName: "phiraphat",
+      lastName: "klintan",
+      title: "นาย",
+      phone: "0938511307",
+      employeeCode: "aws1150",
+      role: "admin", // Force admin role for development
+    };
+
+    const { setUser } = useUserStore.getState();
+    setUser(mockUser);
+
+    return { isAuthenticated: true, user: mockUser };
+  }
 
   try {
-    // สำหรับ HttpOnly cookies เราไม่สามารถอ่าน token ได้จาก JavaScript
-    // ดังนั้นเราจะเรียก API เพื่อตรวจสอบ authentication และดึงข้อมูลผู้ใช้
-    console.log("🌐 Calling API: http://localhost:3001/api/users/me");
     const response = await fetch("http://localhost:3001/api/users/me", {
       credentials: "include",
     });
 
-    console.log(
-      "📊 API Response status:",
-      response.status,
-      response.statusText
-    );
-
     if (response.ok) {
       const userData = await response.json();
-      console.log("✅ User data fetched from API:", userData);
-
-      // Store in Zustand
-      const { setUser } = useUserStore.getState();
       const storeUser: StoreUser = {
         id: userData.id || "",
         email: userData.email || "",
@@ -193,59 +201,108 @@ export const initializeUserFromToken = async (): Promise<StoreUser | null> => {
         role: userData.role || "user",
       };
 
+      // Update store
+      const { setUser } = useUserStore.getState();
       setUser(storeUser);
-      console.log(
-        "✅ User data initialized from API and stored in Zustand:",
-        storeUser
-      );
-      return storeUser;
+
+      return { isAuthenticated: true, user: storeUser };
     } else {
-      // ถ้า API return 401/403 แสดงว่าไม่ authenticated
-      console.log("❌ User not authenticated, API returned:", response.status);
-
-      // ตรวจสอบว่าเป็น error 401/403 หรือไม่
-      if (response.status === 401 || response.status === 403) {
-        // ตรวจสอบว่าเป็นหน้า auth หรือไม่ก่อนที่จะ clear user data
-        const currentPath = window.location.pathname;
-        const currentUrl = window.location.href;
-        const isAuthPage =
-          currentPath.includes("/login") ||
-          currentPath.includes("/register") ||
-          currentPath.includes("/auth") ||
-          currentUrl.includes("/login") ||
-          currentUrl.includes("/register") ||
-          currentUrl.includes("/auth");
-
-        // ตรวจสอบ locale prefix
-        const pathSegments = currentPath
-          .split("/")
-          .filter((segment) => segment);
-        let isLocaleAuthPage = false;
-        if (pathSegments.length >= 2) {
-          const locale = pathSegments[0];
-          const page = pathSegments[1];
-          isLocaleAuthPage =
-            (locale === "en" || locale === "th") &&
-            (page === "login" || page === "register" || page === "auth");
-        }
-
-        if (!isAuthPage && !isLocaleAuthPage) {
-          console.log("🔒 Authentication failed, clearing user data");
-          clearUserData();
-        } else {
-          console.log(
-            "⚠️ Authentication failed on auth page, skipping clearUserData"
-          );
-        }
-      }
-
-      return null;
+      // Clear user if auth failed
+      clearUserData();
+      return {
+        isAuthenticated: false,
+        user: null,
+        error: `Auth failed: ${response.status} ${response.statusText}`,
+      };
     }
   } catch (error) {
-    console.error("❌ Error fetching user data from API:", error);
+    console.error("Error checking auth status:", error);
+    return {
+      isAuthenticated: false,
+      user: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+};
 
-    // ในหน้า auth ไม่ต้อง clear user data เพราะผู้ใช้กำลัง login
-    // ตรวจสอบอีกครั้งว่าเป็นหน้า auth หรือไม่
+export const refreshAuthToken = async (): Promise<boolean> => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  // Development mock - always succeed in development
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔧 Development mock: Token refresh succeeded");
+    return true;
+  }
+
+  try {
+    const response = await fetch("http://localhost:3001/api/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      console.log("✅ Auth token refreshed successfully");
+      return true;
+    }
+    console.log(`❌ Token refresh failed: ${response.status}`);
+    return false;
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    return false;
+  }
+};
+
+// Initialize user store from token
+export const initializeUserFromToken = async (): Promise<StoreUser | null> => {
+  // ตรวจสอบว่าเราอยู่ใน browser environment
+  if (typeof window === "undefined") {
+    console.log("🔄 initializeUserFromToken: Skipping on server side");
+    return null;
+  }
+
+  console.log("🔄 initializeUserFromToken: Starting...");
+
+  // Development mock - return admin user immediately in development
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "🔧 Development mock: initializeUserFromToken returning admin user"
+    );
+    const mockUser: StoreUser = {
+      id: "b92d20d0-77c6-4c31-840f-4aeda8086232",
+      email: "peel2aput@gmail.com",
+      username: "ofly153351",
+      firstName: "phiraphat",
+      lastName: "klintan",
+      title: "นาย",
+      phone: "0938511307",
+      employeeCode: "aws1150",
+      role: "admin",
+    };
+
+    const { setUser } = useUserStore.getState();
+    setUser(mockUser);
+
+    return mockUser;
+  }
+
+  // Use the new checkAuthStatus helper
+  const authResult = await checkAuthStatus();
+
+  if (authResult.isAuthenticated && authResult.user) {
+    console.log(
+      "✅ initializeUserFromToken: User authenticated via checkAuthStatus:",
+      authResult.user
+    );
+    return authResult.user;
+  } else {
+    console.log(
+      "❌ initializeUserFromToken: Authentication failed:",
+      authResult.error
+    );
+
+    // ตรวจสอบว่าเป็นหน้า auth หรือไม่ก่อนที่จะ clear user data
     const currentPath = window.location.pathname;
     const currentUrl = window.location.href;
     const isAuthPage =
@@ -268,11 +325,12 @@ export const initializeUserFromToken = async (): Promise<StoreUser | null> => {
     }
 
     if (!isAuthPage && !isLocaleAuthPage) {
-      // เฉพาะหน้าที่ไม่ใช่ auth page ให้ clear user data
-      console.log("🔒 Clearing user data due to API error on non-auth page");
+      console.log("🔒 Authentication failed, clearing user data");
       clearUserData();
     } else {
-      console.log("⚠️ API error on auth page, skipping clearUserData");
+      console.log(
+        "⚠️ Authentication failed on auth page, skipping clearUserData"
+      );
     }
 
     return null;
