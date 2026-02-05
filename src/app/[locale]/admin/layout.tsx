@@ -20,10 +20,21 @@ export default async function AdminLayout({
 
   // Check if user is authenticated and has admin role
   const currentUser = await getCurrentUser();
+  console.log("🔍 AdminLayout: currentUser =", currentUser);
 
   // Check if user exists and has admin role
-  if (!currentUser || currentUser.role !== "admin") {
-    // Redirect to login if not authenticated or not admin
+  if (!currentUser) {
+    console.log("❌ AdminLayout: No current user found, redirecting to login");
+    redirect(`/${locale}/login`);
+  }
+
+  console.log(
+    "🔍 AdminLayout: User role =",
+    currentUser.role,
+    "Expected: admin"
+  );
+  if (currentUser.role !== "admin") {
+    console.log("❌ AdminLayout: User is not admin, redirecting to login");
     redirect(`/${locale}/login`);
   }
 

@@ -56,13 +56,25 @@ export default async function middleware(request: NextRequest) {
 
       if (!response.ok) {
         // User not found or unauthorized, redirect to login
+        console.error(
+          "❌ Middleware: /api/users/me API returned error status:",
+          response.status,
+          response.statusText
+        );
         return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
       }
 
       const userData = await response.json();
+      console.log("🔍 Middleware: User data from API:", userData);
 
       // Check if user has admin role
       const userRole = userData.role || userData.user?.role;
+      console.log(
+        "🔍 Middleware: Detected user role:",
+        userRole,
+        "Full user data:",
+        userData
+      );
 
       if (userRole !== "admin") {
         // Not an admin, redirect to home

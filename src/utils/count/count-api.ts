@@ -878,9 +878,11 @@ export const createSugarType = async (sugarTypeData: {
  * Returns user from Zustand store if available, otherwise fetches from API
  */
 export const getCurrentUser = async (): Promise<User | null> => {
+  console.log("🔍 getCurrentUser: Starting...");
   try {
     // Check if we're on an auth page (login, register, etc.)
     // Skip API calls on auth pages to prevent unnecessary requests
+    console.log("🔍 getCurrentUser: Checking if we're on auth page...");
     if (typeof window !== "undefined") {
       const currentPath = window.location.pathname;
       const isAuthPage =
@@ -927,29 +929,45 @@ export const getCurrentUser = async (): Promise<User | null> => {
       }
     }
 
+    console.log("🔍 getCurrentUser: Checking Zustand store...");
     // First check if user is already in Zustand store
     const { user: storeUser, isAuthenticated } = await import(
       "@/store/user-store"
     ).then((module) => module.useUserStore.getState());
 
     if (storeUser && isAuthenticated) {
-      console.log("Using user data from Zustand store");
+      console.log(
+        "✅ getCurrentUser: Using user data from Zustand store:",
+        storeUser
+      );
       return storeUser as User;
     }
 
+    console.log(
+      "🔍 getCurrentUser: No user in store, initializing from token..."
+    );
     // If not in store, try to initialize from token
     const { initializeUserFromToken } = await import("@/store/user-store");
     const user = await initializeUserFromToken();
 
     if (user) {
+      console.log("✅ getCurrentUser: User initialized from token:", user);
       return user as User;
     }
 
+    console.log(
+      "🔍 getCurrentUser: No user in store or token, trying direct API call..."
+    );
     // Fallback: try direct API call (for backward compatibility)
     const response = await fetch("http://localhost:3001/api/users/me", {
       credentials: "include",
     });
 
+    console.log(
+      "🔍 getCurrentUser: API response status:",
+      response.status,
+      response.statusText
+    );
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
         console.log("User not authenticated, returning null");
@@ -959,6 +977,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
     }
 
     const userData = await response.json();
+    console.log("✅ getCurrentUser: User data from direct API call:", userData);
     return userData as User;
   } catch (error) {
     console.error("Error getting current user:", error);
