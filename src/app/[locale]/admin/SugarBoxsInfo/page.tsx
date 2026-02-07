@@ -103,6 +103,8 @@ export default function Page({ params }: PageProps) {
         amount: `${session.totalCount || 0} กล่อง`,
         id: session.id, // Add session ID for image upload
         rawSession: session,
+        boxSession: session.boxSession,
+        sessionType: session.sessionType || "box",
       };
     }) || [];
 

@@ -13,7 +13,6 @@ import Swal from "sweetalert2";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 
-import { useSackRowsBySession, useBoxRowsBySession } from "@/hooks/useCount";
 import { API_CONFIG } from "@/utils/config";
 
 interface TableProps {
@@ -37,16 +36,12 @@ export default function Table({
     string,
     any
   > | null>(null);
+  const [selectedRowImage, setSelectedRowImage] = useState<Record<
+    string,
+    any
+  > | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-  // Fetch rows for selected session
-  const sessionId = selectedSession?.id || selectedSession?.rawSession?.id;
-  const { data: sackRows, isLoading: isLoadingSackRows } = useSackRowsBySession(
-    sessionId as string | number
-  );
-  const { data: boxRows, isLoading: isLoadingBoxRows } = useBoxRowsBySession(
-    sessionId as string | number
-  );
 
   // Helper function to get image URLs with fallbacks
   const getImageUrl = (pathOrUrl?: string): string => {
@@ -187,7 +182,11 @@ export default function Table({
 
   const headers = getTableHeaders();
 
-  const handleOpenImagesModal = (session: Record<string, any>) => {
+  const handleOpenImagesModal = (
+    session: Record<string, any>,
+    rowImage?: Record<string, any>
+  ) => {
+    setSelectedRowImage(rowImage || null);
     setSelectedSession(session);
     setIsImagesModalOpen(true);
   };
@@ -313,15 +312,28 @@ export default function Table({
               const rowId = String(row.id ?? row.rawSession?.id ?? row.no ?? i);
               const isExpanded = expandedRows.has(rowId);
               const sackRows = row.sackSession?.sackRows ?? [];
-              const hasSackRows = sackRows.length > 0;
+              const boxRows = row.boxSession?.boxRows ?? [];
               const sessionType =
                 row.sessionType ?? row.rawSession?.sessionType;
+              const isSackSession = sessionType === "sack";
+              const isBoxSession = sessionType === "box";
+              const childRows = isSackSession ? sackRows : boxRows;
+              const hasChildRows = childRows.length > 0;
               const showExpandButton =
-                sessionType === "sack" && hasSackRows;
+                (isSackSession || isBoxSession) && hasChildRows;
 
               return (
                 <React.Fragment key={rowId}>
-                  <tr className="hover:bg-blue-50/40 transition-colors duration-150">
+                  <tr
+                    className={`hover:bg-blue-50/40 transition-colors duration-150 ${
+                      showExpandButton ? "cursor-pointer" : ""
+                    }`}
+                    onClick={() => {
+                      if (showExpandButton) {
+                        toggleRowExpansion(rowId);
+                      }
+                    }}
+                  >
                     {headers.map((h) => (
                       <td
                         key={h.key}
@@ -344,32 +356,11 @@ export default function Table({
                     ))}
 
                     <td className="px-6 py-4 flex gap-2">
-                      {showExpandButton && (
-                        <button
-                          onClick={() => toggleRowExpansion(rowId)}
-                          className="p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200 shadow-lg border-2 border-blue-700 transform hover:scale-105 active:scale-95"
-                          title={isExpanded ? "ย่อแถว" : "ขยายแถว"}
-                        >
-                          {isExpanded ? (
-                            <ChevronDown className="w-5 h-5 transition-transform duration-200" />
-                          ) : (
-                            <ChevronRight className="w-5 h-5 transition-transform duration-200" />
-                          )}
-                        </button>
-                      )}
-
-                      {(type === "bags" || type === "box") && (
-                        <button
-                          onClick={() => handleOpenImagesModal(row)}
-                          className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
-                          title="ดูรูปภาพ"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      )}
-
                       <button
-                        onClick={() => handleDelete(row)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(row);
+                        }}
                         className="p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -391,55 +382,63 @@ export default function Table({
                             <div className="p-4">
                               <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
                                 <ChevronDown className="w-4 h-4" />
-                                รายละเอียดการนับกระสอบ
-                              </h4>
-                            {hasSackRows ? (
-                              <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-blue-200">
-                                  <thead className="bg-blue-100">
-                                    <tr>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
-                                        แถวที่
-                                      </th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
-                                        น้ำหนัก
-                                      </th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
-                                        จำนวน
-                                      </th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
-                                        สถานะ
+                              {isSackSession
+                                ? "รายละเอียดการนับกระสอบ"
+                                : "รายละเอียดการนับกล่อง"}
+                            </h4>
+                              {hasChildRows ? (
+                                <div className="overflow-x-auto">
+                                  <table className="min-w-full divide-y divide-blue-200">
+                                    <thead className="bg-blue-100">
+                                      <tr>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
+                                          แถวที่
+                                        </th>
+                                        {isSackSession && (
+                                          <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
+                                            น้ำหนัก
+                                          </th>
+                                        )}
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
+                                          จำนวน
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
+                                          รูปภาพ
                                       </th>
                                     </tr>
                                   </thead>
                                   <tbody className="bg-white divide-y divide-blue-100">
-                                    {sackRows.map(
-                                      (sackRow: any, index: number) => (
+                                    {childRows.map(
+                                      (childRow: any, index: number) => (
                                         <tr
-                                          key={sackRow.id || index}
+                                          key={childRow.id || index}
                                           className="hover:bg-blue-50"
                                         >
                                           <td className="px-4 py-2 text-sm text-gray-700">
-                                            {sackRow.rowNumber || index + 1}
+                                            {childRow.rowNumber || index + 1}
                                           </td>
+                                          {isSackSession && (
+                                            <td className="px-4 py-2 text-sm text-gray-700">
+                                              {childRow.weightType || "ไม่ระบุ"}
+                                            </td>
+                                          )}
                                           <td className="px-4 py-2 text-sm text-gray-700">
-                                            {sackRow.weightType || "ไม่ระบุ"}
-                                          </td>
-                                          <td className="px-4 py-2 text-sm text-gray-700">
-                                            {sackRow.finalCount || 0}
+                                            {childRow.finalCount || 0}
                                           </td>
                                           <td className="px-4 py-2 text-sm">
-                                            <span
-                                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                sackRow.status === "completed"
-                                                  ? "bg-green-100 text-green-700 border border-green-200"
-                                                  : "bg-yellow-100 text-yellow-700 border border-yellow-200"
-                                              }`}
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOpenImagesModal(
+                                                  row,
+                                                  childRow
+                                                );
+                                              }}
+                                              className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
+                                              title="ดูรูปภาพ"
                                             >
-                                              {sackRow.status === "completed"
-                                                ? "สำเร็จ"
-                                                : "กำลังดำเนินการ"}
-                                            </span>
+                                              <Eye className="w-4 h-4" />
+                                            </button>
                                           </td>
                                         </tr>
                                       )
@@ -447,13 +446,13 @@ export default function Table({
                                   </tbody>
                                 </table>
                                 <p className="text-sm text-gray-600 mt-3">
-                                  รวม {sackRows.length} แถว
+                                  รวม {childRows.length} แถว
                                 </p>
                               </div>
                             ) : (
                               <div className="text-center py-6">
                                 <p className="text-gray-500 italic">
-                                  No sack rows data
+                                  No rows data
                                 </p>
                               </div>
                             )}
@@ -481,8 +480,8 @@ export default function Table({
       </div>
 
       {/* Images Modal for viewing original and annotated images */}
-      {isImagesModalOpen && selectedSession && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        {isImagesModalOpen && selectedSession && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -496,151 +495,132 @@ export default function Table({
                 </p>
               </div>
               <button
-                onClick={() => {
-                  setIsImagesModalOpen(false);
-                  setSelectedSession(null);
-                }}
-                className="p-2 rounded-full hover:bg-gray-100 transition"
-              >
+                  onClick={() => {
+                    setIsImagesModalOpen(false);
+                    setSelectedSession(null);
+                    setSelectedRowImage(null);
+                  }}
+                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
 
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto max-h-[70vh]">
-              {/* Loading State */}
-              {(isLoadingSackRows || isLoadingBoxRows) && (
-                <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                  <span className="ml-3 text-gray-600">กำลังโหลดรูปภาพ...</span>
-                </div>
-              )}
-
-              {/* Content when loaded */}
-              {!(isLoadingSackRows || isLoadingBoxRows) && (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Original Images Section */}
-                    <div className="bg-gray-50 rounded-xl p-5">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <ImageIcon className="w-5 h-5 text-blue-600" />
-                        รูปภาพต้นฉบับ
-                      </h3>
-                      <div className="space-y-4">
-                        {(type === "bags" ? sackRows || [] : boxRows || [])?.map(
-                          (row: any, index: number) => (
-                            <div
-                              key={row.id || index}
-                              className="bg-white rounded-lg p-4 border border-gray-200"
-                            >
-                              <div className="flex justify-between items-start mb-3">
-                                <div>
-                                  <p className="font-medium text-gray-800">
-                                    แถวที่ {row.rowNumber}
-                                  </p>
-                                  <p className="text-sm text-gray-600">
-                                    {type === "bags" &&
-                                      `น้ำหนัก: ${
-                                        row.weightType || "ไม่ระบุ"
-                                      } • `}
-                                    จำนวน: {row.finalCount || 0}
-                                  </p>
-                                </div>
-                                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
-                                  ต้นฉบับ
-                                </span>
-                              </div>
-                              {getOriginalImageUrl(row) ? (
-                                <div className="relative rounded-lg overflow-hidden border border-gray-300">
-                                  <img
-                                    src={getOriginalImageUrl(row)}
-                                    alt={`Original image row ${row.rowNumber}`}
-                                    className="w-full h-48 object-contain bg-gray-100"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg border border-gray-300">
-                                  <div className="text-center">
-                                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                                    <p className="text-gray-500 text-sm">
-                                      ไม่มีรูปภาพต้นฉบับ
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
+              {selectedRowImage ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Original Images Section */}
+                  <div className="bg-gray-50 rounded-xl p-5">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-blue-600" />
+                      รูปภาพต้นฉบับ
+                    </h3>
+                    <div className="space-y-4">
+                      {[selectedRowImage].map((row: any, index: number) => (
+                        <div
+                          key={row.id || index}
+                          className="bg-white rounded-lg p-4 border border-gray-200"
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                แถวที่ {row.rowNumber}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {type === "bags" &&
+                                  `น้ำหนัก: ${
+                                    row.weightType || "ไม่ระบุ"
+                                  } • `}
+                                จำนวน: {row.finalCount || 0}
+                              </p>
                             </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Annotated Images Section */}
-                    <div className="bg-gray-50 rounded-xl p-5">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <ImageIcon className="w-5 h-5 text-green-600" />
-                        รูปภาพที่วิเคราะห์แล้ว
-                      </h3>
-                      <div className="space-y-4">
-                        {(type === "bags" ? sackRows || [] : boxRows || [])?.map(
-                          (row: any, index: number) => (
-                            <div
-                              key={row.id || index}
-                              className="bg-white rounded-lg p-4 border border-gray-200"
-                            >
-                              <div className="flex justify-between items-start mb-3">
-                                <div>
-                                  <p className="font-medium text-gray-800">
-                                    แถวที่ {row.rowNumber}
-                                  </p>
-                                  <p className="text-sm text-gray-600">
-                                    {type === "bags" &&
-                                      `น้ำหนัก: ${
-                                        row.weightType || "ไม่ระบุ"
-                                      } • `}
-                                    จำนวน: {row.finalCount || 0}
-                                  </p>
-                                </div>
-                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-                                  วิเคราะห์แล้ว
-                                </span>
-                              </div>
-                              {getAnnotatedImageUrl(row) ? (
-                                <div className="relative rounded-lg overflow-hidden border border-gray-300">
-                                  <img
-                                    src={getAnnotatedImageUrl(row)}
-                                    alt={`Annotated image row ${row.rowNumber}`}
-                                    className="w-full h-48 object-contain bg-gray-100"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg border border-gray-300">
-                                  <div className="text-center">
-                                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                                    <p className="text-gray-500 text-sm">
-                                      ไม่มีรูปภาพที่วิเคราะห์แล้ว
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+                              ต้นฉบับ
+                            </span>
+                          </div>
+                          {getOriginalImageUrl(row) ? (
+                            <div className="relative rounded-lg overflow-hidden border border-gray-300">
+                              <img
+                                src={getOriginalImageUrl(row)}
+                                alt={`Original image row ${row.rowNumber}`}
+                                className="w-full h-48 object-contain bg-gray-100"
+                              />
                             </div>
-                          )
-                        )}
-                      </div>
+                          ) : (
+                            <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg border border-gray-300">
+                              <div className="text-center">
+                                <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                <p className="text-gray-500 text-sm">
+                                  ไม่มีรูปภาพต้นฉบับ
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Empty State */}
-                  {((type === "bags" && (!sackRows || sackRows?.length === 0)) ||
-                    (type === "box" &&
-                      (!boxRows || boxRows?.length === 0))) && (
-                    <div className="text-center py-12">
-                      <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">
-                        ไม่มีข้อมูลรูปภาพสำหรับเซสชันนี้
-                      </p>
+                  {/* Annotated Images Section */}
+                  <div className="bg-gray-50 rounded-xl p-5">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-green-600" />
+                      รูปภาพที่วิเคราะห์แล้ว
+                    </h3>
+                    <div className="space-y-4">
+                      {[selectedRowImage].map((row: any, index: number) => (
+                        <div
+                          key={row.id || index}
+                          className="bg-white rounded-lg p-4 border border-gray-200"
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                แถวที่ {row.rowNumber}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {type === "bags" &&
+                                  `น้ำหนัก: ${
+                                    row.weightType || "ไม่ระบุ"
+                                  } • `}
+                                จำนวน: {row.finalCount || 0}
+                              </p>
+                            </div>
+                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
+                              วิเคราะห์แล้ว
+                            </span>
+                          </div>
+                          {getAnnotatedImageUrl(row) ? (
+                            <div className="relative rounded-lg overflow-hidden border border-gray-300">
+                              <img
+                                src={getAnnotatedImageUrl(row)}
+                                alt={`Annotated image row ${row.rowNumber}`}
+                                className="w-full h-48 object-contain bg-gray-100"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg border border-gray-300">
+                              <div className="text-center">
+                                <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                <p className="text-gray-500 text-sm">
+                                  ไม่มีรูปภาพที่วิเคราะห์แล้ว
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">
+                    ไม่มีข้อมูลรูปภาพสำหรับแถวนี้
+                  </p>
+                </div>
               )}
             </div>
 
@@ -651,6 +631,7 @@ export default function Table({
                   onClick={() => {
                     setIsImagesModalOpen(false);
                     setSelectedSession(null);
+                    setSelectedRowImage(null);
                   }}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                 >
