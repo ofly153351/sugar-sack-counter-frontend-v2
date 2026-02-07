@@ -17,7 +17,7 @@ import {
   Dictionary,
   LoginCredentials,
 } from "@/utils/login";
-import { getCurrentUser } from "@/utils/count/count-api";
+import { checkAuthStatus } from "@/store/user-store";
 
 export default function LoginPage() {
   const params = useParams();
@@ -52,11 +52,11 @@ export default function LoginPage() {
     // Check if user is already authenticated
     const checkAuth = async () => {
       try {
-        const currentUser = await getCurrentUser();
-        if (currentUser) {
+        const authResult = await checkAuthStatus();
+        if (authResult.isAuthenticated && authResult.user) {
           // User is already logged in, redirect based on role
           const redirectTo =
-            currentUser.role === "admin"
+            authResult.user.role === "admin"
               ? `/${locale}/admin`
               : `/${locale}/home`;
           router.push(redirectTo);
@@ -232,7 +232,7 @@ export default function LoginPage() {
       <p className="text-sm text-gray-600 mt-4 text-center">
         {t.dontHaveAccount}{" "}
         <Link
-          href="/register"
+          href={`/${locale}/register`}
           className="text-blue-600 font-medium hover:underline"
         >
           {t.signUp}

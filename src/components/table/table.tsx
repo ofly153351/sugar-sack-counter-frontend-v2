@@ -1,19 +1,26 @@
 "use client";
 
-import { PencilLine, Trash2, Upload } from "lucide-react";
+import React from "react";
+import {
+  Trash2,
+  Image as ImageIcon,
+  Eye,
+  X,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import Swal from "sweetalert2";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
-import { ImageUploadModal } from "../image-upload/ImageUploadModal";
-import { uploadCountingSessionImage } from "@/utils/count/count-api";
-import { processImageWithAI } from "@/utils/ai/ai-api";
+
+import { useSackRowsBySession, useBoxRowsBySession } from "@/hooks/useCount";
+import { API_CONFIG } from "@/utils/config";
 
 interface TableProps {
   type: "vehicle" | "bags" | "box" | "users";
   data?: Record<string, any>[];
   onEdit?: (item: Record<string, any>) => void;
   onDelete?: (item: Record<string, any>) => void;
-  onUploadImage?: (item: Record<string, any>) => void;
 }
 
 export default function Table({
@@ -21,15 +28,46 @@ export default function Table({
   data = [],
   onEdit,
   onDelete,
-  onUploadImage,
 }: TableProps) {
   const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<Record<string, any> | null>(
-    null
+
+  const [isImagesModalOpen, setIsImagesModalOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<Record<
+    string,
+    any
+  > | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  // Fetch rows for selected session
+  const sessionId = selectedSession?.id || selectedSession?.rawSession?.id;
+  const { data: sackRows, isLoading: isLoadingSackRows } = useSackRowsBySession(
+    sessionId as string | number
   );
-  const [isUploading, setIsUploading] = useState(false);
+  const { data: boxRows, isLoading: isLoadingBoxRows } = useBoxRowsBySession(
+    sessionId as string | number
+  );
+
+  // Helper function to get image URLs with fallbacks
+  const getImageUrl = (pathOrUrl?: string): string => {
+    if (!pathOrUrl) return "";
+    if (pathOrUrl.startsWith("http")) return pathOrUrl;
+    return `${API_CONFIG.BASE_URL}/images/${pathOrUrl}`;
+  };
+
+  const getOriginalImageUrl = (row: any): string => {
+    // Check for MinIO URL first, then path fields
+    return getImageUrl(
+      row.originalImageUrl || row.originalImagePath || row.imagePath
+    );
+  };
+
+  const getAnnotatedImageUrl = (row: any): string => {
+    // Check for MinIO URL first, then path fields
+    return getImageUrl(
+      row.annotatedImageUrl || row.annotatedImagePath || row.imagePath
+    );
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -149,101 +187,9 @@ export default function Table({
 
   const headers = getTableHeaders();
 
-  const handleOpenUploadModal = (item: Record<string, any>) => {
-    setSelectedItem(item);
-    setIsUploadModalOpen(true);
-  };
-
-  const handleUploadImage = async (file: File, description?: string) => {
-    if (!selectedItem) return;
-
-    setIsUploading(true);
-    try {
-      // เรียกใช้ฟังก์ชันจาก parent หรือใช้ฟังก์ชัน API โดยตรง
-      if (onUploadImage) {
-        await onUploadImage({ ...selectedItem, file, description });
-      } else {
-        // ถ้าไม่มี onUploadImage prop, ใช้ฟังก์ชัน API โดยตรง
-        // ต้องมี sessionId ใน selectedItem
-        if (selectedItem.id || selectedItem.sessionId) {
-          const sessionId = selectedItem.id || selectedItem.sessionId;
-          await uploadCountingSessionImage(sessionId, file, description);
-        }
-      }
-
-      // แสดงข้อความสำเร็จ
-      Swal.fire({
-        title: "สำเร็จ!",
-        text: "อัปโหลดรูปภาพเรียบร้อยแล้ว",
-        icon: "success",
-        confirmButtonText: "ตกลง",
-      });
-    } catch (error: any) {
-      Swal.fire({
-        title: "เกิดข้อผิดพลาด",
-        text: error.message || "ไม่สามารถอัปโหลดรูปภาพได้",
-        icon: "error",
-        confirmButtonText: "ตกลง",
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleAIDetection = async (file: File) => {
-    try {
-      Swal.fire({
-        title: "กำลังตรวจจับบุคคล...",
-        text: "AI กำลังวิเคราะห์ภาพ กรุณารอสักครู่",
-        icon: "info",
-        showConfirmButton: false,
-        allowOutsideClick: false,
-      });
-
-      const result = await processImageWithAI(file);
-
-      Swal.close();
-
-      // แสดงผลการตรวจจับใน modal ใหม่
-      Swal.fire({
-        title: `ตรวจจับบุคคลสำเร็จ!`,
-        html: `
-          <div class="text-left">
-            <p class="mb-2">พบบุคคลทั้งหมด: <strong>${
-              result.personCount
-            } คน</strong></p>
-            <p class="mb-4">ความเชื่อมั่นเฉลี่ย: <strong>${
-              result.detections.length > 0
-                ? (
-                    (result.detections.reduce(
-                      (sum, d) => sum + d.confidence,
-                      0
-                    ) /
-                      result.detections.length) *
-                    100
-                  ).toFixed(1)
-                : 0
-            }%</strong></p>
-            <div class="mt-4">
-              <img src="${
-                result.annotatedImage
-              }" alt="Annotated Image" class="w-full h-auto rounded-lg border" />
-            </div>
-          </div>
-        `,
-        icon: "success",
-        confirmButtonText: "ตกลง",
-        width: 600,
-      });
-    } catch (error: any) {
-      Swal.fire({
-        title: "เกิดข้อผิดพลาด",
-        text:
-          "ไม่สามารถตรวจจับบุคคลได้: " + (error.message || "เกิดข้อผิดพลาด"),
-        icon: "error",
-        confirmButtonText: "ตกลง",
-      });
-    }
+  const handleOpenImagesModal = (session: Record<string, any>) => {
+    setSelectedSession(session);
+    setIsImagesModalOpen(true);
   };
 
   const handleDelete = (item: Record<string, any>) => {
@@ -281,6 +227,18 @@ export default function Table({
       } else {
         console.log("❌ Table: Delete cancelled by user");
       }
+    });
+  };
+
+  const toggleRowExpansion = (rowId: string) => {
+    setExpandedRows((prev) => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(rowId)) {
+        newExpanded.delete(rowId);
+      } else {
+        newExpanded.add(rowId);
+      }
+      return newExpanded;
     });
   };
 
@@ -327,108 +285,6 @@ export default function Table({
         </table>
       </div>
     );
-
-    return (
-      <>
-        <div className="overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-blue-500/10">
-              <tr>
-                {headers.map((h) => (
-                  <th
-                    key={h.key}
-                    className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide"
-                  >
-                    {h.label}
-                  </th>
-                ))}
-
-                <th className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide">
-                  {t("table.actions", { defaultValue: "Actions" })}
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="bg-white divide-y divide-slate-100">
-              {data.map((row, i) => (
-                <tr
-                  key={i}
-                  className="hover:bg-blue-50/40 transition-colors duration-150"
-                >
-                  {headers.map((h) => (
-                    <td
-                      key={h.key}
-                      className="px-6 py-4 whitespace-nowrap text-[15px] text-slate-700"
-                    >
-                      {type === "vehicle" && h.key === "status" ? (
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            row.status === "active"
-                              ? "bg-green-100 text-green-700 border border-green-200"
-                              : "bg-red-100 text-red-700 border border-red-200"
-                          }`}
-                        >
-                          {row.status === "active" ? "Active" : "Inactive"}
-                        </span>
-                      ) : (
-                        row[h.key]
-                      )}
-                    </td>
-                  ))}
-
-                  <td className="px-6 py-4 flex gap-2">
-                    <button
-                      onClick={() => onEdit?.(row)}
-                      className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition shadow-sm"
-                    >
-                      <PencilLine className="w-4 h-4" />
-                    </button>
-
-                    <button
-                      onClick={() => handleOpenUploadModal(row)}
-                      className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
-                      title="อัปโหลดรูปภาพ"
-                    >
-                      <Upload className="w-4 h-4" />
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(row)}
-                      className="p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {data.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={headers.length + 1}
-                    className="text-center py-8 text-slate-500 italic"
-                  >
-                    {t("table.noData", { defaultValue: "— No data found —" })}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <ImageUploadModal
-          isOpen={isUploadModalOpen}
-          onClose={() => {
-            setIsUploadModalOpen(false);
-            setSelectedItem(null);
-          }}
-          onUpload={handleUploadImage}
-          title={`อัปโหลดรูปภาพสำหรับ ${selectedItem?.vehicleCode || "รายการ"}`}
-          description="เลือกรูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้"
-          enableAIDetection={true}
-        />
-      </>
-    );
   }
 
   return (
@@ -453,58 +309,163 @@ export default function Table({
           </thead>
 
           <tbody className="bg-white divide-y divide-slate-100">
-            {data.map((row, i) => (
-              <tr
-                key={i}
-                className="hover:bg-blue-50/40 transition-colors duration-150"
-              >
-                {headers.map((h) => (
-                  <td
-                    key={h.key}
-                    className="px-6 py-4 whitespace-nowrap text-[15px] text-slate-700"
-                  >
-                    {type === "vehicle" && h.key === "status" ? (
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          row.status === "active"
-                            ? "bg-green-100 text-green-700 border border-green-200"
-                            : "bg-red-100 text-red-700 border border-red-200"
-                        }`}
+            {data.map((row, i) => {
+              const rowId = String(row.id ?? row.rawSession?.id ?? row.no ?? i);
+              const isExpanded = expandedRows.has(rowId);
+              const sackRows = row.sackSession?.sackRows ?? [];
+              const hasSackRows = sackRows.length > 0;
+              const sessionType =
+                row.sessionType ?? row.rawSession?.sessionType;
+              const showExpandButton =
+                sessionType === "sack" && hasSackRows;
+
+              return (
+                <React.Fragment key={rowId}>
+                  <tr className="hover:bg-blue-50/40 transition-colors duration-150">
+                    {headers.map((h) => (
+                      <td
+                        key={h.key}
+                        className="px-6 py-4 whitespace-nowrap text-[15px] text-slate-700"
                       >
-                        {row.status === "active" ? "Active" : "Inactive"}
-                      </span>
-                    ) : (
-                      row[h.key]
-                    )}
-                  </td>
-                ))}
+                        {type === "vehicle" && h.key === "status" ? (
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              row.status === "active"
+                                ? "bg-green-100 text-green-700 border border-green-200"
+                                : "bg-red-100 text-red-700 border border-red-200"
+                            }`}
+                          >
+                            {row.status === "active" ? "Active" : "Inactive"}
+                          </span>
+                        ) : (
+                          row[h.key]
+                        )}
+                      </td>
+                    ))}
 
-                <td className="px-6 py-4 flex gap-2">
-                  <button
-                    onClick={() => onEdit?.(row)}
-                    className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition shadow-sm"
-                  >
-                    <PencilLine className="w-4 h-4" />
-                  </button>
+                    <td className="px-6 py-4 flex gap-2">
+                      {showExpandButton && (
+                        <button
+                          onClick={() => toggleRowExpansion(rowId)}
+                          className="p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200 shadow-lg border-2 border-blue-700 transform hover:scale-105 active:scale-95"
+                          title={isExpanded ? "ย่อแถว" : "ขยายแถว"}
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="w-5 h-5 transition-transform duration-200" />
+                          ) : (
+                            <ChevronRight className="w-5 h-5 transition-transform duration-200" />
+                          )}
+                        </button>
+                      )}
 
-                  <button
-                    onClick={() => handleOpenUploadModal(row)}
-                    className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
-                    title="อัปโหลดรูปภาพ"
-                  >
-                    <Upload className="w-4 h-4" />
-                  </button>
+                      {(type === "bags" || type === "box") && (
+                        <button
+                          onClick={() => handleOpenImagesModal(row)}
+                          className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
+                          title="ดูรูปภาพ"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      )}
 
-                  <button
-                    onClick={() => handleDelete(row)}
-                    className="p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                      <button
+                        onClick={() => handleDelete(row)}
+                        className="p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
 
+                  {showExpandButton && (
+                    <tr>
+                      <td colSpan={headers.length + 1} className="px-0 py-0">
+                        <div
+                          className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
+                            isExpanded
+                              ? "max-h-[1200px] opacity-100"
+                              : "max-h-0 opacity-0"
+                          }`}
+                        >
+                          <div className="bg-blue-50 border-l-4 border-blue-400">
+                            <div className="p-4">
+                              <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                                <ChevronDown className="w-4 h-4" />
+                                รายละเอียดการนับกระสอบ
+                              </h4>
+                            {hasSackRows ? (
+                              <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-blue-200">
+                                  <thead className="bg-blue-100">
+                                    <tr>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
+                                        แถวที่
+                                      </th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
+                                        น้ำหนัก
+                                      </th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
+                                        จำนวน
+                                      </th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
+                                        สถานะ
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="bg-white divide-y divide-blue-100">
+                                    {sackRows.map(
+                                      (sackRow: any, index: number) => (
+                                        <tr
+                                          key={sackRow.id || index}
+                                          className="hover:bg-blue-50"
+                                        >
+                                          <td className="px-4 py-2 text-sm text-gray-700">
+                                            {sackRow.rowNumber || index + 1}
+                                          </td>
+                                          <td className="px-4 py-2 text-sm text-gray-700">
+                                            {sackRow.weightType || "ไม่ระบุ"}
+                                          </td>
+                                          <td className="px-4 py-2 text-sm text-gray-700">
+                                            {sackRow.finalCount || 0}
+                                          </td>
+                                          <td className="px-4 py-2 text-sm">
+                                            <span
+                                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                sackRow.status === "completed"
+                                                  ? "bg-green-100 text-green-700 border border-green-200"
+                                                  : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+                                              }`}
+                                            >
+                                              {sackRow.status === "completed"
+                                                ? "สำเร็จ"
+                                                : "กำลังดำเนินการ"}
+                                            </span>
+                                          </td>
+                                        </tr>
+                                      )
+                                    )}
+                                  </tbody>
+                                </table>
+                                <p className="text-sm text-gray-600 mt-3">
+                                  รวม {sackRows.length} แถว
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="text-center py-6">
+                                <p className="text-gray-500 italic">
+                                  No sack rows data
+                                </p>
+                              </div>
+                            )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
             {data.length === 0 && (
               <tr>
                 <td
@@ -519,17 +480,187 @@ export default function Table({
         </table>
       </div>
 
-      <ImageUploadModal
-        isOpen={isUploadModalOpen}
-        onClose={() => {
-          setIsUploadModalOpen(false);
-          setSelectedItem(null);
-        }}
-        onUpload={handleUploadImage}
-        title={`อัปโหลดรูปภาพสำหรับ ${selectedItem?.vehicleCode || "รายการ"}`}
-        description="เลือกรูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้"
-        enableAIDetection={true}
-      />
+      {/* Images Modal for viewing original and annotated images */}
+      {isImagesModalOpen && selectedSession && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  รูปภาพการนับ
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  รถหมายเลข: {selectedSession?.vehicleCode || "ไม่ทราบ"} •
+                  วันที่: {selectedSession?.datetime || "ไม่ทราบ"}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsImagesModalOpen(false);
+                  setSelectedSession(null);
+                }}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              {/* Loading State */}
+              {(isLoadingSackRows || isLoadingBoxRows) && (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  <span className="ml-3 text-gray-600">กำลังโหลดรูปภาพ...</span>
+                </div>
+              )}
+
+              {/* Content when loaded */}
+              {!(isLoadingSackRows || isLoadingBoxRows) && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Original Images Section */}
+                    <div className="bg-gray-50 rounded-xl p-5">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <ImageIcon className="w-5 h-5 text-blue-600" />
+                        รูปภาพต้นฉบับ
+                      </h3>
+                      <div className="space-y-4">
+                        {(type === "bags" ? sackRows || [] : boxRows || [])?.map(
+                          (row: any, index: number) => (
+                            <div
+                              key={row.id || index}
+                              className="bg-white rounded-lg p-4 border border-gray-200"
+                            >
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <p className="font-medium text-gray-800">
+                                    แถวที่ {row.rowNumber}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    {type === "bags" &&
+                                      `น้ำหนัก: ${
+                                        row.weightType || "ไม่ระบุ"
+                                      } • `}
+                                    จำนวน: {row.finalCount || 0}
+                                  </p>
+                                </div>
+                                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+                                  ต้นฉบับ
+                                </span>
+                              </div>
+                              {getOriginalImageUrl(row) ? (
+                                <div className="relative rounded-lg overflow-hidden border border-gray-300">
+                                  <img
+                                    src={getOriginalImageUrl(row)}
+                                    alt={`Original image row ${row.rowNumber}`}
+                                    className="w-full h-48 object-contain bg-gray-100"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg border border-gray-300">
+                                  <div className="text-center">
+                                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                    <p className="text-gray-500 text-sm">
+                                      ไม่มีรูปภาพต้นฉบับ
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Annotated Images Section */}
+                    <div className="bg-gray-50 rounded-xl p-5">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <ImageIcon className="w-5 h-5 text-green-600" />
+                        รูปภาพที่วิเคราะห์แล้ว
+                      </h3>
+                      <div className="space-y-4">
+                        {(type === "bags" ? sackRows || [] : boxRows || [])?.map(
+                          (row: any, index: number) => (
+                            <div
+                              key={row.id || index}
+                              className="bg-white rounded-lg p-4 border border-gray-200"
+                            >
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <p className="font-medium text-gray-800">
+                                    แถวที่ {row.rowNumber}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    {type === "bags" &&
+                                      `น้ำหนัก: ${
+                                        row.weightType || "ไม่ระบุ"
+                                      } • `}
+                                    จำนวน: {row.finalCount || 0}
+                                  </p>
+                                </div>
+                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
+                                  วิเคราะห์แล้ว
+                                </span>
+                              </div>
+                              {getAnnotatedImageUrl(row) ? (
+                                <div className="relative rounded-lg overflow-hidden border border-gray-300">
+                                  <img
+                                    src={getAnnotatedImageUrl(row)}
+                                    alt={`Annotated image row ${row.rowNumber}`}
+                                    className="w-full h-48 object-contain bg-gray-100"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg border border-gray-300">
+                                  <div className="text-center">
+                                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                    <p className="text-gray-500 text-sm">
+                                      ไม่มีรูปภาพที่วิเคราะห์แล้ว
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Empty State */}
+                  {((type === "bags" && (!sackRows || sackRows?.length === 0)) ||
+                    (type === "box" &&
+                      (!boxRows || boxRows?.length === 0))) && (
+                    <div className="text-center py-12">
+                      <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">
+                        ไม่มีข้อมูลรูปภาพสำหรับเซสชันนี้
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setIsImagesModalOpen(false);
+                    setSelectedSession(null);
+                  }}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  ปิด
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

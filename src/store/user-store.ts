@@ -161,27 +161,6 @@ export const checkAuthStatus = async (): Promise<{
     return { isAuthenticated: false, user: null };
   }
 
-  // Development mock - return admin user for testing
-  if (process.env.NODE_ENV === "development") {
-    console.log("🔧 Development mock: Returning admin user for testing");
-    const mockUser: StoreUser = {
-      id: "b92d20d0-77c6-4c31-840f-4aeda8086232",
-      email: "peel2aput@gmail.com",
-      username: "ofly153351",
-      firstName: "phiraphat",
-      lastName: "klintan",
-      title: "นาย",
-      phone: "0938511307",
-      employeeCode: "aws1150",
-      role: "admin", // Force admin role for development
-    };
-
-    const { setUser } = useUserStore.getState();
-    setUser(mockUser);
-
-    return { isAuthenticated: true, user: mockUser };
-  }
-
   try {
     const response = await fetch("http://localhost:3001/api/users/me", {
       credentials: "include",
@@ -263,29 +242,6 @@ export const initializeUserFromToken = async (): Promise<StoreUser | null> => {
   }
 
   console.log("🔄 initializeUserFromToken: Starting...");
-
-  // Development mock - return admin user immediately in development
-  if (process.env.NODE_ENV === "development") {
-    console.log(
-      "🔧 Development mock: initializeUserFromToken returning admin user"
-    );
-    const mockUser: StoreUser = {
-      id: "b92d20d0-77c6-4c31-840f-4aeda8086232",
-      email: "peel2aput@gmail.com",
-      username: "ofly153351",
-      firstName: "phiraphat",
-      lastName: "klintan",
-      title: "นาย",
-      phone: "0938511307",
-      employeeCode: "aws1150",
-      role: "admin",
-    };
-
-    const { setUser } = useUserStore.getState();
-    setUser(mockUser);
-
-    return mockUser;
-  }
 
   // Use the new checkAuthStatus helper
   const authResult = await checkAuthStatus();

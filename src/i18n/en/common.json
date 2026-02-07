@@ -38,6 +38,15 @@
   "usernameError": "Username must be at least 6 characters and contain only English letters or numbers",
   "passwordError": "Password must be at least 6 characters and contain only English letters or numbers",
   "loginFailed": "Login failed. Please try again.",
+  "register": {
+    "title": "Create Account",
+    "subtitle": "Sign up to get started",
+    "createAccount": "Create Account",
+    "creatingAccount": "Creating account...",
+    "confirmPassword": "Confirm Password",
+    "alreadyHaveAccount": "Already have an account?",
+    "successToast": "Registration successful"
+  },
   "home": {
     "title": "Smart Sugar Sack Counting System",
     "description": "Enhance inventory inspection efficiency with AI technology",
@@ -129,6 +138,12 @@
       "boxes": "Count Boxes",
       "notSelected": "Not selected"
     },
+    "startHeader": "Counting Setup",
+    "startDescription": "Choose your tab, vehicle, and sugar type before starting.",
+    "startCounting": "Start Counting",
+    "startCountingHint": "Click to create a counting session and begin.",
+    "startCountingButton": "Start",
+    "startCountingTooltip": "Creates a counting session and unlocks the form",
     "selectVehicle": "Select transportation vehicle",
     "selectSugarType": "Select sugar type",
     "noVehiclesAvailable": "No available transportation vehicles",

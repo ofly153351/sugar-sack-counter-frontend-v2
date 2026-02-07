@@ -1,9 +1,18 @@
 import Link from "next/link";
 import { LogIn } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { i18nSettings, Locale } from "@/i18n/settings";
 
-export default async function HomePage() {
-  const t = await getTranslations("home");
+export default async function HomePage({
+  params,
+}: {
+  params?: { locale?: Locale };
+}) {
+  const locale =
+    params?.locale && i18nSettings.locales.includes(params.locale)
+      ? params.locale
+      : i18nSettings.defaultLocale;
+  const t = await getTranslations({ locale, namespace: "home" });
 
   return (
     <div className="min-h-screen flex flex-col font-sans antialiased">
@@ -25,7 +34,7 @@ export default async function HomePage() {
           </p>
 
           <Link
-            href="/count"
+            href={`/${locale}/count`}
             className={`flex items-center gap-3 text-white font-bold px-12 py-5 rounded-full shadow-2xl
               bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700
               hover:from-blue-400 hover:via-blue-500 hover:to-blue-600

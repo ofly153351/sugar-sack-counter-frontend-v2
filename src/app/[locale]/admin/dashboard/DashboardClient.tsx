@@ -92,7 +92,7 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
       {isAuthenticated && user ? (
         <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl shadow-lg border border-gray-100 mb-6">
           <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-mp-green-500 to-blue-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-mp-green-700 to-blue-700 flex items-center justify-center">
               <span className="text-white text-sm font-bold">U</span>
             </div>
             {dict.dashboard.userInfo}
@@ -140,9 +140,7 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
               <p className="text-yellow-800 font-medium">
                 {dict.dashboard.noUserInfo}
               </p>
-              <p className="text-yellow-600 text-sm mt-1">
-                Please 
-              </p>
+              <p className="text-yellow-600 text-sm mt-1">Please</p>
             </div>
           </div>
         </div>
@@ -150,7 +148,7 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
 
       <div className="bg-gradient-to-br from-mp-green-50 to-blue-50 p-6 rounded-2xl shadow-lg border border-mp-green-200">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-mp-green-500 to-blue-500 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-mp-green-700 to-blue-700 flex items-center justify-center">
             <span className="text-white text-lg">🎯</span>
           </div>
           <div>

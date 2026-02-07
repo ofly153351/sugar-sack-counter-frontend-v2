@@ -5,11 +5,9 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { Locale } from "@/i18n/settings";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { SugarTypeModal } from "@/components/sugar-types/SugarTypeModal";
-import {
-  createSugarType,
-  uploadCountingSessionImage,
-} from "@/utils/count/count-api";
+import { createSugarType } from "@/utils/count/count-api";
 import Swal from "sweetalert2";
 import { useCountingSessionsByType } from "@/hooks/useCount";
 import { API_CONFIG } from "@/utils/config";
@@ -43,15 +41,14 @@ const getUserDisplayName = (user?: {
 };
 
 export default function Page({ params }: PageProps) {
+  const router = useRouter();
   const [dict, setDict] = useState<Awaited<
     ReturnType<typeof getDictionary>
   > | null>(null);
+  const [currentLocale, setCurrentLocale] = useState<Locale>("th");
   const [searchCode, setSearchCode] = useState("");
   const [isSugarTypeModalOpen, setIsSugarTypeModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [uploadingSessionId, setUploadingSessionId] = useState<
-    string | number | null
-  >(null);
 
   // Fetch counting sessions for boxes
   const {
@@ -78,6 +75,7 @@ export default function Page({ params }: PageProps) {
       const { locale } = await params;
       const d = await getDictionary(locale);
       setDict(d);
+      setCurrentLocale(locale);
     }
     load();
   }, [params]);
@@ -104,6 +102,7 @@ export default function Page({ params }: PageProps) {
         sugarType: session.sugarType?.name || "ไม่ทราบชนิดน้ำตาล",
         amount: `${session.totalCount || 0} กล่อง`,
         id: session.id, // Add session ID for image upload
+        rawSession: session,
       };
     }) || [];
 
@@ -120,108 +119,37 @@ export default function Page({ params }: PageProps) {
     error: error ? error.message : null,
   });
 
-  // Handle image upload for a session
-  const handleUploadImage = async (item: Record<string, any>) => {
-    try {
-      console.log("📤 Handling image upload for item:", item);
-
-      // Extract session ID from the item
-      const sessionId = item.id || item.sessionId;
-
-      if (!sessionId) {
-        Swal.fire({
-          title: "ข้อผิดพลาด",
-          text: "ไม่พบรหัสเซสชันสำหรับอัปโหลดรูปภาพ",
-          icon: "error",
-          confirmButtonText: "ตกลง",
-        });
-        return;
-      }
-
-      setUploadingSessionId(sessionId);
-
-      // Note: The actual file upload will be handled by the Table component
-      // This function just prepares the session ID
-      return { sessionId };
-    } catch (error: any) {
-      console.error("❌ Error in handleUploadImage:", error);
-      Swal.fire({
-        title: "เกิดข้อผิดพลาด",
-        text: error.message || "ไม่สามารถเตรียมอัปโหลดรูปภาพได้",
-        icon: "error",
-        confirmButtonText: "ตกลง",
-      });
-    }
-  };
-
-  // Function to actually upload the image (called from Table component)
-  const handleImageUpload = async (data: {
-    file: File;
-    description?: string;
-    sessionId?: string | number;
-  }) => {
-    try {
-      const sessionId = data.sessionId || uploadingSessionId;
-      if (!sessionId) {
-        throw new Error("ไม่พบรหัสเซสชันสำหรับอัปโหลด");
-      }
-
-      Swal.fire({
-        title: "กำลังอัปโหลด...",
-        text: "กรุณารอสักครู่",
-        icon: "info",
-        showConfirmButton: false,
-        allowOutsideClick: false,
-      });
-
-      const result = await uploadCountingSessionImage(
-        sessionId,
-        data.file,
-        data.description
-      );
-
-      Swal.fire({
-        title: "สำเร็จ!",
-        text: result.message || "อัปโหลดรูปภาพเรียบร้อยแล้ว",
-        icon: "success",
-        confirmButtonText: "ตกลง",
-      });
-
-      return result;
-    } catch (error: any) {
-      Swal.fire({
-        title: "เกิดข้อผิดพลาด",
-        text: error.message || "ไม่สามารถอัปโหลดรูปภาพได้",
-        icon: "error",
-        confirmButtonText: "ตกลง",
-      });
-      throw error;
-    }
-  };
-
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">
           {dict.dashboard.sidebar.SugarBoxsInfo}
         </h1>
-        <button
-          onClick={() => setIsSugarTypeModalOpen(true)}
-          disabled={isCreating}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isCreating ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              {dict.count.addSugarType || "กำลังเพิ่ม..."}
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4" />
-              {dict.count.addSugarType || "เพิ่มชนิดน้ำตาล"}
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push(`/${currentLocale}/count?tab=boxes`)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            เริ่มนับกล่อง
+          </button>
+          <button
+            onClick={() => setIsSugarTypeModalOpen(true)}
+            disabled={isCreating}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isCreating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                {dict.count.addSugarType || "กำลังเพิ่ม..."}
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                {dict.count.addSugarType || "เพิ่มชนิดน้ำตาล"}
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* 🔍 ตัวกรองรหัสรถ */}
@@ -280,11 +208,7 @@ export default function Page({ params }: PageProps) {
               <p className="text-gray-500">ไม่พบข้อมูลการนับกล่อง</p>
             </div>
           ) : (
-            <Table
-              type="box"
-              data={filteredData}
-              onUploadImage={handleUploadImage}
-            />
+            <Table type="box" data={filteredData} />
           )}
         </>
       )}

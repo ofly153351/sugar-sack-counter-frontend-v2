@@ -5,6 +5,7 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { Locale } from "@/i18n/settings";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { SugarTypeModal } from "@/components/sugar-types/SugarTypeModal";
 import { createSugarType } from "@/utils/count/count-api";
 import Swal from "sweetalert2";
@@ -40,9 +41,11 @@ const getUserDisplayName = (user?: {
 };
 
 export default function Page({ params }: PageProps) {
+  const router = useRouter();
   const [dict, setDict] = useState<Awaited<
     ReturnType<typeof getDictionary>
   > | null>(null);
+  const [currentLocale, setCurrentLocale] = useState<Locale>("th");
   const [searchCode, setSearchCode] = useState("");
   const [isSugarTypeModalOpen, setIsSugarTypeModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -65,6 +68,21 @@ export default function Page({ params }: PageProps) {
       endpoint: `/counting-sessions/type/sack`,
       fullURL: `${API_CONFIG.BASE_URL}/counting-sessions/type/sack`,
     });
+
+    // Log first session details to check structure
+    if (countingSessions && countingSessions.length > 0) {
+      console.log("🔍 [DEBUG] First session structure:", {
+        id: countingSessions[0].id,
+        sessionType: countingSessions[0].sessionType,
+        hasSessionType: "sessionType" in countingSessions[0],
+        keys: Object.keys(countingSessions[0]),
+        sackSession: countingSessions[0].sackSession,
+        hasSackSession: !!countingSessions[0].sackSession,
+        sackSessionKeys: countingSessions[0].sackSession
+          ? Object.keys(countingSessions[0].sackSession)
+          : [],
+      });
+    }
   }, [isLoading, error, countingSessions]);
 
   useEffect(() => {
@@ -72,6 +90,7 @@ export default function Page({ params }: PageProps) {
       const { locale } = await params;
       const d = await getDictionary(locale);
       setDict(d);
+      setCurrentLocale(locale);
     }
     load();
   }, [params]);
@@ -83,20 +102,44 @@ export default function Page({ params }: PageProps) {
     countingSessions?.map((session, index) => {
       console.log(`🔍 [DEBUG] Session ${index}:`, {
         id: session.id,
+        sessionType: session.sessionType,
         vehicle: session.vehicle,
         countingDate: session.countingDate,
         user: session.user,
         sugarType: session.sugarType,
         totalCount: session.totalCount,
+        sackSession: session.sackSession,
+        sackRows: session.sackSession?.sackRows,
+        sackRowsCount: session.sackSession?.sackRows?.length,
+        hasSackRows: !!session.sackSession?.sackRows?.length,
+        sackRowsIsArray: Array.isArray(session.sackSession?.sackRows),
+        sackRowsType: typeof session.sackSession?.sackRows,
+      });
+
+      console.log(`🔍 [DEBUG] Session ${index} sackRows structure:`, {
+        hasSackSession: !!session.sackSession,
+        sackSessionId: session.sackSession?.id,
+        hasSackRows: !!session.sackSession?.sackRows,
+        sackRowsLength: session.sackSession?.sackRows?.length,
+        sackRowsIsArray: Array.isArray(session.sackSession?.sackRows),
+        sackRowsType: typeof session.sackSession?.sackRows,
+        sackRows: session.sackSession?.sackRows,
       });
 
       return {
+        id: session.id,
+        rawSession: session,
         no: index + 1,
         vehicleCode: session.vehicle?.vehicleCode || "ไม่ทราบรหัส",
         datetime: formatDate(session.countingDate),
         createdBy: getUserDisplayName(session.user),
         sugarType: session.sugarType?.name || "ไม่ทราบชนิดน้ำตาล",
         amount: `${session.totalCount || 0} กระสอบ`,
+        hasSackRows: !!session.sackSession?.sackRows?.length,
+        sackRowsCount: session.sackSession?.sackRows?.length || 0,
+        sackRows: session.sackSession?.sackRows,
+        sackSession: session.sackSession,
+        sessionType: session.sessionType || "sack",
       };
     }) || [];
 
@@ -118,23 +161,31 @@ export default function Page({ params }: PageProps) {
         <h1 className="text-2xl font-bold">
           {dict.dashboard.sidebar.SugarBagsInfo}
         </h1>
-        <button
-          onClick={() => setIsSugarTypeModalOpen(true)}
-          disabled={isCreating}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isCreating ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              {dict.count.addSugarType || "กำลังเพิ่ม..."}
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4" />
-              {dict.count.addSugarType || "เพิ่มชนิดน้ำตาล"}
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push(`/${currentLocale}/count?tab=bags`)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            เริ่มนับกระสอบ
+          </button>
+          <button
+            onClick={() => setIsSugarTypeModalOpen(true)}
+            disabled={isCreating}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isCreating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                {dict.count.addSugarType || "กำลังเพิ่ม..."}
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                {dict.count.addSugarType || "เพิ่มชนิดน้ำตาล"}
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* 🔍 ตัวกรองรหัสรถ */}

@@ -102,41 +102,9 @@ async function fetchUserData(cookieHeader: string, retries = 2): Promise<any> {
 
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const pathSegments = pathname.split("/").filter(Boolean);
+  const locale = pathname.split("/")[1] || i18nSettings.defaultLocale;
 
-  // Check if the first segment is a valid locale
-  const firstSegment = pathSegments[0];
-  const isValidLocale =
-    firstSegment && i18nSettings.locales.includes(firstSegment as any);
-
-  // Handle paths without locale prefix
-  if (!isValidLocale) {
-    const defaultLocale = i18nSettings.defaultLocale;
-
-    // Skip redirect for API and static files
-    if (
-      pathname.startsWith("/_next") ||
-      pathname.startsWith("/api") ||
-      pathname.startsWith("/static") ||
-      pathname.startsWith("/favicon.ico") ||
-      pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp|css|js)$/) ||
-      pathname === "/Logistic.png" ||
-      pathname.startsWith("/images/")
-    ) {
-      return NextResponse.next();
-    }
-
-    // Redirect to default locale for all other paths
-    const newPathname = `/${defaultLocale}${pathname === "/" ? "" : pathname}`;
-    console.log(
-      `🔄 Middleware: Adding locale prefix - redirecting ${pathname} to ${newPathname}`
-    );
-    return NextResponse.redirect(new URL(newPathname, request.url));
-  }
-
-  const locale = firstSegment || i18nSettings.defaultLocale;
-
-  // Skip middleware for static files and API routes (after locale validation)
+  // Skip middleware for static files and API routes
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -157,13 +125,23 @@ export default async function middleware(request: NextRequest) {
     `🔍 Middleware: Path: ${pathname}, Has token: ${!!token}, Has refresh token: ${!!refreshToken}`
   );
 
-  // Handle login page - redirect if already authenticated
+  // Handle auth pages - redirect if already authenticated (role-based)
   const fullPath = pathname;
-  if (fullPath.includes("/login") && token) {
+  if ((fullPath.includes("/login") || fullPath.includes("/register")) && token) {
     console.log(
-      "🔍 Middleware: User has token, redirecting from login to home"
+      "🔍 Middleware: User has token, checking role for auth page redirect"
     );
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+
+    try {
+      const cookieHeader = request.headers.get("cookie") || "";
+      const userData = await fetchUserData(cookieHeader);
+      const userRole = userData?.role || userData?.user?.role || userData?.position;
+      const redirectTo = userRole === "admin" ? `/${locale}/admin` : `/${locale}/home`;
+      return NextResponse.redirect(new URL(redirectTo, request.url));
+    } catch (error) {
+      console.error("❌ Middleware: Auth page role check failed:", error);
+      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    }
   }
 
   // Handle admin routes - require admin role

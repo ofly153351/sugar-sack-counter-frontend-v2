@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Locale } from "@/i18n/settings";
 import { getDictionary } from "@/i18n/dictionaries";
+import Swal from "sweetalert2";
 import {
   useRegisterForm,
   InputField,
@@ -53,15 +54,29 @@ export default function RegisterPage() {
     username: "Username",
     password: "Password",
     required: "*",
-    forgotPassword: "Forgot your password?",
-    signingIn: "Signing in...",
-    dontHaveAccount: "Don't have an account?",
     signUp: "Sign up",
-    usernameError:
-      "Username must be at least 6 characters and contain only English letters or numbers",
-    passwordError:
-      "Password must be at least 6 characters and contain only English letters or numbers",
-    loginFailed: "Login failed. Please try again.",
+    nav: {
+      employeeCode: "Employee Code",
+      firstName: "First Name",
+      lastName: "Last Name",
+      email: "Email",
+      phone: "Phone Number",
+      username: "Username",
+      title: "Title",
+      employeeCodePlaceholder: "Enter employee code",
+      firstNamePlaceholder: "Enter first name",
+      lastNamePlaceholder: "Enter last name",
+      emailPlaceholder: "Enter email",
+      phonePlaceholder: "Enter phone number",
+    },
+    register: {
+      title: "Create Account",
+      subtitle: "Sign up to get started",
+      createAccount: "Create Account",
+      creatingAccount: "Creating account...",
+      confirmPassword: "Confirm Password",
+      alreadyHaveAccount: "Already have an account?",
+    },
   };
 
   // Registration handler
@@ -70,8 +85,16 @@ export default function RegisterPage() {
       const result = await register(formData);
 
       if (result.success) {
-        const redirectTo = getRegistrationSuccessUrl("/");
-        router.push(redirectTo);
+        await Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: t.register.successToast,
+          showConfirmButton: false,
+          timer: 1500,
+          timerProgressBar: true,
+        });
+        router.push(`/${locale}/login`);
       } else {
         // Handle registration failure
         console.error("Registration failed:", result.message);
@@ -84,8 +107,10 @@ export default function RegisterPage() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
-        <p className="mt-2 text-gray-600">Sign up to get started</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {t.register.title}
+        </h1>
+        <p className="mt-2 text-gray-600">{t.register.subtitle}</p>
       </div>
 
       <form
@@ -93,30 +118,30 @@ export default function RegisterPage() {
         className="space-y-4"
       >
         <InputField
-          label="Username"
+          label={t.username}
           name="username"
           value={formState.formData.username}
           onChange={handleInputChange}
           error={formState.errors.username}
-          placeholder="Enter username"
+          placeholder={t.username}
         />
 
         <InputField
-          label="รหัสพนักงาน"
+          label={t.nav.employeeCode}
           name="employeecode"
           value={formState.formData.employeecode}
           onChange={handleInputChange}
           error={formState.errors.employeecode}
-          placeholder="ระบุรหัสพนักงาน"
+          placeholder={t.nav.employeeCodePlaceholder}
         />
 
         <div>
           <div className="grid grid-cols-2 gap-4 mb-1">
             <label className="text-sm font-medium text-gray-700">
-              คำนำหน้า <span className="text-red-500">*</span>
+              {t.nav.title} <span className="text-red-500">*</span>
             </label>
             <label className="text-sm font-medium text-gray-700">
-              ชื่อ <span className="text-red-500">*</span>
+              {t.nav.firstName} <span className="text-red-500">*</span>
             </label>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -126,10 +151,14 @@ export default function RegisterPage() {
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">เลือก</option>
-              <option value="นาย">นาย</option>
-              <option value="นางสาว">นางสาว</option>
-              <option value="นาง">นาง</option>
+              <option value="">
+                {locale === "th" ? "เลือก" : "Select"}
+              </option>
+              <option value="นาย">{locale === "th" ? "นาย" : "Mr."}</option>
+              <option value="นางสาว">
+                {locale === "th" ? "นางสาว" : "Ms."}
+              </option>
+              <option value="นาง">{locale === "th" ? "นาง" : "Mrs."}</option>
             </select>
 
             <input
@@ -142,7 +171,7 @@ export default function RegisterPage() {
                   ? "border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:ring-blue-500"
               }`}
-              placeholder="ชื่อ"
+              placeholder={t.nav.firstNamePlaceholder}
             />
           </div>
           {formState.errors.firstName && (
@@ -153,50 +182,50 @@ export default function RegisterPage() {
         </div>
 
         <InputField
-          label="นามสกุล"
+          label={t.nav.lastName}
           name="lastName"
           value={formState.formData.lastName}
           onChange={handleInputChange}
           error={formState.errors.lastName}
-          placeholder="นามสกุล"
+          placeholder={t.nav.lastNamePlaceholder}
         />
 
         <InputField
-          label="เบอร์โทรศัพท์"
+          label={t.nav.phone}
           name="phone"
           value={formState.formData.phone}
           onChange={handleInputChange}
           error={formState.errors.phone}
-          placeholder="เบอร์โทรศัพท์"
+          placeholder={t.nav.phonePlaceholder}
         />
 
         <InputField
-          label="Email"
+          label={t.nav.email}
           name="email"
           value={formState.formData.email}
           onChange={handleInputChange}
           error={formState.errors.email}
-          placeholder="Enter your email"
+          placeholder={t.nav.emailPlaceholder}
         />
 
         <InputField
-          label="Password"
+          label={t.password}
           name="password"
           type="password"
           value={formState.formData.password}
           onChange={handleInputChange}
           error={formState.errors.password}
-          placeholder="Enter password"
+          placeholder={t.password}
         />
 
         <InputField
-          label="Confirm Password"
+          label={t.register.confirmPassword}
           name="confirmPassword"
           type="password"
           value={formState.formData.confirmPassword}
           onChange={handleInputChange}
           error={formState.errors.confirmPassword}
-          placeholder="Confirm password"
+          placeholder={t.register.confirmPassword}
         />
 
         <button
@@ -204,18 +233,20 @@ export default function RegisterPage() {
           disabled={formState.isLoading}
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {formState.isLoading ? "Creating account..." : "Create Account"}
+          {formState.isLoading
+            ? t.register.creatingAccount
+            : t.register.createAccount}
         </button>
       </form>
 
       <div className="text-center">
         <p className="text-sm text-gray-600">
-          Already have an account?{" "}
+          {t.register.alreadyHaveAccount}{" "}
           <Link
-            href="/login"
+            href={`/${locale}/login`}
             className="font-medium text-blue-600 hover:text-blue-500"
           >
-            Sign in
+            {t.signIn}
           </Link>
         </p>
       </div>

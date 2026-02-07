@@ -38,31 +38,32 @@ export default function Nav() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
-
-  const [currentLocale, setCurrentLocale] = useState<string>("th");
+  const [isClient, setIsClient] = useState(false);
 
   // Get user from Zustand store
   const { user: currentUser, clearUser } = useUserStore();
 
-  // Get current locale for display with fallback - computed in useEffect to avoid hydration mismatch
-  useEffect(() => {
-    const getCurrentLocale = () => {
-      // Use params first for consistent server/client rendering
-      if (params?.locale) {
-        const locale = params.locale as string;
-        return locale === "en" || locale === "th" ? locale : "th";
-      }
-
-      // Fallback to pathname parsing
-      const pathSegments = pathname.split("/");
-      if (pathSegments.length < 2) return "th";
-
-      const locale = pathSegments[1];
+  // Compute locale directly to avoid hydration mismatch
+  const getCurrentLocale = () => {
+    // Use params first for consistent server/client rendering
+    if (params?.locale) {
+      const locale = params.locale as string;
       return locale === "en" || locale === "th" ? locale : "th";
-    };
+    }
 
-    setCurrentLocale(getCurrentLocale());
-  }, [params, pathname]);
+    // Fallback to pathname parsing
+    const pathSegments = pathname.split("/");
+    if (pathSegments.length < 2) return "th";
+
+    const locale = pathSegments[1];
+    return locale === "en" || locale === "th" ? locale : "th";
+  };
+
+  const currentLocale = getCurrentLocale();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Load current user data - only load if not on auth pages
   useEffect(() => {
@@ -235,10 +236,13 @@ export default function Nav() {
           </div>
 
           {/* Show user dropdown only if not on auth pages */}
-          {!isAuthPage && (
-            <Dropdown placement="bottom-end" showArrow>
+          {!isAuthPage && isClient && (
+            <Dropdown placement="bottom-end" showArrow id="user-dropdown">
               <DropdownTrigger>
-                <button className="flex items-center gap-2 focus:outline-none">
+                <button
+                  id="user-dropdown-trigger"
+                  className="flex items-center gap-2 focus:outline-none"
+                >
                   <div className="w-10 h-10 rounded-full border-2 border-blue-500 bg-blue-100 flex items-center justify-center transition-transform hover:scale-105">
                     <User className="w-6 h-6 text-blue-600" />
                   </div>
@@ -331,6 +335,7 @@ export default function Nav() {
 
       {/* Edit Profile Modal */}
       <Modal
+        id="edit-profile-modal"
         isOpen={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
         placement="center"

@@ -7,7 +7,7 @@ import {
   FileText,
   Forklift,
   LayoutDashboard,
-  UserCog
+  UserCog,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,37 +19,38 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ dict }: AdminSidebarProps) {
   const pathname = usePathname();
+  const locale = pathname.split("/")[1] || "th";
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
     {
       key: "dashboard",
       label: dict.dashboard.sidebar.dashboard,
-      href: "/admin/dashboard",
+      href: `/${locale}/admin/dashboard`,
       icon: LayoutDashboard,
     },
     {
       key: "SugarBagsInfo",
       label: dict.dashboard.sidebar.SugarBagsInfo,
-      href: "/admin/SugarBagsInfo",
+      href: `/${locale}/admin/SugarBagsInfo`,
       icon: FileText,
     },
     {
       key: "SugarBoxsInfo",
       label: dict.dashboard.sidebar.SugarBoxsInfo,
-      href: "/admin/SugarBoxsInfo",
+      href: `/${locale}/admin/SugarBoxsInfo`,
       icon: FileText,
     },
     {
       key: "VehicleInfo",
       label: dict.dashboard.sidebar.VehicleInfo,
-      href: "/admin/VehicleInfo",
+      href: `/${locale}/admin/VehicleInfo`,
       icon: Forklift,
     },
     {
       key: "Users",
       label: dict.dashboard.sidebar.Users,
-      href: "/admin/Users",
+      href: `/${locale}/admin/Users`,
       icon: UserCog,
     },
   ];
@@ -75,14 +76,18 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
         title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         <ChevronLeft
-          className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${
+            isCollapsed ? "rotate-180" : ""
+          }`}
         />
       </button>
 
       {/* Navigation */}
       <nav className={`p-3 md:p-4 ${isCollapsed ? "px-2 md:px-3" : ""}`}>
         <div
-          className={`space-y-1 md:space-y-2 ${isCollapsed ? "space-y-2 md:space-y-3" : ""}`}
+          className={`space-y-1 md:space-y-2 ${
+            isCollapsed ? "space-y-2 md:space-y-3" : ""
+          }`}
         >
           {menuItems.map((item) => {
             const IconComponent = item.icon;
@@ -98,7 +103,7 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
                     : "px-3 py-3 md:px-4 md:py-4"
                 } ${
                   active
-                    ? "bg-gradient-to-r from-mp-green-500 to-blue-500 text-white shadow-lg shadow-mp-green-200/50"
+                    ? "bg-gradient-to-r from-mp-green-700 to-blue-700 text-white shadow-lg shadow-mp-green-300/50"
                     : "text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-md border border-transparent hover:border-gray-200"
                 }`}
                 title={isCollapsed ? item.label : undefined}
@@ -147,7 +152,11 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
                     active
                       ? "text-white"
                       : "text-gray-400 group-hover:text-gray-600"
-                  } ${active ? "translate-x-0" : "-translate-x-1 group-hover:translate-x-0"} ${
+                  } ${
+                    active
+                      ? "translate-x-0"
+                      : "-translate-x-1 group-hover:translate-x-0"
+                  } ${
                     isCollapsed ? "opacity-0 scale-0" : "opacity-100 scale-100"
                   }`}
                 />

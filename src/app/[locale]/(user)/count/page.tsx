@@ -7,6 +7,7 @@ import Tabs from "@/components/count/Tabs";
 import { Plus, Loader2, Bug } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCountManager } from "@/hooks/useCount";
 import Swal from "sweetalert2";
 import type {
@@ -18,12 +19,14 @@ import type {
 // CountPage
 export default function CountPage() {
   const t = useTranslations("count");
+  const searchParams = useSearchParams();
   const [currentTab, setCurrentTab] = useState<"bags" | "boxes">("bags");
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>("");
   const [selectedSugarTypeId, setSelectedSugarTypeId] = useState<string>("");
   const [rows, setRows] = useState<number[]>([1]);
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isSessionStarted, setIsSessionStarted] = useState(false);
   const [sackRowsData, setSackRowsData] = useState<{
     [key: number]: SackRowFormData;
   }>({});
@@ -43,6 +46,14 @@ export default function CountPage() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Initialize tab from query param
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "bags" || tabParam === "boxes") {
+      setCurrentTab(tabParam);
+    }
+  }, [searchParams]);
 
   // Initialize selected values only once when data is loaded
   useEffect(() => {
@@ -80,6 +91,9 @@ export default function CountPage() {
       setCountingSessionId("");
       setTempSessionId("");
     }
+    if (isClient) {
+      setIsSessionStarted(false);
+    }
   }, [isClient, currentTab]);
 
   // Create counting session when vehicle and sugar type are selected
@@ -87,6 +101,7 @@ export default function CountPage() {
     const createCountingSessionIfReady = async () => {
       if (
         isClient &&
+        isSessionStarted &&
         selectedVehicleId &&
         selectedSugarTypeId &&
         countManager.currentUser &&
@@ -158,6 +173,7 @@ export default function CountPage() {
     createCountingSessionIfReady();
   }, [
     isClient,
+    isSessionStarted,
     selectedVehicleId,
     selectedSugarTypeId,
     countManager.currentUser,
@@ -479,200 +495,240 @@ export default function CountPage() {
   return (
     <div className="min-h-screen flex justify-center p-4 bg-gray-100">
       <div className="w-full max-w-3xl bg-white p-6 sm:p-8 rounded-2xl shadow-xl">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8 text-gray-800">
-          {t("title")}
-        </h1>
-
-        {/* Tabs */}
-        <div className="mb-6">
-          <Tabs currentTab={currentTab} setCurrentTab={setCurrentTab} />
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800">
+            {t("title")}
+          </h1>
+          <p className="text-center text-sm text-gray-500 mt-2">
+            {t("startHeader", { defaultValue: "ตั้งค่าการนับ" })} •{" "}
+            {t("startDescription", {
+              defaultValue: "เลือกข้อมูลให้ครบก่อนเริ่มนับ",
+            })}
+          </p>
         </div>
 
-        {/* รถขนส่ง + ประเภทน้ำตาล */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t("transportation")}
-            </label>
-            <CustomDropdown
-              options={countManager.vehicles.map((vehicle) => ({
-                value: vehicle.id?.toString() || "",
-                label: `${vehicle.vehicleCode || ""} - ${
-                  vehicle.licensePlate || ""
-                } (${vehicle.driverName || ""})`,
-              }))}
-              selected={selectedVehicleId}
-              setSelected={setSelectedVehicleId}
-              placeholder={t("selectVehicle", {
-                defaultValue: "เลือกรถขนส่ง",
-              })}
-              disabled={countManager.isLoadingVehicles || !isClient}
-              suppressHydrationWarning={true}
-            />
-            {countManager.vehicles.length === 0 && (
-              <p className="text-sm text-gray-500 mt-1">
-                {t("noVehiclesAvailable", {
-                  defaultValue: "ไม่มีรถขนส่งที่ใช้งานได้",
+        {!isSessionStarted && (
+          <div className="mb-6 flex flex-col items-center text-center gap-3 bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <div>
+              <h2 className="text-lg font-semibold text-blue-900">
+                {t("startCounting", { defaultValue: "เริ่มการนับ" })}
+              </h2>
+              <p className="text-sm text-blue-700 mt-1">
+                {t("startCountingHint", {
+                  defaultValue: "กดปุ่มเพื่อเริ่มสร้างเซสชันการนับ",
                 })}
               </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t("sugarType")}
-            </label>
-            <CustomDropdown
-              options={countManager.sugarTypes.map((sugarType) => ({
-                value: sugarType.id?.toString() || "",
-                label: sugarType.name || "",
-              }))}
-              selected={selectedSugarTypeId}
-              setSelected={setSelectedSugarTypeId}
-              placeholder={t("selectSugarType", {
-                defaultValue: "เลือกประเภทน้ำตาล",
+            </div>
+            <button
+              onClick={() => setIsSessionStarted(true)}
+              title={t("startCountingTooltip", {
+                defaultValue: "สร้างเซสชันและปลดล็อกแบบฟอร์ม",
               })}
-              disabled={countManager.sugarTypes.length === 0 || !isClient}
-              suppressHydrationWarning={true}
-            />
-            {countManager.sugarTypes.length === 0 && (
-              <p className="text-sm text-red-500 mt-1">
-                ⚠️{" "}
-                {t("noSugarTypesAvailable", {
-                  defaultValue: "ไม่มีประเภทน้ำตาล",
-                })}
-              </p>
-            )}
+              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {t("startCountingButton", { defaultValue: "เริ่มนับ" })}
+            </button>
           </div>
-        </div>
+        )}
 
-        {/* Summary Information */}
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="text-lg font-semibold text-blue-800 mb-2">
-            {t("summary.title", { defaultValue: "สรุปข้อมูล" })}
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">
-                {t("summary.vehicle", { defaultValue: "รถขนส่ง" })}:
-              </p>
-              <p className="font-medium">
-                {selectedVehicleId && countManager.vehicles.length > 0
-                  ? countManager.vehicles.find(
-                      (v) => v.id?.toString() === selectedVehicleId
-                    )?.vehicleCode ||
-                    t("summary.notSelected", { defaultValue: "ไม่ได้เลือก" })
-                  : t("summary.notSelected", { defaultValue: "ไม่ได้เลือก" })}
-              </p>
+        {isSessionStarted && (
+          <>
+            {/* Tabs */}
+            <div className="mb-6">
+              <Tabs currentTab={currentTab} setCurrentTab={setCurrentTab} />
             </div>
-            <div>
-              <p className="text-sm text-gray-600">
-                {t("summary.sugarType", { defaultValue: "ประเภทน้ำตาล" })}:
-              </p>
-              <p className="font-medium">
-                {selectedSugarTypeId && countManager.sugarTypes.length > 0
-                  ? (() => {
-                      const sugarType = countManager.sugarTypes.find(
-                        (s) => s.id?.toString() === selectedSugarTypeId
-                      );
-                      if (sugarType) {
-                        return sugarType.name || "";
-                      }
-                      return t("summary.notSelected", {
-                        defaultValue: "ไม่ได้เลือก",
-                      });
-                    })()
-                  : t("summary.notSelected", { defaultValue: "ไม่ได้เลือก" })}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">
-                {t("summary.rowCount", { defaultValue: "จำนวนแถว" })}:
-              </p>
-              <p className="font-medium">
-                {rows.length} {t("summary.rows", { defaultValue: "แถว" })}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">
-                {t("summary.sessionType", { defaultValue: "ประเภทการนับ" })}:
-              </p>
-              <p className="font-medium">
-                {currentTab === "bags"
-                  ? t("summary.bags", { defaultValue: "นับกระสอบ" })
-                  : t("summary.boxes", { defaultValue: "นับกล่อง" })}
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* รายการแถว */}
-        <div className="space-y-4">
-          {rows.map((rowNumber) =>
-            currentTab === "bags" ? (
-              <BagRow
-                key={rowNumber}
-                rowNumber={rowNumber}
-                onDelete={() => deleteRow(rowNumber)}
-                onDataChange={(data) =>
-                  handleSackRowDataChange(rowNumber, data)
+            {/* รถขนส่ง + ประเภทน้ำตาล */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("transportation")}
+                </label>
+                <CustomDropdown
+                  options={countManager.vehicles.map((vehicle) => ({
+                    value: vehicle.id?.toString() || "",
+                    label: `${vehicle.vehicleCode || ""} - ${
+                      vehicle.licensePlate || ""
+                    } (${vehicle.driverName || ""})`,
+                  }))}
+                  selected={selectedVehicleId}
+                  setSelected={setSelectedVehicleId}
+                  placeholder={t("selectVehicle", {
+                    defaultValue: "เลือกรถขนส่ง",
+                  })}
+                  disabled={countManager.isLoadingVehicles || !isClient}
+                  suppressHydrationWarning={true}
+                />
+                {countManager.vehicles.length === 0 && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {t("noVehiclesAvailable", {
+                      defaultValue: "ไม่มีรถขนส่งที่ใช้งานได้",
+                    })}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("sugarType")}
+                </label>
+                <CustomDropdown
+                  options={countManager.sugarTypes.map((sugarType) => ({
+                    value: sugarType.id?.toString() || "",
+                    label: sugarType.name || "",
+                  }))}
+                  selected={selectedSugarTypeId}
+                  setSelected={setSelectedSugarTypeId}
+                  placeholder={t("selectSugarType", {
+                    defaultValue: "เลือกประเภทน้ำตาล",
+                  })}
+                  disabled={countManager.sugarTypes.length === 0 || !isClient}
+                  suppressHydrationWarning={true}
+                />
+                {countManager.sugarTypes.length === 0 && (
+                  <p className="text-sm text-red-500 mt-1">
+                    ⚠️{" "}
+                    {t("noSugarTypesAvailable", {
+                      defaultValue: "ไม่มีประเภทน้ำตาล",
+                    })}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Summary Information */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                {t("summary.title", { defaultValue: "สรุปข้อมูล" })}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {t("summary.vehicle", { defaultValue: "รถขนส่ง" })}:
+                  </p>
+                  <p className="font-medium">
+                    {selectedVehicleId && countManager.vehicles.length > 0
+                      ? countManager.vehicles.find(
+                          (v) => v.id?.toString() === selectedVehicleId
+                        )?.vehicleCode ||
+                        t("summary.notSelected", { defaultValue: "ไม่ได้เลือก" })
+                      : t("summary.notSelected", { defaultValue: "ไม่ได้เลือก" })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {t("summary.sugarType", { defaultValue: "ประเภทน้ำตาล" })}:
+                  </p>
+                  <p className="font-medium">
+                    {selectedSugarTypeId && countManager.sugarTypes.length > 0
+                      ? (() => {
+                          const sugarType = countManager.sugarTypes.find(
+                            (s) => s.id?.toString() === selectedSugarTypeId
+                          );
+                          if (sugarType) {
+                            return sugarType.name || "";
+                          }
+                          return t("summary.notSelected", {
+                            defaultValue: "ไม่ได้เลือก",
+                          });
+                        })()
+                      : t("summary.notSelected", { defaultValue: "ไม่ได้เลือก" })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {t("summary.rowCount", { defaultValue: "จำนวนแถว" })}:
+                  </p>
+                  <p className="font-medium">
+                    {rows.length} {t("summary.rows", { defaultValue: "แถว" })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {t("summary.sessionType", { defaultValue: "ประเภทการนับ" })}:
+                  </p>
+                  <p className="font-medium">
+                    {currentTab === "bags"
+                      ? t("summary.bags", { defaultValue: "นับกระสอบ" })
+                      : t("summary.boxes", { defaultValue: "นับกล่อง" })}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* รายการแถว */}
+            <div className="space-y-4">
+              {rows.map((rowNumber) =>
+                currentTab === "bags" ? (
+                  <BagRow
+                    key={rowNumber}
+                    rowNumber={rowNumber}
+                    onDelete={() => deleteRow(rowNumber)}
+                    onDataChange={(data) =>
+                      handleSackRowDataChange(rowNumber, data)
+                    }
+                    vehicleId={selectedVehicleId}
+                    sugarTypeId={selectedSugarTypeId}
+                    countingSessionId={getSessionIdForAI()}
+                    resetTrigger={resetTrigger}
+                    disabled={!selectedVehicleId || !selectedSugarTypeId}
+                  />
+                ) : (
+                  <BoxRow
+                    key={rowNumber}
+                    rowNumber={rowNumber}
+                    onDelete={() => deleteRow(rowNumber)}
+                    onDataChange={(data) =>
+                      handleBoxRowDataChange(rowNumber, data)
+                    }
+                    vehicleId={selectedVehicleId}
+                    sugarTypeId={selectedSugarTypeId}
+                    countingSessionId={getSessionIdForAI()}
+                    resetTrigger={resetTrigger}
+                    disabled={!selectedVehicleId || !selectedSugarTypeId}
+                  />
+                )
+              )}
+
+              <button
+                onClick={addRow}
+                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={
+                  !selectedVehicleId ||
+                  !selectedSugarTypeId ||
+                  !getSessionIdForAI()
                 }
-                vehicleId={selectedVehicleId}
-                sugarTypeId={selectedSugarTypeId}
-                countingSessionId={getSessionIdForAI()}
-                resetTrigger={resetTrigger}
-                disabled={!selectedVehicleId || !selectedSugarTypeId}
-              />
-            ) : (
-              <BoxRow
-                key={rowNumber}
-                rowNumber={rowNumber}
-                onDelete={() => deleteRow(rowNumber)}
-                onDataChange={(data) => handleBoxRowDataChange(rowNumber, data)}
-                vehicleId={selectedVehicleId}
-                sugarTypeId={selectedSugarTypeId}
-                countingSessionId={getSessionIdForAI()}
-                resetTrigger={resetTrigger}
-                disabled={!selectedVehicleId || !selectedSugarTypeId}
-              />
-            )
-          )}
+              >
+                <Plus className="w-4 h-4" />
+                {t("addRow", { defaultValue: "เพิ่มแถว" })}
+              </button>
+            </div>
 
-          <button
-            onClick={addRow}
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={
-              !selectedVehicleId || !selectedSugarTypeId || !getSessionIdForAI()
-            }
-          >
-            <Plus className="w-4 h-4" />
-            {t("addRow", { defaultValue: "เพิ่มแถว" })}
-          </button>
-        </div>
-
-        {/* ปุ่มบันทึก */}
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={handleSave}
-            disabled={
-              isSaving ||
-              !selectedVehicleId ||
-              !selectedSugarTypeId ||
-              !countingSessionId ||
-              rows.length === 0
-            }
-            className="flex items-center justify-center gap-2 px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {t("saveMessages.saving", { defaultValue: "กำลังบันทึก..." })}
-              </>
-            ) : (
-              t("saveButton")
-            )}
-          </button>
-        </div>
+            {/* ปุ่มบันทึก */}
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={handleSave}
+                disabled={
+                  isSaving ||
+                  !selectedVehicleId ||
+                  !selectedSugarTypeId ||
+                  !countingSessionId ||
+                  rows.length === 0
+                }
+                className="flex items-center justify-center gap-2 px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    {t("saveMessages.saving", { defaultValue: "กำลังบันทึก..." })}
+                  </>
+                ) : (
+                  t("saveButton")
+                )}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
