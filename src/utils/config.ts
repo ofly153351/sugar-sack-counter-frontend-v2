@@ -30,6 +30,25 @@ export const API_CONFIG = {
   },
 } as const;
 
+// AI Service Configuration
+export const AI_CONFIG = {
+  BASE_URL: process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8082",
+  ENDPOINTS: {
+    DETECT: "/detect",
+    DETECT_SACKS: "/detect-sacks",
+    DETECT_BOXES: "/detect-boxes",
+    HEALTH: "/health",
+    SAVE_TO_MINIO: "/save-to-minio",
+    MINIO_STATUS: "/minio-status",
+  },
+  FALLBACK_ENDPOINTS: [
+    process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8082",
+    "/api/ai",
+    "http://127.0.0.1:8082",
+  ],
+  TIMEOUT: 30000, // 30 seconds
+} as const;
+
 // Authentication Configuration
 export const AUTH_CONFIG = {
   TOKEN_KEY: process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY || "authToken",
@@ -85,9 +104,9 @@ export const validateConfig = (): void => {
 // Export all configuration as a single object for convenience
 export const CONFIG = {
   API: API_CONFIG,
+  AI: AI_CONFIG,
   AUTH: AUTH_CONFIG,
   APP: APP_CONFIG,
-
   DEV: DEV_CONFIG,
   VALIDATION: VALIDATION_PATTERNS,
   ENV: {

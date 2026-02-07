@@ -5,6 +5,7 @@
 // Note: For production, consider using a proxy through the main backend
 
 import axios from "axios";
+import { AI_CONFIG } from "@/utils/config";
 
 export interface DetectionResult {
   class: string;
@@ -101,11 +102,11 @@ export const detectSacksAndBoxes = async (
     // Choose endpoint based on detection type
     let endpoint = "";
     if (detectionType === "sack") {
-      endpoint = "http://localhost:8082/detect-sacks";
+      endpoint = `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.DETECT_SACKS}`;
     } else if (detectionType === "box") {
-      endpoint = "http://localhost:8082/detect-boxes";
+      endpoint = `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.DETECT_BOXES}`;
     } else {
-      endpoint = "http://localhost:8082/detect";
+      endpoint = `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.DETECT}`;
     }
 
     // Try multiple endpoints in order of preference
@@ -113,10 +114,15 @@ export const detectSacksAndBoxes = async (
       // Primary endpoint based on detection type
       endpoint,
       // Alternative endpoints
-      detectionType === "sack" ? "http://localhost:8082/detect" : endpoint,
-      detectionType === "box" ? "http://localhost:8082/detect" : endpoint,
-      "/api/ai/detect",
-      "http://127.0.0.1:8082/detect",
+      detectionType === "sack"
+        ? `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.DETECT}`
+        : endpoint,
+      detectionType === "box"
+        ? `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.DETECT}`
+        : endpoint,
+      ...AI_CONFIG.FALLBACK_ENDPOINTS.map(
+        (baseUrl) => `${baseUrl}${AI_CONFIG.ENDPOINTS.DETECT}`
+      ),
     ];
 
     let lastError: any = null;
@@ -207,9 +213,10 @@ export const detectSacksAndBoxes = async (
  */
 export const checkAIHealth = async (): Promise<AIHealthResponse> => {
   const endpoints = [
-    "http://localhost:8082/health",
-    "/api/ai/health",
-    "http://127.0.0.1:8082/health",
+    `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.HEALTH}`,
+    ...AI_CONFIG.FALLBACK_ENDPOINTS.map(
+      (baseUrl) => `${baseUrl}${AI_CONFIG.ENDPOINTS.HEALTH}`
+    ),
   ];
 
   let lastError: any = null;
@@ -218,7 +225,7 @@ export const checkAIHealth = async (): Promise<AIHealthResponse> => {
     try {
       const response = await axios.get<AIHealthResponse>(endpoint, {
         timeout: 5000,
-        withCredentials: false, // Disable credentials for CORS
+        withCredentials: false,
       });
 
       return response.data;
@@ -603,15 +610,11 @@ export const drawBoundingBoxes = (
  * Useful for debugging and configuration
  */
 export const getAvailableAIEndpoint = async (): Promise<string | null> => {
-  const endpoints = [
-    "http://localhost:8082",
-    "/api/ai",
-    "http://127.0.0.1:8082",
-  ];
+  const endpoints = [AI_CONFIG.BASE_URL, ...AI_CONFIG.FALLBACK_ENDPOINTS];
 
   for (const baseUrl of endpoints) {
     try {
-      const healthUrl = `${baseUrl}/health`;
+      const healthUrl = `${baseUrl}${AI_CONFIG.ENDPOINTS.HEALTH}`;
 
       const response = await axios.get(healthUrl, {
         timeout: 3000,
@@ -748,9 +751,10 @@ export const saveToMinIO = async (
     }
 
     const endpoints = [
-      "http://localhost:8082/save-to-minio",
-      "/api/ai/save-to-minio",
-      "http://127.0.0.1:8082/save-to-minio",
+      `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.SAVE_TO_MINIO}`,
+      ...AI_CONFIG.FALLBACK_ENDPOINTS.map(
+        (baseUrl) => `${baseUrl}${AI_CONFIG.ENDPOINTS.SAVE_TO_MINIO}`
+      ),
     ];
 
     let lastError: any = null;
@@ -764,11 +768,11 @@ export const saveToMinIO = async (
             headers: {
               "Content-Type": "multipart/form-data",
               "X-Auto-Save": "true",
-              ...(sessionId && { "X-Session-Id": sessionId }),
-              ...(rowNumber && { "X-Row-Number": rowNumber.toString() }),
-              ...(detectionType && { "X-Detection-Type": detectionType }),
+              "X-Session-Id": sessionId || "",
+              "X-Row-Number": rowNumber?.toString() || "",
+              "X-Detection-Type": detectionType || "",
             },
-            timeout: 60000,
+            timeout: AI_CONFIG.TIMEOUT,
             withCredentials: false,
           }
         );
@@ -1176,14 +1180,15 @@ export const checkMinIOStatus = async (): Promise<{
       expectedEndpoints: [
         "http://localhost:9000",
         "http://localhost:9001 (UI)",
-        "http://localhost:8082/minio-status",
+        `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.MINIO_STATUS}`,
       ],
     });
 
     const endpoints = [
-      "http://localhost:8082/minio-status",
-      "/api/ai/minio-status",
-      "http://127.0.0.1:8082/minio-status",
+      `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.MINIO_STATUS}`,
+      ...AI_CONFIG.FALLBACK_ENDPOINTS.map(
+        (baseUrl) => `${baseUrl}${AI_CONFIG.ENDPOINTS.MINIO_STATUS}`
+      ),
     ];
 
     for (const endpoint of endpoints) {
