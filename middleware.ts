@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { i18nSettings } from "./src/i18n/settings";
 import createIntlMiddleware from "next-intl/middleware";
+import { API_CONFIG } from "./src/utils/config";
 
 // API base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 // Allow list for users who can access admin dashboard even if role is "user"
 // This is a temporary solution for development/testing
@@ -127,7 +128,10 @@ export default async function middleware(request: NextRequest) {
 
   // Handle auth pages - redirect if already authenticated (role-based)
   const fullPath = pathname;
-  if ((fullPath.includes("/login") || fullPath.includes("/register")) && token) {
+  if (
+    (fullPath.includes("/login") || fullPath.includes("/register")) &&
+    token
+  ) {
     console.log(
       "🔍 Middleware: User has token, checking role for auth page redirect"
     );
@@ -135,8 +139,10 @@ export default async function middleware(request: NextRequest) {
     try {
       const cookieHeader = request.headers.get("cookie") || "";
       const userData = await fetchUserData(cookieHeader);
-      const userRole = userData?.role || userData?.user?.role || userData?.position;
-      const redirectTo = userRole === "admin" ? `/${locale}/admin` : `/${locale}/home`;
+      const userRole =
+        userData?.role || userData?.user?.role || userData?.position;
+      const redirectTo =
+        userRole === "admin" ? `/${locale}/admin` : `/${locale}/home`;
       return NextResponse.redirect(new URL(redirectTo, request.url));
     } catch (error) {
       console.error("❌ Middleware: Auth page role check failed:", error);
@@ -254,7 +260,7 @@ export default async function middleware(request: NextRequest) {
         console.log("🔍 Middleware: Attempting token refresh...");
         try {
           const refreshResponse = await fetch(
-            `${API_BASE_URL}/api/auth/refresh`,
+            `${API_BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.REFRESH}`,
             {
               method: "POST",
               headers: {
@@ -301,13 +307,16 @@ export default async function middleware(request: NextRequest) {
     // Verify token is still valid by making a quick check
     try {
       const cookieHeader = request.headers.get("cookie") || "";
-      const quickCheck = await fetch(`${API_BASE_URL}/api/auth/validate`, {
-        method: "POST",
-        headers: {
-          Cookie: cookieHeader,
-        },
-        signal: AbortSignal.timeout(2000),
-      });
+      const quickCheck = await fetch(
+        `${API_BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.VALIDATE}`,
+        {
+          method: "POST",
+          headers: {
+            Cookie: cookieHeader,
+          },
+          signal: AbortSignal.timeout(2000),
+        }
+      );
 
       if (!quickCheck.ok) {
         console.log(

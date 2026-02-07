@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { API_CONFIG } from "@/utils/config";
 import { StoreUser } from "@/utils/types";
 
 // JWT token payload interface
@@ -162,9 +163,12 @@ export const checkAuthStatus = async (): Promise<{
   }
 
   try {
-    const response = await fetch("http://localhost:3001/api/users/me", {
-      credentials: "include",
-    });
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS.ME}`,
+      {
+        credentials: "include",
+      }
+    );
 
     if (response.ok) {
       const userData = await response.json();
@@ -216,10 +220,13 @@ export const refreshAuthToken = async (): Promise<boolean> => {
   }
 
   try {
-    const response = await fetch("http://localhost:3001/api/auth/refresh", {
-      method: "POST",
-      credentials: "include",
-    });
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.REFRESH}`,
+      {
+        method: "POST",
+        credentials: "include",
+      }
+    );
 
     if (response.ok) {
       console.log("✅ Auth token refreshed successfully");

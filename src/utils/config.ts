@@ -7,25 +7,28 @@
 
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/api",
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
   ENDPOINTS: {
     AUTH: {
-      LOGIN: "/auth/login",
-      REGISTER: "/auth/register",
-      VALIDATE: "/auth/validate",
-      REFRESH: "/auth/refresh",
-      LOGOUT: "/auth/logout",
-      PROFILE: "/auth/profile",
-      CHECK_USERNAME: "/auth/check-username",
-      CHECK_EMAIL: "/auth/check-email",
-      CHECK_EMPLOYEE_CODE: "/auth/check-employee-code",
-      CHECK_ROLE: "/auth/check-role",
+      LOGIN: "/api/auth/login",
+      REGISTER: "/api/auth/register",
+      VALIDATE: "/api/auth/validate",
+      REFRESH: "/api/auth/refresh",
+      LOGOUT: "/api/auth/logout",
+      PROFILE: "/api/auth/profile",
+      CHECK_USERNAME: "/api/auth/check-username",
+      CHECK_EMAIL: "/api/auth/check-email",
+      CHECK_EMPLOYEE_CODE: "/api/auth/check-employee-code",
+      CHECK_ROLE: "/api/auth/check-role",
     },
     COUNTING: {
-      SESSIONS: "/counting-sessions",
-      SESSIONS_BY_TYPE: "/counting-sessions/type",
-      SESSIONS_BY_USER: "/counting-sessions/user",
-      SESSIONS_BY_VEHICLE: "/counting-sessions/vehicle",
+      SESSIONS: "/api/counting-sessions",
+      SESSIONS_BY_TYPE: "/api/counting-sessions/type",
+      SESSIONS_BY_USER: "/api/counting-sessions/user",
+      SESSIONS_BY_VEHICLE: "/api/counting-sessions/vehicle",
+    },
+    USERS: {
+      ME: "/api/users/me",
     },
   },
 } as const;

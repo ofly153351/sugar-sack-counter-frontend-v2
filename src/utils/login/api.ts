@@ -55,9 +55,12 @@ export const login = async (
 
     // After successful login, fetch complete user data from /api/users/me
     try {
-      const userResponse = await fetch("http://localhost:3001/api/users/me", {
-        credentials: "include",
-      });
+      const userResponse = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS.ME}`,
+        {
+          credentials: "include",
+        }
+      );
 
       if (userResponse.ok) {
         const completeUserData = await userResponse.json();
@@ -283,12 +286,15 @@ export const getUserProfile = async (token: string) => {
       return null;
     }
 
-    const response = await fetch("http://localhost:3001/api/users/me", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-    });
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS.ME}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      }
+    );
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
