@@ -16,6 +16,18 @@ const createApiClient = (): AxiosInstance => {
     withCredentials: true,
   });
 
+  // Override request to use buildUrl for proper URL construction
+  const originalRequest = instance.request;
+  instance.request = function (config) {
+    if (config.url && !config.url.startsWith("http")) {
+      // Use buildUrl to construct the full URL
+      config.url = API_CONFIG.buildUrl(config.url);
+      // Remove baseURL since we're using full URL
+      config.baseURL = undefined;
+    }
+    return originalRequest.call(this, config);
+  };
+
   // Request interceptor
   instance.interceptors.request.use(
     (config) => {
@@ -45,7 +57,7 @@ const createApiClient = (): AxiosInstance => {
       if (process.env.NEXT_PUBLIC_DEBUG === "true") {
         console.log(
           `✅ API Response: ${response.status} ${response.config.url}`,
-          response.data,
+          response.data
         );
       }
       return response;

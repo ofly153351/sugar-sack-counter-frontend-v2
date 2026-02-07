@@ -164,7 +164,7 @@ export const checkAuthStatus = async (): Promise<{
 
   try {
     const response = await fetch(
-      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS.ME}`,
+      API_CONFIG.buildUrl(API_CONFIG.ENDPOINTS.USERS.ME),
       {
         credentials: "include",
       }
@@ -221,7 +221,7 @@ export const refreshAuthToken = async (): Promise<boolean> => {
 
   try {
     const response = await fetch(
-      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.REFRESH}`,
+      API_CONFIG.buildUrl(API_CONFIG.ENDPOINTS.AUTH.REFRESH),
       {
         method: "POST",
         credentials: "include",

@@ -51,13 +51,16 @@ async function fetchUserData(cookieHeader: string, retries = 2): Promise<any> {
         })`
       );
 
-      const response = await fetch(`${API_BASE_URL}/api/users/me`, {
-        headers: {
-          Cookie: cookieHeader,
-        },
-        // Add timeout to prevent hanging
-        signal: AbortSignal.timeout(5000),
-      });
+      const response = await fetch(
+        API_CONFIG.buildUrl(API_CONFIG.ENDPOINTS.USERS.ME),
+        {
+          headers: {
+            Cookie: cookieHeader,
+          },
+          // Add timeout to prevent hanging
+          signal: AbortSignal.timeout(5000),
+        }
+      );
 
       console.log(
         `🔍 Middleware: API response status: ${response.status} ${response.statusText}`
@@ -260,12 +263,12 @@ export default async function middleware(request: NextRequest) {
         console.log("🔍 Middleware: Attempting token refresh...");
         try {
           const refreshResponse = await fetch(
-            `${API_BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.REFRESH}`,
+            API_CONFIG.buildUrl(API_CONFIG.ENDPOINTS.AUTH.REFRESH),
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Cookie: request.headers.get("cookie") || "",
+                Cookie: cookieHeader,
               },
             }
           );
@@ -308,7 +311,7 @@ export default async function middleware(request: NextRequest) {
     try {
       const cookieHeader = request.headers.get("cookie") || "";
       const quickCheck = await fetch(
-        `${API_BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.VALIDATE}`,
+        API_CONFIG.buildUrl(API_CONFIG.ENDPOINTS.AUTH.VALIDATE),
         {
           method: "POST",
           headers: {

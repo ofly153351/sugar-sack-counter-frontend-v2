@@ -56,7 +56,7 @@ export const login = async (
     // After successful login, fetch complete user data from /api/users/me
     try {
       const userResponse = await fetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS.ME}`,
+        API_CONFIG.buildUrl(API_CONFIG.ENDPOINTS.USERS.ME),
         {
           credentials: "include",
         }
@@ -287,7 +287,7 @@ export const getUserProfile = async (token: string) => {
     }
 
     const response = await fetch(
-      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS.ME}`,
+      API_CONFIG.buildUrl(API_CONFIG.ENDPOINTS.USERS.ME),
       {
         headers: {
           Authorization: `Bearer ${token}`,
