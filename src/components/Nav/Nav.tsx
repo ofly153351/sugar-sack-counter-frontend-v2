@@ -133,7 +133,7 @@ export default function Nav() {
 
     setIsLoggingOut(true);
     try {
-      const response = await fetch("http://localhost:3001/api/auth/logout", {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,6 +154,9 @@ export default function Nav() {
             defaultValue: "Logout failed. Please try again.",
           })
         );
+        // Even if backend fails, force local logout and redirect
+        clearUser();
+        router.push(`/${currentLocale}/login`);
       }
     } catch (error) {
       console.error("Error during logout:", error);
@@ -162,6 +165,9 @@ export default function Nav() {
           defaultValue: "An error occurred during logout. Please try again.",
         })
       );
+      // Force local logout and redirect on error
+      clearUser();
+      router.push(`/${currentLocale}/login`);
     } finally {
       setIsLoggingOut(false);
     }

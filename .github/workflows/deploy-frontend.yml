@@ -1,0 +1,42 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: frontend-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            cd /root/sugar-sack/sugar-sack-counter-frontend-v2
+            git fetch --all
+            git reset --hard origin/main
+
+            if [ ! -d .next ]; then
+              npm install
+            fi
+
+            npm run build
+
+            if pm2 list | grep -q "frontend"; then
+              pm2 restart frontend
+            else
+              pm2 start npm --name frontend -- start
+            fi
