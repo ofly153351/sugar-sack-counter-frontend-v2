@@ -106,6 +106,15 @@ async function fetchUserData(cookieHeader: string, retries = 2): Promise<any> {
 
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const host = request.headers.get("host") || "";
+
+  // Canonical host: redirect www to apex so auth cookies match domain
+  if (host.startsWith("www.")) {
+    const apexHost = host.replace(/^www\./, "");
+    const url = request.nextUrl.clone();
+    url.host = apexHost;
+    return NextResponse.redirect(url, 308);
+  }
   const locale = pathname.split("/")[1] || i18nSettings.defaultLocale;
 
   // Skip middleware for static files and API routes
