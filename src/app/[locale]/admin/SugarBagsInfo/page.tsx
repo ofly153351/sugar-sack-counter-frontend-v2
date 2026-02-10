@@ -126,6 +126,15 @@ export default function Page({ params }: PageProps) {
         sackRows: session.sackSession?.sackRows,
       });
 
+      const sackRows = session.sackSession?.sackRows || [];
+      const totalSacks =
+        sackRows.length > 0
+          ? sackRows.reduce(
+              (sum, row) => sum + (row?.finalCount ?? 0),
+              0
+            )
+          : session.totalCount || 0;
+
       return {
         id: session.id,
         rawSession: session,
@@ -134,7 +143,7 @@ export default function Page({ params }: PageProps) {
         datetime: formatDate(session.countingDate),
         createdBy: getUserDisplayName(session.user),
         sugarType: session.sugarType?.name || "ไม่ทราบชนิดน้ำตาล",
-        amount: `${session.totalCount || 0} กระสอบ`,
+        amount: `${totalSacks} กระสอบ`,
         hasSackRows: !!session.sackSession?.sackRows?.length,
         sackRowsCount: session.sackSession?.sackRows?.length || 0,
         sackRows: session.sackSession?.sackRows,
