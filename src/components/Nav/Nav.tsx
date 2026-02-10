@@ -196,6 +196,12 @@ export default function Nav() {
     return currentUser.username || t("nav.user", { defaultValue: "ผู้ใช้" });
   };
 
+  const getUserFirstName = () => {
+    if (!currentUser) return t("nav.user", { defaultValue: "ผู้ใช้" });
+    if (currentUser.firstName) return currentUser.firstName;
+    return currentUser.username || t("nav.user", { defaultValue: "ผู้ใช้" });
+  };
+
   // Get user role display
   const getUserRoleDisplay = () => {
     if (!currentUser) return t("nav.user", { defaultValue: "ผู้ใช้งาน" });
@@ -249,8 +255,11 @@ export default function Nav() {
               <DropdownTrigger>
                 <button
                   id="user-dropdown-trigger"
-                  className="flex items-center gap-2 focus:outline-none"
+                  className="flex items-center gap-3 focus:outline-none"
                 >
+                  <span className="text-md font-medium text-gray-500">
+                    {getUserFirstName()}
+                  </span>
                   <div className="w-10 h-10 rounded-full border-2 border-blue-500 bg-blue-100 flex items-center justify-center transition-transform hover:scale-105">
                     <User className="w-6 h-6 text-blue-600" />
                   </div>
@@ -301,12 +310,6 @@ export default function Nav() {
                     </button>
                   </div>
                 </DropdownItem>
-
-                <DropdownItem
-                  key="divider"
-                  className="h-px bg-gray-100 my-1"
-                  isReadOnly
-                />
 
                 <DropdownItem
                   key="edit-profile"

@@ -38,6 +38,8 @@ export default function CountPage() {
   const [resetTrigger, setResetTrigger] = useState<number>(0);
   const vehicleInitializedRef = useRef(false);
   const sugarTypeInitializedRef = useRef(false);
+  const prevTabRef = useRef(currentTab);
+  const countingSessionIdRef = useRef("");
 
   // Use count manager hook
   const countManager = useCountManager();
@@ -84,17 +86,23 @@ export default function CountPage() {
     }
   }, [isClient, countManager.sugarTypes.length]);
 
-  // Reset countingSessionId when tab changes
+  // Reset countingSessionId when tab changes (only if session already started)
   useEffect(() => {
-    if (isClient && countingSessionId) {
-      console.log("🔄 [DEBUG] Tab changed, resetting counting session ID");
-      setCountingSessionId("");
-      setTempSessionId("");
+    if (!isClient) return;
+    if (prevTabRef.current !== currentTab) {
+      if (isSessionStarted && countingSessionIdRef.current) {
+        console.log("🔄 [DEBUG] Tab changed, resetting counting session ID");
+        setCountingSessionId("");
+        setTempSessionId("");
+        setIsSessionStarted(false);
+      }
+      prevTabRef.current = currentTab;
     }
-    if (isClient) {
-      setIsSessionStarted(false);
-    }
-  }, [isClient, currentTab]);
+  }, [isClient, currentTab, isSessionStarted]);
+
+  useEffect(() => {
+    countingSessionIdRef.current = countingSessionId;
+  }, [countingSessionId]);
 
   // Create counting session when vehicle and sugar type are selected
   useEffect(() => {
@@ -214,6 +222,16 @@ export default function CountPage() {
   // Get session ID for AI calls (use real countingSessionId if available, otherwise temp)
   const getSessionIdForAI = () => {
     return countingSessionId || tempSessionId;
+  };
+
+  const handleBackToStart = () => {
+    setIsSessionStarted(false);
+    setRows([1]);
+    setSackRowsData({});
+    setBoxRowsData({});
+    setCountingSessionId("");
+    setTempSessionId("");
+    setResetTrigger((prev) => prev + 1);
   };
 
   const handleSave = async () => {
@@ -508,31 +526,57 @@ export default function CountPage() {
         </div>
 
         {!isSessionStarted && (
-          <div className="mb-6 flex flex-col items-center text-center gap-3 bg-blue-50 border border-blue-200 rounded-xl p-6">
+          <div className="mb-6 flex flex-col items-center text-center gap-4 bg-blue-50 border border-blue-200 rounded-xl p-6">
             <div>
               <h2 className="text-lg font-semibold text-blue-900">
                 {t("startCounting", { defaultValue: "เริ่มการนับ" })}
               </h2>
               <p className="text-sm text-blue-700 mt-1">
                 {t("startCountingHint", {
-                  defaultValue: "กดปุ่มเพื่อเริ่มสร้างเซสชันการนับ",
+                  defaultValue: "เลือกประเภทการนับเพื่อเริ่มสร้างเซสชัน",
                 })}
               </p>
             </div>
-            <button
-              onClick={() => setIsSessionStarted(true)}
-              title={t("startCountingTooltip", {
-                defaultValue: "สร้างเซสชันและปลดล็อกแบบฟอร์ม",
-              })}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {t("startCountingButton", { defaultValue: "เริ่มนับ" })}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setCurrentTab("bags");
+                  setIsSessionStarted(true);
+                }}
+                title={t("startCountingTooltip", {
+                  defaultValue: "สร้างเซสชันและปลดล็อกแบบฟอร์ม",
+                })}
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                {t("startButtons.bags", { defaultValue: "นับกระสอบ" })}
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentTab("boxes");
+                  setIsSessionStarted(true);
+                }}
+                title={t("startCountingTooltip", {
+                  defaultValue: "สร้างเซสชันและปลดล็อกแบบฟอร์ม",
+                })}
+                className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                {t("startButtons.boxes", { defaultValue: "นับกล่องหหห" })}
+              </button>
+            </div>
           </div>
         )}
 
         {isSessionStarted && (
           <>
+            <div className="mb-4 flex justify-start">
+              <button
+                onClick={handleBackToStart}
+                className="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                {t("backToStart", { defaultValue: "ย้อนกลับ" })}
+              </button>
+            </div>
+
             {/* Tabs */}
             <div className="mb-6">
               <Tabs currentTab={currentTab} setCurrentTab={setCurrentTab} />

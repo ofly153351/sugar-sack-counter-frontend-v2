@@ -11,6 +11,8 @@ interface UsersTableProps {
   onSearchChange: (value: string) => void;
   onEdit: (user: User) => void;
   onDelete: (user: User) => void;
+  onRoleChange?: (user: User, role: "admin" | "user" | "operator" | "viewer") => void;
+  isRoleUpdating?: boolean;
   isLoading?: boolean;
 }
 
@@ -20,6 +22,8 @@ export function UsersTable({
   onSearchChange,
   onEdit,
   onDelete,
+  onRoleChange,
+  isRoleUpdating = false,
   isLoading = false,
 }: UsersTableProps) {
   const t = useTranslations("users");
@@ -82,7 +86,14 @@ export function UsersTable({
           )}
         </div>
       ) : (
-        <Table type="users" data={users} onEdit={onEdit} onDelete={onDelete} />
+        <Table
+          type="users"
+          data={users}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onRoleChange={onRoleChange}
+          isRoleUpdating={isRoleUpdating}
+        />
       )}
     </div>
   );

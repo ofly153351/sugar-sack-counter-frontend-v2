@@ -66,11 +66,15 @@
       "Users": "Manage Users"
     },
     "metrics": {
-      "vehiclesIn": "Vehicles In",
-      "vehiclesOut": "Vehicles Out",
-      "bagsOut": "Bags Out",
-      "boxesOut": "Boxes Out"
+      "sacksToday": "Sacks Today",
+      "boxesToday": "Boxes Today",
+      "totalUsers": "Total Users",
+      "totalVehicles": "Total Vehicles"
     },
+    "last7Days": "Last 7 days",
+    "loading": "Loading dashboard summary...",
+    "error": "Failed to load dashboard summary",
+    "retry": "Retry",
     "userInfo": "User Information",
     "name": "Name",
     "username": "Username",
@@ -80,7 +84,7 @@
     "welcomeMessage": "Welcome to the admin dashboard. Only authenticated users can access this page."
   },
   "count": {
-    "title": "Count Sugar Sacks",
+    "title": "Count Sugar",
     "tabs": {
       "bags": "Count Bags",
       "boxes": "Count Boxes"
@@ -146,6 +150,11 @@
     "startCountingHint": "Click to create a counting session and begin.",
     "startCountingButton": "Start",
     "startCountingTooltip": "Creates a counting session and unlocks the form",
+    "startButtons": {
+      "bags": "Count Bags",
+      "boxes": "Count Boxes"
+    },
+    "backToStart": "Back",
     "selectVehicle": "Select transportation vehicle",
     "selectSugarType": "Select sugar type",
     "noVehiclesAvailable": "No available transportation vehicles",
@@ -356,6 +365,16 @@
       "createSuccess": "User created successfully",
       "updateSuccess": "User updated successfully",
       "error": "Failed to save user"
+    },
+    "roles": {
+      "admin": "Administrator",
+      "user": "User",
+      "operator": "Operator",
+      "viewer": "Viewer"
+    },
+    "role": {
+      "updateSuccess": "Role updated",
+      "updateError": "Failed to update role"
     },
     "errors": {
       "loadError": "Failed to load users"

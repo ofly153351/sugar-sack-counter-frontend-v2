@@ -10,18 +10,29 @@ import {
 import { UsersHeader, UsersTable, UserModal } from "@/components/users";
 import { useUsersManager } from "@/hooks/useUsers";
 import { useTranslations } from "next-intl";
+import { useUserStore } from "@/store/user-store";
 
 export default function UsersPage() {
   const t = useTranslations("users");
   const [modalOpen, setModalOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [search, setSearch] = useState("");
+  const { user: currentUser } = useUserStore();
 
   // Use React Query hooks
   const usersManager = useUsersManager();
 
   // Filter users client-side based on search
-  const filteredUsers = usersManager.users.filter((user) => {
+  const filteredUsers = usersManager.users
+    .filter((user) => {
+      if (!currentUser) return true;
+      return !(
+        (currentUser.id && user.id === currentUser.id) ||
+        (currentUser.username && user.username === currentUser.username) ||
+        (currentUser.email && user.email === currentUser.email)
+      );
+    })
+    .filter((user) => {
     const keyword = search.toLowerCase();
     return (
       user.empCode.toLowerCase().includes(keyword) ||
@@ -31,7 +42,7 @@ export default function UsersPage() {
       user.email?.toLowerCase().includes(keyword) ||
       user.phone?.toLowerCase().includes(keyword)
     );
-  });
+    });
 
   const isLoading = usersManager.isLoading;
   const isError = usersManager.isError;
@@ -40,6 +51,33 @@ export default function UsersPage() {
   const handleDelete = async (user: User) => {
     // The delete confirmation is handled inside useConfirmDeleteUser hook
     usersManager.deleteUser(user);
+  };
+
+  const handleRoleChange = (
+    user: User,
+    role: "admin" | "user" | "operator" | "viewer"
+  ) => {
+    const userId = user.id || user.no;
+    usersManager.updateUserRole(
+      { id: userId, role },
+      {
+        onSuccess: () => {
+          Swal.fire({
+            title: t("role.updateSuccess", { defaultValue: "อัปเดตสิทธิ์แล้ว" }),
+            icon: "success",
+            confirmButtonText: t("buttons.ok"),
+          });
+        },
+        onError: (error: Error) => {
+          Swal.fire({
+            title: t("role.updateError", { defaultValue: "อัปเดตสิทธิ์ไม่สำเร็จ" }),
+            text: error.message || t("role.updateError"),
+            icon: "error",
+            confirmButtonText: t("buttons.ok"),
+          });
+        },
+      }
+    );
   };
 
   const handleEdit = (user: User) => {
@@ -157,6 +195,8 @@ export default function UsersPage() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         isLoading={isLoading}
+        onRoleChange={handleRoleChange}
+        isRoleUpdating={usersManager.isUpdatingRole}
       />
 
       <UserModal
