@@ -16,24 +16,32 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
     refetch,
   } = useDashboardSummary();
 
+  const formatDateLabel = (dateStr: string) => {
+    // Use backend date string directly to avoid timezone shifts
+    return dateStr;
+  };
+
   const renderLargeGraph = (
     points: { date: string; total: number }[],
-    colorClass: string
+    colorClass: string,
+    unitLabel: string
   ) => {
     const max = Math.max(1, ...points.map((p) => p.total));
     return (
       <div className="flex items-end gap-3 h-48 md:h-56">
         {points.map((p) => {
           const height = Math.max(12, Math.round((p.total / max) * 200));
+          const label = formatDateLabel(p.date);
           return (
             <div key={p.date} className="flex-1 flex flex-col items-center">
               <div
                 className={`w-full rounded-md ${colorClass} transition-all duration-700 ease-out`}
                 style={{ height }}
-                title={`${p.date}: ${p.total}`}
+                title={`${label}: ${p.total} ${unitLabel}`}
+                aria-label={`${label}: ${p.total} ${unitLabel}`}
               />
               <div className="mt-2 text-[11px] text-gray-500">
-                {p.date.slice(5)}
+                {label.slice(5)}
               </div>
             </div>
           );
@@ -140,7 +148,8 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
           {summary?.sacks?.last7Days?.length
             ? renderLargeGraph(
                 summary.sacks.last7Days,
-                "bg-gradient-to-t from-blue-700 to-blue-400"
+                "bg-gradient-to-t from-blue-700 to-blue-400",
+                dict.dashboard.units.sacks
               )
             : null}
         </div>
@@ -157,7 +166,8 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
           {summary?.boxes?.last7Days?.length
             ? renderLargeGraph(
                 summary.boxes.last7Days,
-                "bg-gradient-to-t from-emerald-700 to-emerald-400"
+                "bg-gradient-to-t from-emerald-700 to-emerald-400",
+                dict.dashboard.units.boxes
               )
             : null}
         </div>

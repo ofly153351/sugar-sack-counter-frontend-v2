@@ -71,6 +71,10 @@
       "totalUsers": "Total Users",
       "totalVehicles": "Total Vehicles"
     },
+    "units": {
+      "sacks": "sacks",
+      "boxes": "boxes"
+    },
     "last7Days": "Last 7 days",
     "loading": "Loading dashboard summary...",
     "error": "Failed to load dashboard summary",
