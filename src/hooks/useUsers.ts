@@ -5,6 +5,7 @@ import {
   fetchUsers,
   createUser,
   updateUser,
+  updateUserRole,
   deleteUser,
   getUserById,
   type User,
@@ -85,6 +86,30 @@ export function useUpdateUser() {
   });
 }
 
+// Hook for updating a user's role
+export function useUpdateUserRole() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      role,
+    }: {
+      id: string | number;
+      role: "admin" | "user" | "operator" | "viewer";
+    }) => updateUserRole(id, role),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: userKeys.detail(variables.id),
+      });
+    },
+    onError: (error: Error) => {
+      console.error("❌ Error updating user role:", error);
+    },
+  });
+}
+
 // Hook for deleting a user
 export function useDeleteUser() {
   const queryClient = useQueryClient();
@@ -152,6 +177,7 @@ export function useUsersManager() {
   const usersQuery = useUsers();
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
+  const updateUserRoleMutation = useUpdateUserRole();
   const { confirmDelete } = useConfirmDeleteUser();
 
   return {
@@ -167,9 +193,14 @@ export function useUsersManager() {
     isCreating: createUserMutation.isPending,
     updateUser: updateUserMutation.mutate,
     isUpdating: updateUserMutation.isPending,
+    updateUserRole: updateUserRoleMutation.mutate,
+    isUpdatingRole: updateUserRoleMutation.isPending,
     deleteUser: confirmDelete,
 
     // Combined loading state
-    isProcessing: createUserMutation.isPending || updateUserMutation.isPending,
+    isProcessing:
+      createUserMutation.isPending ||
+      updateUserMutation.isPending ||
+      updateUserRoleMutation.isPending,
   };
 }

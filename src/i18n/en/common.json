@@ -362,6 +362,16 @@
       "updateSuccess": "User updated successfully",
       "error": "Failed to save user"
     },
+    "roles": {
+      "admin": "Administrator",
+      "user": "User",
+      "operator": "Operator",
+      "viewer": "Viewer"
+    },
+    "role": {
+      "updateSuccess": "Role updated",
+      "updateError": "Failed to update role"
+    },
     "errors": {
       "loadError": "Failed to load users"
     },

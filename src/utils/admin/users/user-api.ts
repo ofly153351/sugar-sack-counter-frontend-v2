@@ -114,6 +114,32 @@ export const updateUser = async (
 };
 
 /**
+ * Update user role (admin only)
+ */
+export const updateUserRole = async (
+  userId: string | number,
+  role: "admin" | "user" | "operator" | "viewer"
+): Promise<ApiUser> => {
+  try {
+    console.log(`🔧 Updating role for user ID: ${userId} -> ${role}`);
+    const response = await api.patch(`/admin/users/${userId}/role`, { role });
+    console.log("✅ User role updated successfully");
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Error updating user role:", error);
+
+    let errorMessage = "Failed to update user role";
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    throw new Error(errorMessage);
+  }
+};
+
+/**
  * Delete a user
  */
 export const deleteUser = async (userId: string | number): Promise<void> => {

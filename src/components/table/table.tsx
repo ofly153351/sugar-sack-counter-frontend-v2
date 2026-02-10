@@ -20,6 +20,11 @@ interface TableProps {
   data?: Record<string, any>[];
   onEdit?: (item: Record<string, any>) => void;
   onDelete?: (item: Record<string, any>) => void;
+  onRoleChange?: (
+    item: Record<string, any>,
+    role: "admin" | "user" | "operator" | "viewer"
+  ) => void;
+  isRoleUpdating?: boolean;
 }
 
 export default function Table({
@@ -27,9 +32,17 @@ export default function Table({
   data = [],
   onEdit,
   onDelete,
+  onRoleChange,
+  isRoleUpdating = false,
 }: TableProps) {
   const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
+  const roleOptions: Array<"admin" | "user" | "operator" | "viewer"> = [
+    "admin",
+    "user",
+    "operator",
+    "viewer",
+  ];
 
   const [isImagesModalOpen, setIsImagesModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Record<
@@ -349,6 +362,30 @@ export default function Table({
                           >
                             {row.status === "active" ? "Active" : "Inactive"}
                           </span>
+                        ) : type === "users" && h.key === "role" ? (
+                          <select
+                            value={(row.role || "user") as string}
+                            onChange={(e) =>
+                              onRoleChange?.(
+                                row,
+                                e.target.value as
+                                  | "admin"
+                                  | "user"
+                                  | "operator"
+                                  | "viewer"
+                              )
+                            }
+                            disabled={!onRoleChange || isRoleUpdating}
+                            className="min-w-[140px] rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
+                          >
+                            {roleOptions.map((role) => (
+                              <option key={role} value={role}>
+                                {t(`users.roles.${role}`, {
+                                  defaultValue: role,
+                                })}
+                              </option>
+                            ))}
+                          </select>
                         ) : (
                           row[h.key]
                         )}
