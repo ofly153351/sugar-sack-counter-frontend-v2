@@ -80,7 +80,7 @@
     "welcomeMessage": "Welcome to the admin dashboard. Only authenticated users can access this page."
   },
   "count": {
-    "title": "Count Sugar Sacks",
+    "title": "Count Sugar",
     "tabs": {
       "bags": "Count Bags",
       "boxes": "Count Boxes"
@@ -146,6 +146,7 @@
     "startCountingHint": "Click to create a counting session and begin.",
     "startCountingButton": "Start",
     "startCountingTooltip": "Creates a counting session and unlocks the form",
+    "backToStart": "Back",
     "selectVehicle": "Select transportation vehicle",
     "selectSugarType": "Select sugar type",
     "noVehiclesAvailable": "No available transportation vehicles",

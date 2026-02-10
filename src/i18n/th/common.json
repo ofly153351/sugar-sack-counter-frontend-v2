@@ -81,7 +81,7 @@
     "phonePlaceholder": "กรอกเบอร์โทรศัพท์"
   },
   "count": {
-    "title": "นับจำนวนกระสอบน้ำตาล",
+    "title": "นับจำนวนน้ำตาล",
     "tabs": {
       "bags": "นับกระสอบ",
       "boxes": "นับกล่อง"
@@ -147,6 +147,7 @@
     "startCountingHint": "กดเพื่อสร้างเซสชันและเริ่มนับ",
     "startCountingButton": "เริ่มนับ",
     "startCountingTooltip": "สร้างเซสชันและปลดล็อกแบบฟอร์ม",
+    "backToStart": "ย้อนกลับ",
     "selectVehicle": "เลือกรถขนส่ง",
     "selectSugarType": "เลือกประเภทน้ำตาล",
     "noVehiclesAvailable": "ไม่มีรถขนส่งที่ใช้งานได้",
