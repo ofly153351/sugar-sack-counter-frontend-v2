@@ -147,6 +147,10 @@
     "startCountingHint": "กดเพื่อสร้างเซสชันและเริ่มนับ",
     "startCountingButton": "เริ่มนับ",
     "startCountingTooltip": "สร้างเซสชันและปลดล็อกแบบฟอร์ม",
+    "startButtons": {
+      "bags": "นับกระสอบ",
+      "boxes": "นับกล่อง"
+    },
     "backToStart": "ย้อนกลับ",
     "selectVehicle": "เลือกรถขนส่ง",
     "selectSugarType": "เลือกประเภทน้ำตาล",

@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { i18nSettings, Locale } from "@/i18n/settings";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 export async function generateStaticParams() {
   return i18nSettings.locales.map((locale) => ({ locale }));
 }
@@ -16,10 +16,11 @@ export default async function LocaleLayout({
   params,
 }: LocaleLayoutProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider messages={messages} locale={locale}>
       <div className="min-h-screen min-w-screen flex flex-col">
         <main className="bg-[#F5F5F5] flex-1 flex flex-col">{children}</main>
       </div>

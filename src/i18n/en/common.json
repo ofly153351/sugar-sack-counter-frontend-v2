@@ -146,6 +146,10 @@
     "startCountingHint": "Click to create a counting session and begin.",
     "startCountingButton": "Start",
     "startCountingTooltip": "Creates a counting session and unlocks the form",
+    "startButtons": {
+      "bags": "Count Bags",
+      "boxes": "Count Boxes"
+    },
     "backToStart": "Back",
     "selectVehicle": "Select transportation vehicle",
     "selectSugarType": "Select sugar type",

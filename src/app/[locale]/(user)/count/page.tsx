@@ -548,7 +548,7 @@ export default function CountPage() {
                 })}
                 className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                {t("tabs.bags", { defaultValue: "นับกระสอบ" })}
+                {t("startButtons.bags", { defaultValue: "นับกระสอบ" })}
               </button>
               <button
                 onClick={() => {
@@ -560,7 +560,7 @@ export default function CountPage() {
                 })}
                 className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
-                {t("tabs.boxes", { defaultValue: "นับกล่อง" })}
+                {t("startButtons.boxes", { defaultValue: "นับกล่องหหห" })}
               </button>
             </div>
           </div>
