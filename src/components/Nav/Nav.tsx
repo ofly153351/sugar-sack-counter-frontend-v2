@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  LogOut,
-  Settings,
-  User,
-  Loader2,
-  Edit,
-  Home,
-  LayoutDashboard,
-} from "lucide-react";
+import { LogOut, Settings, User, Loader2, Edit, LayoutDashboard } from "lucide-react";
 import Logo from "../logo/logo";
 import { useRouter, usePathname } from "next/navigation";
 import { useCallback, useState, useEffect } from "react";
@@ -215,14 +207,6 @@ export default function Nav() {
     <>
       <Navbar className="px-3 py-4 bg-white shadow-sm border-b border-gray-200 h-18 z-30 justify-between">
         <NavbarBrand className="flex items-center gap-2">
-          <button
-            onClick={() => router.push(`/${currentLocale}/home`)}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-            title={t("nav.home", { defaultValue: "หน้าแรก" })}
-            aria-label={t("nav.home", { defaultValue: "หน้าแรก" })}
-          >
-            <Home className="w-5 h-5 text-gray-700" />
-          </button>
           <Logo width={40} height={40} />
           <p className="font-bold text-2xl text-mp-green-800">Mitr Phol</p>
         </NavbarBrand>
