@@ -306,12 +306,6 @@ export default function Nav() {
                 </DropdownItem>
 
                 <DropdownItem
-                  key="divider"
-                  className="h-px bg-gray-100 my-1"
-                  isReadOnly
-                />
-
-                <DropdownItem
                   key="edit-profile"
                   className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
                   onClick={handleEditProfile}
