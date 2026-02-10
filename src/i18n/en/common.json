@@ -9,6 +9,8 @@
   "nav": {
     "editProfile": "Edit Profile",
     "editProfileTitle": "Edit Profile",
+    "home": "Home",
+    "adminDashboard": "Go to Dashboard",
     "saveChanges": "Save Changes",
     "cancel": "Cancel",
     "loading": "Loading...",

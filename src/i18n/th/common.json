@@ -60,6 +60,8 @@
   "nav": {
     "editProfile": "แก้ไขโปรไฟล์",
     "editProfileTitle": "แก้ไขโปรไฟล์",
+    "home": "หน้าแรก",
+    "adminDashboard": "ไปที่แดชบอร์ด",
     "saveChanges": "บันทึกการเปลี่ยนแปลง",
     "cancel": "ยกเลิก",
     "loading": "กำลังโหลด...",
