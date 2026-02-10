@@ -1,6 +1,14 @@
 "use client";
 
-import { LogOut, Settings, User, Loader2, Edit } from "lucide-react";
+import {
+  LogOut,
+  Settings,
+  User,
+  Loader2,
+  Edit,
+  Home,
+  LayoutDashboard,
+} from "lucide-react";
 import Logo from "../logo/logo";
 import { useRouter, usePathname } from "next/navigation";
 import { useCallback, useState, useEffect } from "react";
@@ -207,10 +215,20 @@ export default function Nav() {
     return role || t("nav.user", { defaultValue: "ผู้ใช้งาน" });
   };
 
+  const isAdmin = currentUser?.role === "admin";
+
   return (
     <>
       <Navbar className="px-3 py-4 bg-white shadow-sm border-b border-gray-200 h-18 z-30 justify-between">
         <NavbarBrand className="flex items-center gap-2">
+          <button
+            onClick={() => router.push(`/${currentLocale}/home`)}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            title={t("nav.home", { defaultValue: "หน้าแรก" })}
+            aria-label={t("nav.home", { defaultValue: "หน้าแรก" })}
+          >
+            <Home className="w-5 h-5 text-gray-700" />
+          </button>
           <Logo width={40} height={40} />
           <p className="font-bold text-2xl text-mp-green-800">Mitr Phol</p>
         </NavbarBrand>
@@ -316,6 +334,23 @@ export default function Nav() {
                     {t("nav.editProfile", { defaultValue: "แก้ไขโปรไฟล์" })}
                   </div>
                 </DropdownItem>
+
+                {isAdmin && (
+                  <DropdownItem
+                    key="admin-dashboard"
+                    className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
+                    onClick={() =>
+                      router.push(`/${currentLocale}/admin/dashboard`)
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <LayoutDashboard className="w-4 h-4" />
+                      {t("nav.adminDashboard", {
+                        defaultValue: "ไปที่แดชบอร์ด",
+                      })}
+                    </div>
+                  </DropdownItem>
+                )}
 
                 <DropdownItem
                   key="logout"
