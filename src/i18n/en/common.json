@@ -66,11 +66,15 @@
       "Users": "Manage Users"
     },
     "metrics": {
-      "vehiclesIn": "Vehicles In",
-      "vehiclesOut": "Vehicles Out",
-      "bagsOut": "Bags Out",
-      "boxesOut": "Boxes Out"
+      "sacksToday": "Sacks Today",
+      "boxesToday": "Boxes Today",
+      "totalUsers": "Total Users",
+      "totalVehicles": "Total Vehicles"
     },
+    "last7Days": "Last 7 days",
+    "loading": "Loading dashboard summary...",
+    "error": "Failed to load dashboard summary",
+    "retry": "Retry",
     "userInfo": "User Information",
     "name": "Name",
     "username": "Username",
