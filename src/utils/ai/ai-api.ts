@@ -140,21 +140,8 @@ export const detectSacksAndBoxes = async (
       endpoint = `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.DETECT}`;
     }
 
-    // Try multiple endpoints in order of preference
-    const endpoints = [
-      // Primary endpoint based on detection type
-      endpoint,
-      // Alternative endpoints
-      detectionType === "sack"
-        ? `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.DETECT}`
-        : endpoint,
-      detectionType === "box"
-        ? `${AI_CONFIG.BASE_URL}${AI_CONFIG.ENDPOINTS.DETECT}`
-        : endpoint,
-      ...AI_CONFIG.FALLBACK_ENDPOINTS.map(
-        (baseUrl) => `${baseUrl}${AI_CONFIG.ENDPOINTS.DETECT}`
-      ),
-    ];
+    // Use only the specific endpoint (no /detect fallback)
+    const endpoints = [endpoint];
 
     let lastError: any = null;
 

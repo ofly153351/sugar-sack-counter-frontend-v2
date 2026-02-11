@@ -160,6 +160,10 @@
       "boxes": "นับกล่อง"
     },
     "backToStart": "ย้อนกลับ",
+    "leaveWarningTitle": "ยืนยันการออก",
+    "leaveWarningText": "หากออกหรือรีเฟรช ข้อมูลที่กำลังกรอกจะไม่ถูกบันทึก",
+    "leaveWarningConfirm": "ออกจากหน้านี้",
+    "leaveWarningCancel": "อยู่ต่อ",
     "selectVehicle": "เลือกรถขนส่ง",
     "selectSugarType": "เลือกประเภทน้ำตาล",
     "noVehiclesAvailable": "ไม่มีรถขนส่งที่ใช้งานได้",

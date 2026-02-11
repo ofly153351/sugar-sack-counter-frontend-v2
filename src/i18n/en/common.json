@@ -159,6 +159,10 @@
       "boxes": "Count Boxes"
     },
     "backToStart": "Back",
+    "leaveWarningTitle": "Confirm leave",
+    "leaveWarningText": "Leaving or refreshing will discard the current input",
+    "leaveWarningConfirm": "Leave page",
+    "leaveWarningCancel": "Stay",
     "selectVehicle": "Select transportation vehicle",
     "selectSugarType": "Select sugar type",
     "noVehiclesAvailable": "No available transportation vehicles",

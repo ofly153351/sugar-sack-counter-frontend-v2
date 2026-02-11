@@ -15,6 +15,8 @@ import type {
   BoxRowFormData,
   CountingSessionFormData,
 } from "@/utils/types";
+import { deleteCountingSession } from "@/utils/count/count-api";
+import { API_CONFIG } from "@/utils/config";
 
 // CountPage
 export default function CountPage() {
@@ -36,6 +38,7 @@ export default function CountPage() {
   const [countingSessionId, setCountingSessionId] = useState<string>("");
   const [tempSessionId, setTempSessionId] = useState<string>("");
   const [resetTrigger, setResetTrigger] = useState<number>(0);
+  const [hasSaved, setHasSaved] = useState(false);
   const vehicleInitializedRef = useRef(false);
   const sugarTypeInitializedRef = useRef(false);
   const prevTabRef = useRef(currentTab);
@@ -102,6 +105,12 @@ export default function CountPage() {
 
   useEffect(() => {
     countingSessionIdRef.current = countingSessionId;
+  }, [countingSessionId]);
+
+  useEffect(() => {
+    if (countingSessionId) {
+      setHasSaved(false);
+    }
   }, [countingSessionId]);
 
   // Create counting session when vehicle and sugar type are selected
@@ -224,7 +233,51 @@ export default function CountPage() {
     return countingSessionId || tempSessionId;
   };
 
-  const handleBackToStart = () => {
+  const handleBackToStart = async () => {
+    let dirty = false;
+    if (typeof window !== "undefined") {
+      const raw = localStorage.getItem("count_dirty_rows") || "[]";
+      dirty = JSON.parse(raw).length > 0;
+    }
+
+    if (dirty) {
+      const result = await Swal.fire({
+        title: t("leaveWarningTitle", {
+          defaultValue: "ข้อมูลจะหาย",
+        }),
+        text: t("leaveWarningText", {
+          defaultValue: "ถ้าออกหรือรีเฟรช ข้อมูลที่กรอกจะหาย",
+        }),
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: t("leaveWarningConfirm", {
+          defaultValue: "ออก",
+        }),
+        cancelButtonText: t("leaveWarningCancel", {
+          defaultValue: "ยกเลิก",
+        }),
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("count_dirty_rows");
+      if (window.onbeforeunload) {
+        window.onbeforeunload = null;
+      }
+    }
+
+    if (countingSessionIdRef.current && !hasSaved) {
+      try {
+        await deleteCountingSession(countingSessionIdRef.current);
+      } catch (error) {
+        console.error("Failed to delete counting session:", error);
+      }
+    }
+
     setIsSessionStarted(false);
     setRows([1]);
     setSackRowsData({});
@@ -232,6 +285,7 @@ export default function CountPage() {
     setCountingSessionId("");
     setTempSessionId("");
     setResetTrigger((prev) => prev + 1);
+    setHasSaved(false);
   };
 
   const handleSave = async () => {
@@ -340,6 +394,7 @@ export default function CountPage() {
       setCountingSessionId(""); // Reset to create new counting session
       setTempSessionId(""); // Reset temp session ID too
       setResetTrigger((prev) => prev + 1); // Trigger reset in BagRow/BoxRow
+      setHasSaved(true);
 
       // Clear localStorage for all rows to reset BagRow/BoxRow state
       if (typeof window !== "undefined") {
@@ -356,6 +411,10 @@ export default function CountPage() {
           localStorage.removeItem(`boxRow_${i}_detectionType`);
         }
         console.log("🧹 Cleared localStorage for all rows");
+        localStorage.removeItem("count_dirty_rows");
+        if (window.onbeforeunload) {
+          window.onbeforeunload = null;
+        }
       }
 
       // Show success message
@@ -383,6 +442,27 @@ export default function CountPage() {
       setIsSaving(false);
     }
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!countingSessionIdRef.current || hasSaved) return;
+
+    const handlePageHide = () => {
+      const sessionId = countingSessionIdRef.current;
+      if (!sessionId || hasSaved) return;
+      const url = API_CONFIG.buildUrl(`/counting-sessions/${sessionId}`);
+      fetch(url, {
+        method: "DELETE",
+        credentials: "include",
+        keepalive: true,
+      }).catch(() => {});
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+    };
+  }, [hasSaved]);
 
   // Handler for updating sack row data
   const handleSackRowDataChange = useCallback(

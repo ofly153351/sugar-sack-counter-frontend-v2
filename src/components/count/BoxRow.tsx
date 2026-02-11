@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Camera,
-  CloudDownload,
   Image as ImageIcon,
   X,
   Brain,
@@ -19,6 +17,7 @@ import Swal from "sweetalert2";
 import { API_CONFIG } from "@/utils/config";
 import axios from "axios";
 import { processImageWithAI, getMinIOUIUrl } from "@/utils/ai/ai-api";
+import RowUploadButton from "@/components/count/RowUploadButton";
 import { BoxRowFormData } from "@/utils/types";
 
 // Add keyboard event listener for ESC key
@@ -59,6 +58,7 @@ export default function BoxRow({
   disabled,
 }: BoxRowProps) {
   const t = useTranslations("count.boxRow");
+  const tCount = useTranslations("count");
   const [boxWeight, setBoxWeight] = useState("10");
   const [manualCount, setManualCount] = useState(0);
   const [aiCount, setAiCount] = useState<number | null>(null);
@@ -85,6 +85,7 @@ export default function BoxRow({
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(
     null
   );
+  const dirtyKey = `box-${rowNumber}`;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use ref to track previous data and prevent infinite loops
@@ -296,6 +297,55 @@ export default function BoxRow({
       resetTrigger ? `(trigger: ${resetTrigger})` : ""
     );
   }, [countingSessionId, rowNumber, resetTrigger]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const hasData =
+      manualCount > 0 ||
+      aiCount !== null ||
+      !!aiResult ||
+      !!imageFile ||
+      !!imagePreview;
+
+    const raw = localStorage.getItem("count_dirty_rows") || "[]";
+    const set = new Set<string>(JSON.parse(raw));
+
+    if (hasData) {
+      set.add(dirtyKey);
+    } else {
+      set.delete(dirtyKey);
+    }
+
+    localStorage.setItem("count_dirty_rows", JSON.stringify([...set]));
+
+    const message = tCount("leaveWarningText", {
+      defaultValue: "ถ้าออกหรือรีเฟรช ข้อมูลที่กรอกจะหาย",
+    });
+
+    if (set.size > 0) {
+      window.onbeforeunload = (e) => {
+        e.preventDefault();
+        e.returnValue = message;
+        return message;
+      };
+    } else if (window.onbeforeunload) {
+      window.onbeforeunload = null;
+    }
+  }, [manualCount, aiCount, aiResult, imageFile, imagePreview, dirtyKey, tCount]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window === "undefined") return;
+      const raw = localStorage.getItem("count_dirty_rows") || "[]";
+      const set = new Set<string>(JSON.parse(raw));
+      set.delete(dirtyKey);
+      localStorage.setItem("count_dirty_rows", JSON.stringify([...set]));
+      if (set.size === 0 && window.onbeforeunload) {
+        window.onbeforeunload = null;
+      }
+    };
+  }, [dirtyKey]);
 
   // Generate session ID in useEffect to avoid hydration error
   useEffect(() => {
@@ -1062,28 +1112,12 @@ export default function BoxRow({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button
+          <RowUploadButton
             onClick={openFilePicker}
-            disabled={isUploading || isDetecting || !vehicleId || !sugarTypeId}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            {isUploading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                กำลังอัปโหลด...
-              </>
-            ) : isDetecting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                กำลังตรวจจับ...
-              </>
-            ) : (
-              <>
-                <Camera className="w-4 h-4 mr-2" />
-                ถ่ายภาพ / อัปโหลด
-              </>
-            )}
-          </button>
+            disabled={!vehicleId || !sugarTypeId}
+            isUploading={isUploading}
+            isDetecting={isDetecting}
+          />
           {imageFile && !autoDetectEnabled && (
             <button
               onClick={handleAIDetection}
