@@ -190,6 +190,11 @@
       "createdBy": "Created By",
       "sugarType": "Sugar Type",
       "amount": "Amount",
+      "manualCount": "Manual Count",
+      "aiCount": "AI Count",
+      "manualTotal": "Manual Total",
+      "aiTotal": "AI Total",
+      "totalSummary": "Total (Manual) | Total (AI)",
       "actions": "Actions"
     }
   },
@@ -201,6 +206,11 @@
       "createdBy": "Created By",
       "sugarType": "Sugar Type",
       "amount": "Amount",
+      "manualCount": "Manual Count",
+      "aiCount": "AI Count",
+      "manualTotal": "Manual Total",
+      "aiTotal": "AI Total",
+      "totalSummary": "Total (Manual) | Total (AI)",
       "actions": "Actions"
     }
   },
@@ -338,6 +348,8 @@
       "empCode": "Employee Code",
       "firstname": "First Name",
       "lastname": "Last Name",
+      "manualTotal": "Manual Total",
+      "aiTotal": "AI Total",
       "role": "Role",
       "actions": "Actions"
     },

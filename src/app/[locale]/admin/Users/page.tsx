@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Swal from "sweetalert2";
 import {
   convertToUserFormData,
@@ -9,6 +9,7 @@ import {
 } from "@/utils/admin/users/user-api";
 import { UsersHeader, UsersTable, UserModal } from "@/components/users";
 import { useUsersManager } from "@/hooks/useUsers";
+import { useCountingSessionsByType } from "@/hooks/useCount";
 import { useTranslations } from "next-intl";
 import { useUserStore } from "@/store/user-store";
 
@@ -21,6 +22,8 @@ export default function UsersPage() {
 
   // Use React Query hooks
   const usersManager = useUsersManager();
+  const sackSessionsQuery = useCountingSessionsByType("sack");
+  const boxSessionsQuery = useCountingSessionsByType("box");
 
   // Filter users client-side based on search
   const filteredUsers = usersManager.users
@@ -33,16 +36,81 @@ export default function UsersPage() {
       );
     })
     .filter((user) => {
-    const keyword = search.toLowerCase();
-    return (
-      user.empCode.toLowerCase().includes(keyword) ||
-      user.username?.toLowerCase().includes(keyword) ||
-      user.firstname.toLowerCase().includes(keyword) ||
-      user.lastname.toLowerCase().includes(keyword) ||
-      user.email?.toLowerCase().includes(keyword) ||
-      user.phone?.toLowerCase().includes(keyword)
-    );
+      const keyword = search.toLowerCase();
+      return (
+        user.empCode.toLowerCase().includes(keyword) ||
+        user.username?.toLowerCase().includes(keyword) ||
+        user.firstname.toLowerCase().includes(keyword) ||
+        user.lastname.toLowerCase().includes(keyword) ||
+        user.email?.toLowerCase().includes(keyword) ||
+        user.phone?.toLowerCase().includes(keyword)
+      );
     });
+
+  const totalsByUser = useMemo(() => {
+    const totals = new Map<string, { manual: number; ai: number }>();
+
+    const addTotals = (userKey: string, manual: number, ai: number) => {
+      const existing = totals.get(userKey) || { manual: 0, ai: 0 };
+      totals.set(userKey, {
+        manual: existing.manual + manual,
+        ai: existing.ai + ai,
+      });
+    };
+
+    const getSessionUserKey = (session: any) => {
+      const key =
+        session.userId ||
+        session.user?.id ||
+        session.user?.username ||
+        session.user?.email;
+      return key ? String(key) : "";
+    };
+
+    const getTotalsFromRows = (rows: any[], fallbackManual?: number) => {
+      if (rows.length > 0) {
+        const manual = rows.reduce(
+          (sum, row) => sum + (row?.finalCount ?? 0),
+          0
+        );
+        const ai = rows.reduce((sum, row) => sum + (row?.aiCount ?? 0), 0);
+        return { manual, ai };
+      }
+
+      return {
+        manual: typeof fallbackManual === "number" ? fallbackManual : 0,
+        ai: 0,
+      };
+    };
+
+    sackSessionsQuery.data?.forEach((session: any) => {
+      const userKey = getSessionUserKey(session);
+      if (!userKey) return;
+      const rows = session.sackSession?.sackRows || [];
+      const { manual, ai } = getTotalsFromRows(rows, session.totalCount);
+      addTotals(userKey, manual, ai);
+    });
+
+    boxSessionsQuery.data?.forEach((session: any) => {
+      const userKey = getSessionUserKey(session);
+      if (!userKey) return;
+      const rows = session.boxSession?.boxRows || [];
+      const { manual, ai } = getTotalsFromRows(rows, session.totalCount);
+      addTotals(userKey, manual, ai);
+    });
+
+    return totals;
+  }, [sackSessionsQuery.data, boxSessionsQuery.data]);
+
+  const usersWithTotals = filteredUsers.map((user) => {
+    const key = user.id || user.username || user.email || user.no;
+    const total = totalsByUser.get(String(key)) || { manual: 0, ai: 0 };
+    return {
+      ...user,
+      manualTotal: total.manual,
+      aiTotal: total.ai,
+    };
+  });
 
   const isLoading = usersManager.isLoading;
   const isError = usersManager.isError;
@@ -189,7 +257,7 @@ export default function UsersPage() {
       <UsersHeader onAddUser={handleAddUser} />
 
       <UsersTable
-        users={filteredUsers}
+        users={usersWithTotals}
         search={search}
         onSearchChange={setSearch}
         onEdit={handleEdit}

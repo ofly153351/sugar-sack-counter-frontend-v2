@@ -287,6 +287,11 @@
       "createdBy": "ผู้บันทึก",
       "sugarType": "ชนิดน้ำตาล",
       "amount": "จำนวน",
+      "manualCount": "จำนวน (Manual)",
+      "aiCount": "จำนวน (AI)",
+      "manualTotal": "รวม (Manual)",
+      "aiTotal": "รวม (AI)",
+      "totalSummary": "จำนวนรวม (Manual) | จำนวนรวม (AI)",
       "actions": "จัดการ"
     }
   },
@@ -298,6 +303,11 @@
       "createdBy": "ผู้บันทึก",
       "sugarType": "ชนิดน้ำตาล",
       "amount": "จำนวน",
+      "manualCount": "จำนวน (Manual)",
+      "aiCount": "จำนวน (AI)",
+      "manualTotal": "รวม (Manual)",
+      "aiTotal": "รวม (AI)",
+      "totalSummary": "จำนวนรวม (Manual) | จำนวนรวม (AI)",
       "actions": "จัดการ"
     }
   },
@@ -317,6 +327,8 @@
       "empCode": "รหัสพนักงาน",
       "firstname": "ชื่อ",
       "lastname": "นามสกุล",
+      "manualTotal": "รวม (Manual)",
+      "aiTotal": "รวม (AI)",
       "role": "ตำแหน่ง",
       "actions": "จัดการ"
     },
