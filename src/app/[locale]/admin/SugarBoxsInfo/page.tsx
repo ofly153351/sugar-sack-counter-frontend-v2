@@ -94,24 +94,13 @@ export default function Page({ params }: PageProps) {
         totalCount: session.totalCount,
       });
 
-      const boxRows = session.boxSession?.boxRows || [];
-      const manualTotal =
-        boxRows.length > 0
-          ? boxRows.reduce((sum, row) => sum + (row?.finalCount ?? 0), 0)
-          : session.totalCount || 0;
-      const aiTotal =
-        boxRows.length > 0
-          ? boxRows.reduce((sum, row) => sum + (row?.aiCount ?? 0), 0)
-          : 0;
-
       return {
         no: index + 1,
         vehicleCode: session.vehicle?.vehicleCode || "ไม่ทราบรหัส",
         datetime: formatDate(session.countingDate),
         createdBy: getUserDisplayName(session.user),
         sugarType: session.sugarType?.name || "ไม่ทราบชนิดน้ำตาล",
-        manualTotal: `${manualTotal} กล่อง`,
-        aiTotal: `${aiTotal} กล่อง`,
+        amount: `${session.totalCount || 0} กล่อง`,
         id: session.id, // Add session ID for image upload
         rawSession: session,
         boxSession: session.boxSession,
