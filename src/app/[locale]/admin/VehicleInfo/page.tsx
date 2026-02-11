@@ -151,7 +151,7 @@ export default function VehicleInfoPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       <VehiclesHeader
         onAddVehicle={handleAddVehicle}
         onAddVehicleType={handleAddVehicleType}

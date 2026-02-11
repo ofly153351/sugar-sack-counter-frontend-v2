@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface AdminSidebarProps {
   dict: Dictionary;
@@ -21,6 +21,27 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
   const pathname = usePathname();
   const locale = pathname.split("/")[1] || "th";
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const small = window.innerWidth <= 560;
+      setIsSmallScreen(small);
+      if (small) {
+        setIsCollapsed(true);
+      }
+      if (process.env.NEXT_PUBLIC_DEBUG === "true") {
+        console.log("[AdminSidebar] handleResize", {
+          width: window.innerWidth,
+          small,
+        });
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const menuItems = [
     {
@@ -64,10 +85,30 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
   };
 
   return (
+    <>
+      {isSmallScreen && (
+        <button
+          onClick={() => setIsCollapsed((prev) => !prev)}
+          className="fixed bottom-4 right-4 z-50 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+          title={isCollapsed ? "Open sidebar" : "Close sidebar"}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="w-5 h-5 text-gray-700" />
+          ) : (
+            <ChevronLeft className="w-5 h-5 text-gray-700" />
+          )}
+        </button>
+      )}
     <div
       className={`bg-gradient-to-b from-white to-gray-50 shadow-xl min-h-screen border-r border-gray-100 transition-all duration-300 ${
-        isCollapsed ? "w-20 lg:w-20" : "w-80 lg:w-80"
-      } md:w-64`}
+        isSmallScreen
+          ? isCollapsed
+            ? "w-16"
+            : "fixed inset-0 z-40 w-full"
+          : isCollapsed
+          ? "w-20 lg:w-20"
+          : "w-80 lg:w-80 md:w-64"
+      }`}
     >
       {/* Navigation */}
       <nav className={`p-3 md:p-4 ${isCollapsed ? "px-2 md:px-3" : ""}`}>
@@ -161,5 +202,6 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
 
       </nav>
     </div>
+    </>
   );
 }

@@ -165,22 +165,22 @@ export default function Page({ params }: PageProps) {
   });
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">
+    <div className="p-3 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">
           {dict.dashboard.sidebar.SugarBagsInfo}
         </h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => router.push(`/${currentLocale}/count?tab=bags`)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center gap-2 px-3 py-1.5 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
           >
             เริ่มนับกระสอบ
           </button>
           <button
             onClick={() => setIsSugarTypeModalOpen(true)}
             disabled={isCreating}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 px-3 py-1.5 text-sm sm:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
             {isCreating ? (
               <>
@@ -198,7 +198,7 @@ export default function Page({ params }: PageProps) {
       </div>
 
       {/* 🔍 ตัวกรองรหัสรถ */}
-      <div className="mb-6 p-4 bg-white border border-gray-100 rounded-xl shadow-sm max-w-3xl">
+      <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-white border border-gray-100 rounded-xl shadow-sm w-full sm:max-w-3xl">
         <label className="block text-gray-700 font-semibold mb-2">
           ค้นหารหัสรถ
         </label>
@@ -207,7 +207,7 @@ export default function Page({ params }: PageProps) {
           placeholder="เช่น V001, V021..."
           value={searchCode}
           onChange={(e) => setSearchCode(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none
+          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none
                      focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
         />
       </div>

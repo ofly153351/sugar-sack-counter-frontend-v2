@@ -257,19 +257,19 @@ export default function Table({
   // Render loading state on server to avoid hydration mismatch
   if (!isClient) {
     return (
-      <div className="overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white">
-        <table className="min-w-full divide-y divide-slate-200">
+      <div className="w-full max-w-full overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white overscroll-x-contain">
+        <table className="min-w-0 w-full table-fixed divide-y divide-slate-200">
           <thead className="bg-blue-500/10">
             <tr>
               {Array.from({ length: 6 }).map((_, index) => (
                 <th
                   key={index}
-                  className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide"
+                  className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words"
                 >
                   <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
                 </th>
               ))}
-              <th className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide">
+              <th className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words">
                 <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
               </th>
             </tr>
@@ -280,12 +280,12 @@ export default function Table({
                 {Array.from({ length: 6 }).map((_, cellIndex) => (
                   <td
                     key={cellIndex}
-                    className="px-6 py-4 whitespace-nowrap text-sm"
+                    className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal text-xs sm:text-sm break-words"
                   >
                     <div className="h-4 bg-gray-100 rounded animate-pulse"></div>
                   </td>
                 ))}
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal text-xs sm:text-sm break-words">
                   <div className="flex space-x-2">
                     <div className="h-8 w-8 bg-gray-100 rounded animate-pulse"></div>
                     <div className="h-8 w-8 bg-gray-100 rounded animate-pulse"></div>
@@ -301,20 +301,20 @@ export default function Table({
 
   return (
     <>
-      <div className="overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white">
-        <table className="min-w-full divide-y divide-slate-200">
+      <div className="w-full max-w-full overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white overscroll-x-contain">
+        <table className="min-w-0 w-full table-fixed divide-y divide-slate-200">
           <thead className="bg-blue-500/10">
             <tr>
               {headers.map((h) => (
                 <th
                   key={h.key}
-                  className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide"
+                  className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words"
                 >
                   {h.label}
                 </th>
               ))}
 
-              <th className="px-6 py-4 text-left text-sm font-semibold text-blue-700 tracking-wide">
+              <th className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words">
                 {t("table.actions", { defaultValue: "Actions" })}
               </th>
             </tr>
@@ -350,7 +350,7 @@ export default function Table({
                     {headers.map((h) => (
                       <td
                         key={h.key}
-                        className="px-6 py-4 whitespace-nowrap text-[15px] text-slate-700"
+                        className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal text-xs sm:text-[15px] text-slate-700 break-words"
                       >
                         {type === "vehicle" && h.key === "status" ? (
                           <span
@@ -392,16 +392,18 @@ export default function Table({
                       </td>
                     ))}
 
-                    <td className="px-6 py-4 flex gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(row);
-                        }}
-                        className="p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-center">
+                      <div className="flex items-center justify-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(row);
+                          }}
+                          className="p-1.5 sm:p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
 
@@ -471,10 +473,10 @@ export default function Table({
                                                   childRow
                                                 );
                                               }}
-                                              className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
+                                              className="p-1.5 sm:p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
                                               title="ดูรูปภาพ"
                                             >
-                                              <Eye className="w-4 h-4" />
+                                              <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                             </button>
                                           </td>
                                         </tr>
