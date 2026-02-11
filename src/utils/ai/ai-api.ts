@@ -64,6 +64,37 @@ export interface MinIOSaveResponse {
   };
 }
 
+const isHeicFile = (file: File) => {
+  const name = file.name.toLowerCase();
+  return (
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    name.endsWith(".heic") ||
+    name.endsWith(".heif")
+  );
+};
+
+const toJpegFile = async (file: File): Promise<File> => {
+  if (!isHeicFile(file)) return file;
+
+  let heic2any: any;
+  try {
+    ({ default: heic2any } = await import("heic2any"));
+  } catch (error) {
+    throw new Error("HEIC conversion library not installed. Please add heic2any.");
+  }
+
+  const converted = (await heic2any({
+    blob: file,
+    toType: "image/jpeg",
+    quality: 0.9,
+  })) as Blob;
+
+  return new File([converted], file.name.replace(/\.(heic|heif)$/i, ".jpg"), {
+    type: "image/jpeg",
+  });
+};
+
 /**
  * Detect sacks and boxes in an image using AI service
  * @param file The image file to analyze
@@ -337,25 +368,27 @@ export const processImageWithAI = async (
   };
 }> => {
   try {
+    const safeFile = await toJpegFile(file);
+
     // Validate file size before processing (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    if (safeFile.size > 5 * 1024 * 1024) {
       throw new Error("Image file is too large. Maximum size is 5MB.");
     }
 
     // Validate file type
     const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
-    if (!validTypes.includes(file.type)) {
+    if (!validTypes.includes(safeFile.type)) {
       throw new Error(
         `Invalid file type. Supported types: ${validTypes.join(", ")}`
       );
     }
 
     // Get original image as base64 for display
-    const originalImage = await fileToBase64(file);
+    const originalImage = await fileToBase64(safeFile);
 
     // Get AI detection results
     const aiResult = await detectSacksAndBoxes(
-      file,
+      safeFile,
       detectionType,
       saveToMinIO,
       sessionId,
