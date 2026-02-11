@@ -214,7 +214,9 @@ export default function Nav() {
       <Navbar className="px-3 py-4 bg-white shadow-sm border-b border-gray-200 h-18 z-30 justify-between">
         <NavbarBrand className="flex items-center gap-2">
           <Logo width={40} height={40} />
-          <p className="font-bold text-2xl text-mp-green-800">Mitr Phol</p>
+          <p className="font-bold text-2xl text-mp-green-800 hidden sm:block">
+            Mitr Phol
+          </p>
         </NavbarBrand>
 
         {/* เมนูด้านขวา */}
@@ -364,13 +366,13 @@ export default function Nav() {
         classNames={{
           base: "bg-white",
           backdrop: "bg-black/40 backdrop-blur-sm",
-          wrapper: "z-[9999]",
+          wrapper: "z-[9999] items-start pt-6 sm:pt-10",
         }}
       >
-        <ModalContent className="bg-white border border-gray-300 shadow-xl rounded-2xl">
+        <ModalContent className="bg-white border border-gray-300 shadow-xl rounded-2xl w-full max-w-[90vw] sm:max-w-[86vw] md:max-w-3xl max-h-[90vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1 bg-gradient-to-r from-mp-green-50 to-blue-50 border-b border-gray-200 px-6 py-5">
+              <ModalHeader className="flex flex-col gap-1 bg-gradient-to-r from-mp-green-50 to-blue-50 border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-5">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gradient-to-br from-mp-green-100 to-blue-100 rounded-lg">
                     <Edit className="w-5 h-5 text-mp-green-700" />
@@ -389,7 +391,7 @@ export default function Nav() {
                   </div>
                 </div>
               </ModalHeader>
-              <ModalBody className="py-6">
+              <ModalBody className="py-4 sm:py-6 px-3 sm:px-6">
                 {currentUser ? (
                   <div className="space-y-6">
                     <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-mp-green-50 to-blue-50 rounded-xl border border-gray-200">
@@ -511,7 +513,7 @@ export default function Nav() {
                   </div>
                 )}
               </ModalBody>
-              <ModalFooter className="bg-gray-50 border-t border-gray-200 px-6 py-4">
+              <ModalFooter className="bg-gray-50 border-t border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
                 <div className="flex w-full gap-3">
                   <Button
                     color="default"
