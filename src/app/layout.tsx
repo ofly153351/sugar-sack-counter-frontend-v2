@@ -3,6 +3,13 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./client-layout";
 
+if (process.env.NODE_ENV === "production") {
+  // Silence noisy console output in production
+  console.log = () => {};
+  console.info = () => {};
+  console.debug = () => {};
+}
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
