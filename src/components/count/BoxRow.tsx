@@ -546,6 +546,10 @@ export default function BoxRow({
     }
   };
 
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleAIDetection = async () => {
     if (!imageFile) return;
 
@@ -1058,14 +1062,10 @@ export default function BoxRow({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-            <Camera className="w-4 h-4 mr-2" />
-            {t("takePhoto")}
-          </button>
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={openFilePicker}
             disabled={isUploading || isDetecting}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
             {isUploading ? (
               <>
@@ -1079,8 +1079,8 @@ export default function BoxRow({
               </>
             ) : (
               <>
-                <CloudDownload className="w-4 h-4 mr-2" />
-                {t("upload")}
+                <Camera className="w-4 h-4 mr-2" />
+                ถ่ายภาพ / อัปโหลด
               </>
             )}
           </button>
@@ -1147,6 +1147,7 @@ export default function BoxRow({
             ref={fileInputRef}
             onChange={handleFileSelect}
             accept="image/*"
+            capture="environment"
             className="hidden"
           />
         </div>
