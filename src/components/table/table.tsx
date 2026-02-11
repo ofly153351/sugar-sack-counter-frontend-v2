@@ -140,8 +140,14 @@ export default function Table({
             label: t("bags.table.sugarType", { defaultValue: "Sugar Type" }),
           },
           {
-            key: "amount",
-            label: t("bags.table.amount", { defaultValue: "Amount" }),
+            key: "manualTotal",
+            label: t("bags.table.manualTotal", {
+              defaultValue: "Manual Total",
+            }),
+          },
+          {
+            key: "aiTotal",
+            label: t("bags.table.aiTotal", { defaultValue: "AI Total" }),
           },
         ];
       case "box":
@@ -164,8 +170,14 @@ export default function Table({
             label: t("box.table.sugarType", { defaultValue: "Sugar Type" }),
           },
           {
-            key: "amount",
-            label: t("box.table.amount", { defaultValue: "Amount" }),
+            key: "manualTotal",
+            label: t("box.table.manualTotal", {
+              defaultValue: "Manual Total",
+            }),
+          },
+          {
+            key: "aiTotal",
+            label: t("box.table.aiTotal", { defaultValue: "AI Total" }),
           },
         ];
       case "users":
@@ -182,6 +194,16 @@ export default function Table({
           {
             key: "lastname",
             label: t("users.table.lastname", { defaultValue: "Last Name" }),
+          },
+          {
+            key: "manualTotal",
+            label: t("users.table.manualTotal", {
+              defaultValue: "Manual Total",
+            }),
+          },
+          {
+            key: "aiTotal",
+            label: t("users.table.aiTotal", { defaultValue: "AI Total" }),
           },
           {
             key: "role",
@@ -439,7 +461,20 @@ export default function Table({
                                           </th>
                                         )}
                                         <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
-                                          จำนวน
+                                          {t(
+                                            isSackSession
+                                              ? "bags.table.manualCount"
+                                              : "box.table.manualCount",
+                                            { defaultValue: "Manual Count" }
+                                          )}
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
+                                          {t(
+                                            isSackSession
+                                              ? "bags.table.aiCount"
+                                              : "box.table.aiCount",
+                                            { defaultValue: "AI Count" }
+                                          )}
                                         </th>
                                         <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
                                           รูปภาพ
@@ -463,6 +498,9 @@ export default function Table({
                                           )}
                                           <td className="px-4 py-2 text-sm text-gray-700">
                                             {childRow.finalCount || 0}
+                                          </td>
+                                          <td className="px-4 py-2 text-sm text-gray-700">
+                                            {childRow.aiCount || 0}
                                           </td>
                                           <td className="px-4 py-2 text-sm">
                                             <button
