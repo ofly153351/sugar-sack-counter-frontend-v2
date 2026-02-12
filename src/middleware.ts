@@ -7,18 +7,6 @@ import { API_CONFIG, AUTH_CONFIG } from "./utils/config";
 // API base URL
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
-// Allow list for users who can access admin dashboard even if role is "user"
-// This is a temporary solution for development/testing
-const ADMIN_ALLOW_LIST = [
-  // Email allow list
-  "peel2aput@gmail.com",
-
-  // Username allow list
-  "ofly153351",
-
-  // Add more emails or usernames as needed
-];
-
 // Create next-intl middleware
 const intlMiddleware = createIntlMiddleware({
   locales: i18nSettings.locales,
@@ -188,37 +176,11 @@ export default async function middleware(request: NextRequest) {
         userData.role || userData.user?.role || userData.position;
       console.log(`🔍 Middleware: Determined user role: "${userRole}"`);
 
-      // Get user email and username for allow list checking
-      const userEmail = userData.email || userData.user?.email;
-      const userUsername = userData.username || userData.user?.username;
-
-      console.log(
-        `🔍 Middleware: User email: "${userEmail}", username: "${userUsername}"`
-      );
-
-      // Check if user is in admin allow list
-      const isInAllowList =
-        ADMIN_ALLOW_LIST.includes(userEmail) ||
-        ADMIN_ALLOW_LIST.includes(userUsername);
-
-      console.log(
-        `🔍 Middleware: User is in admin allow list: ${isInAllowList}`
-      );
-
       if (userRole !== "admin") {
-        // If user is not admin, check if they're in the allow list
-        if (isInAllowList) {
-          console.log(
-            `✅ Middleware: User "${
-              userEmail || userUsername
-            }" is in admin allow list, allowing access despite role "${userRole}"`
-          );
-        } else {
-          console.log(
-            `❌ Middleware: User role "${userRole}" is not admin and user is not in allow list, redirecting to home`
-          );
-          return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
-        }
+        console.log(
+          `❌ Middleware: User role "${userRole}" is not admin, redirecting to home`
+        );
+        return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
       }
 
       console.log("✅ Middleware: Admin access granted");
