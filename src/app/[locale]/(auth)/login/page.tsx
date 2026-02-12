@@ -11,7 +11,6 @@ import {
   useLoginForm,
   usePasswordVisibility,
   login,
-  storeAuthToken,
   getRedirectUrl,
   validateLoginCredentials,
   Dictionary,
@@ -28,7 +27,7 @@ export default function LoginPage() {
 
   const [dictionary, setDictionary] = useState<Dictionary | null>(null);
   const [submitError, setSubmitError] = useState("");
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [, setIsCheckingAuth] = useState(true);
 
   // Load dictionary on component mount
   useEffect(() => {
@@ -64,7 +63,7 @@ export default function LoginPage() {
           // User is not authenticated, stay on login page
           console.log("User not authenticated, showing login page");
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Error occurred, stay on login page
         console.log(
           "Error checking authentication, showing login page:",
@@ -79,12 +78,10 @@ export default function LoginPage() {
   }, [locale, router]);
 
   // Form management
-  const { formState, handleInputChange, setLoading, handleSubmit } =
-    useLoginForm();
+  const { formState, handleInputChange, handleSubmit } = useLoginForm();
 
   // Password visibility
   const {
-    isVisible: showPassword,
     toggleVisibility,
     getInputType,
     getVisibilityIcon,
@@ -138,11 +135,12 @@ export default function LoginPage() {
           "based on role:",
           result.role
         );
-        router.push(redirectTo);
+        // Force full navigation so middleware receives the freshly-set HttpOnly cookie
+        window.location.assign(redirectTo);
       } else {
         setSubmitError(result.message || t.loginFailed);
       }
-    } catch (err) {
+    } catch {
       setSubmitError(t.loginFailed);
     }
   };
