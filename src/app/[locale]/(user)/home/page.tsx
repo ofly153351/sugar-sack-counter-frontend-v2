@@ -6,11 +6,13 @@ import { i18nSettings, Locale } from "@/i18n/settings";
 export default async function HomePage({
   params,
 }: {
-  params?: { locale?: Locale };
+  params: Promise<{ locale?: Locale }>;
 }) {
+  const resolvedParams = await params;
   const locale =
-    params?.locale && i18nSettings.locales.includes(params.locale)
-      ? params.locale
+    resolvedParams?.locale &&
+    i18nSettings.locales.includes(resolvedParams.locale)
+      ? resolvedParams.locale
       : i18nSettings.defaultLocale;
   const t = await getTranslations({ locale, namespace: "home" });
 
