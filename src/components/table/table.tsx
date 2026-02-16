@@ -196,16 +196,6 @@ export default function Table({
             label: t("users.table.lastname", { defaultValue: "Last Name" }),
           },
           {
-            key: "manualTotal",
-            label: t("users.table.manualTotal", {
-              defaultValue: "Manual Total",
-            }),
-          },
-          {
-            key: "aiTotal",
-            label: t("users.table.aiTotal", { defaultValue: "AI Total" }),
-          },
-          {
             key: "role",
             label: t("users.table.role", { defaultValue: "Role" }),
           },

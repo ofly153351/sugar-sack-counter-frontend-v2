@@ -186,14 +186,14 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
             );
           })}
         </div>
-        <div className="mt-4 flex justify-end">
+        <div className="mt-20 flex justify-center">
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:shadow-lg transition-all duration-300"
+            className="w-10 h-10 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:shadow-lg transition-all duration-300"
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <ChevronLeft
-              className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${
+              className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${
                 isCollapsed ? "rotate-180" : ""
               }`}
             />
