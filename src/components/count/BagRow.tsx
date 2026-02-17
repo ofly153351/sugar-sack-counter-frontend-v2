@@ -751,7 +751,7 @@ export default function BagRow({
   const handleClearAIData = () => {
     Swal.fire({
       title: "ยืนยันการล้างข้อมูล AI",
-      text: "คุณต้องการล้างข้อมูล AI ทั้งหมดสำหรับแถวนี้หรือไม่? (รูปภาพจะยังคงอยู่)",
+      text: "คุณต้องการล้างข้อมูล AI และรูปภาพทั้งหมดสำหรับแถวนี้หรือไม่?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ล้างข้อมูล",
@@ -760,13 +760,17 @@ export default function BagRow({
       if (result.isConfirmed) {
         setAiCount(null);
         setAiResult(null);
+        setImageFile(null);
+        setImagePreview(null);
+        setShowFullscreenImage(false);
+        setFullscreenImageUrl(null);
         // Also reset file input to allow re-uploading
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
         Swal.fire({
           title: "สำเร็จ!",
-          text: "ล้างข้อมูล AI เรียบร้อยแล้ว",
+          text: "ล้างข้อมูล AI และรูปภาพเรียบร้อยแล้ว",
           icon: "success",
           confirmButtonText: "ตกลง",
         });
@@ -934,8 +938,16 @@ export default function BagRow({
             <X className="w-5 h-5" />
           </button>
           <div
-            className="bg-white border border-gray-300 w-full md:w-28 h-28 flex items-center justify-center rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-300 relative z-10 cursor-pointer"
-            onClick={() => fileInputRef.current?.click()}
+            className={`bg-white border border-gray-300 w-full md:w-28 h-28 flex items-center justify-center rounded-xl shadow-sm overflow-hidden transition-shadow duration-300 relative z-10 ${
+              imagePreview
+                ? "cursor-default"
+                : "cursor-pointer hover:shadow-lg"
+            }`}
+            onClick={() => {
+              if (!imagePreview) {
+                fileInputRef.current?.click();
+              }
+            }}
           >
             {imagePreview ? (
               <div className="relative w-full h-full">
