@@ -417,6 +417,27 @@ export interface ApiVehicle {
   updatedAt?: string;
 }
 
+export interface Product {
+  id?: string | number;
+  productCode: string;
+  productName: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProductFormData {
+  productCode: string;
+  productName: string;
+}
+
+export interface ApiProduct {
+  id: string | number;
+  productCode: string;
+  productName: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // Store Types
 export interface StoreUser {
   id: string;

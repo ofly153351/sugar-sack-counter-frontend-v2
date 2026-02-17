@@ -6,6 +6,7 @@ import {
   ChevronRight,
   FileText,
   Forklift,
+  Package,
   LayoutDashboard,
   UserRound,
   UserCog,
@@ -68,6 +69,12 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
       label: dict.dashboard.sidebar.VehicleInfo,
       href: `/${locale}/admin/VehicleInfo`,
       icon: Forklift,
+    },
+    {
+      key: "Products",
+      label: dict.dashboard.sidebar.Products,
+      href: `/${locale}/admin/Products`,
+      icon: Package,
     },
     {
       key: "Users",

@@ -17,7 +17,7 @@ import { useState, useEffect } from "react";
 import { API_CONFIG } from "@/utils/config";
 
 interface TableProps {
-  type: "vehicle" | "bags" | "box" | "users";
+  type: "vehicle" | "bags" | "box" | "users" | "products";
   data?: Record<string, any>[];
   onEdit?: (item: Record<string, any>) => void;
   onDelete?: (item: Record<string, any>) => void;
@@ -199,6 +199,22 @@ export default function Table({
           {
             key: "role",
             label: t("users.table.role", { defaultValue: "Role" }),
+          },
+        ];
+      case "products":
+        return [
+          { key: "no", label: t("products.table.no", { defaultValue: "NO." }) },
+          {
+            key: "productCode",
+            label: t("products.table.productCode", {
+              defaultValue: "Product Code",
+            }),
+          },
+          {
+            key: "productName",
+            label: t("products.table.productName", {
+              defaultValue: "Product Name",
+            }),
           },
         ];
       default:

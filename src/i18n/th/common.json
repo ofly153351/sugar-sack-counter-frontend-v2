@@ -42,6 +42,7 @@
       "SugarBagsInfo": "ข้อมูลการนับกระสอบน้ำตาล",
       "SugarBoxsInfo": "ข้อมูลการนับกล่องน้ำตาล",
       "Users": "จัดการข้อมูลผู้ใช้",
+      "Products": "สินค้า",
       "EmployeeInfo": "ข้อมูลพนักงาน"
     },
     "metrics": {
@@ -376,6 +377,49 @@
     },
     "errors": {
       "loadError": "ไม่สามารถโหลดข้อมูลผู้ใช้งานได้"
+    },
+    "buttons": {
+      "ok": "ตกลง",
+      "cancel": "ยกเลิก",
+      "retry": "ลองใหม่"
+    }
+  },
+  "products": {
+    "title": "จัดการสินค้า",
+    "addProduct": "เพิ่มสินค้า",
+    "editProduct": "แก้ไขสินค้า",
+    "loading": "กำลังโหลดข้อมูลสินค้า...",
+    "noProducts": "ไม่พบข้อมูลสินค้า",
+    "noProductsInSystem": "ไม่มีข้อมูลสินค้าในระบบ",
+    "search": "ค้นหาด้วยรหัสสินค้า หรือชื่อสินค้า",
+    "tryDifferentSearch": "ลองใช้คำค้นหาอื่นหรือ",
+    "clearSearch": "ล้างการค้นหา",
+    "table": {
+      "no": "NO.",
+      "productCode": "รหัสสินค้า",
+      "productName": "ชื่อสินค้า",
+      "actions": "จัดการ"
+    },
+    "form": {
+      "productCode": "รหัสสินค้า",
+      "productName": "ชื่อสินค้า",
+      "save": "บันทึก",
+      "cancel": "ยกเลิก",
+      "requiredFields": "กรุณากรอกข้อมูลให้ครบ"
+    },
+    "delete": {
+      "confirm": "ต้องการลบสินค้านี้หรือไม่?",
+      "confirmButton": "ลบ",
+      "success": "ลบสินค้าเรียบร้อย",
+      "error": "ไม่สามารถลบสินค้าได้"
+    },
+    "save": {
+      "createSuccess": "เพิ่มสินค้าเรียบร้อย",
+      "updateSuccess": "แก้ไขสินค้าเรียบร้อย",
+      "error": "ไม่สามารถบันทึกสินค้าได้"
+    },
+    "errors": {
+      "loadError": "ไม่สามารถโหลดข้อมูลสินค้าได้"
     },
     "buttons": {
       "ok": "ตกลง",

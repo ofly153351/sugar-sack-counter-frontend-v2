@@ -4,13 +4,11 @@ import Table from "@/components/table/table";
 import { getDictionary } from "@/i18n/dictionaries";
 import { Locale } from "@/i18n/settings";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { SugarTypeModal } from "@/components/sugar-types/SugarTypeModal";
-import { createSugarType } from "@/utils/count/count-api";
-import Swal from "sweetalert2";
 import { useCountingSessionsByType } from "@/hooks/useCount";
 import { API_CONFIG } from "@/utils/config";
+import { deleteCountingSession } from "@/utils/count/count-api";
+import Swal from "sweetalert2";
 
 interface PageProps {
   params: Promise<{ locale: Locale }>;
@@ -47,14 +45,13 @@ export default function Page({ params }: PageProps) {
   > | null>(null);
   const [currentLocale, setCurrentLocale] = useState<Locale>("th");
   const [searchCode, setSearchCode] = useState("");
-  const [isSugarTypeModalOpen, setIsSugarTypeModalOpen] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
 
   // Fetch counting sessions for boxes
   const {
     data: countingSessions,
     isLoading,
     error,
+    refetch,
   } = useCountingSessionsByType("box");
 
   // Debug logging
@@ -124,6 +121,31 @@ export default function Page({ params }: PageProps) {
     item.vehicleCode.toLowerCase().includes(searchCode.toLowerCase())
   );
 
+  const handleDeleteSession = async (item: { id?: string | number }) => {
+    if (!item.id) return;
+
+    try {
+      await deleteCountingSession(item.id);
+      await refetch();
+      Swal.fire({
+        title: "ลบสำเร็จ",
+        text: "ลบข้อมูลการนับเรียบร้อยแล้ว",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+    } catch (deleteError: unknown) {
+      Swal.fire({
+        title: "ลบไม่สำเร็จ",
+        text:
+          deleteError instanceof Error
+            ? deleteError.message
+            : "ไม่สามารถลบข้อมูลการนับได้",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
   console.log("🔍 [DEBUG] SugarBoxsInfo - Final Data:", {
     tableDataCount: tableData.length,
     filteredDataCount: filteredData.length,
@@ -144,23 +166,6 @@ export default function Page({ params }: PageProps) {
             className="flex items-center justify-center gap-2 px-3 py-1.5 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
           >
             เริ่มนับกล่อง
-          </button>
-          <button
-            onClick={() => setIsSugarTypeModalOpen(true)}
-            disabled={isCreating}
-            className="flex items-center justify-center gap-2 px-3 py-1.5 text-sm sm:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-          >
-            {isCreating ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                {dict.count.addSugarType || "กำลังเพิ่ม..."}
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4" />
-                {dict.count.addSugarType || "เพิ่มชนิดน้ำตาล"}
-              </>
-            )}
           </button>
         </div>
       </div>
@@ -221,50 +226,11 @@ export default function Page({ params }: PageProps) {
               <p className="text-gray-500">ไม่พบข้อมูลการนับกล่อง</p>
             </div>
           ) : (
-            <Table type="box" data={filteredData} />
+            <Table type="box" data={filteredData} onDelete={handleDeleteSession} />
           )}
         </>
       )}
 
-      {/* Sugar Type Modal */}
-      <SugarTypeModal
-        isOpen={isSugarTypeModalOpen}
-        onClose={() => setIsSugarTypeModalOpen(false)}
-        onSave={async (sugarType: { name: string; description?: string }) => {
-          setIsCreating(true);
-          try {
-            await createSugarType({
-              name: sugarType.name,
-              description: sugarType.description,
-            });
-
-            // Show success message
-            Swal.fire({
-              title: dict?.sugarTypeManagement?.successTitle || "สำเร็จ!",
-              text:
-                dict?.sugarTypeManagement?.addSuccess ||
-                "เพิ่มชนิดน้ำตาลเรียบร้อยแล้ว",
-              icon: "success",
-              confirmButtonText: dict?.sugarTypeManagement?.ok || "ตกลง",
-              confirmButtonColor: "#3085d6",
-            });
-          } catch (error: unknown) {
-            console.error("❌ Error creating sugar type:", error);
-            Swal.fire({
-              title: dict?.sugarTypeManagement?.errorTitle || "เกิดข้อผิดพลาด",
-              text:
-                (error instanceof Error ? error.message : String(error)) ||
-                dict?.sugarTypeManagement?.createErrorMessage ||
-                "ไม่สามารถเพิ่มชนิดน้ำตาลได้",
-              icon: "error",
-              confirmButtonText: dict?.sugarTypeManagement?.ok || "ตกลง",
-              confirmButtonColor: "#3085d6",
-            });
-          } finally {
-            setIsCreating(false);
-          }
-        }}
-      />
     </div>
   );
 }

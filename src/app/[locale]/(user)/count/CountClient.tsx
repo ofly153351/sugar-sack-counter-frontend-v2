@@ -7,7 +7,6 @@ import Tabs from "@/components/count/Tabs";
 import { Plus, Loader2, Bug } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
 import { useCountManager } from "@/hooks/useCount";
 import Swal from "sweetalert2";
 import type {
@@ -18,11 +17,14 @@ import type {
 import { deleteCountingSession } from "@/utils/count/count-api";
 import { API_CONFIG } from "@/utils/config";
 
+interface CountPageProps {
+  initialTab?: "bags" | "boxes";
+}
+
 // CountPage
-export default function CountPage() {
+export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   const t = useTranslations("count");
-  const searchParams = useSearchParams();
-  const [currentTab, setCurrentTab] = useState<"bags" | "boxes">("bags");
+  const [currentTab, setCurrentTab] = useState<"bags" | "boxes">(initialTab);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>("");
   const [selectedSugarTypeId, setSelectedSugarTypeId] = useState<string>("");
   const [rows, setRows] = useState<number[]>([1]);
@@ -51,14 +53,6 @@ export default function CountPage() {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  // Initialize tab from query param
-  useEffect(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam === "bags" || tabParam === "boxes") {
-      setCurrentTab(tabParam);
-    }
-  }, [searchParams]);
 
   // Initialize selected values only once when data is loaded
   useEffect(() => {

@@ -2,3 +2,4 @@
 
 // Export all admin-related utilities
 export * from "./users/user-api";
+export * from "./products/product-api";
