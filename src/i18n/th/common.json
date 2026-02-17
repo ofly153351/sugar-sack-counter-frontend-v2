@@ -123,7 +123,9 @@
     },
     "validation": {
       "requiredFields": "ข้อมูลไม่ครบถ้วน",
-      "selectVehicleAndSugarType": "กรุณาเลือกรถขนส่งและประเภทน้ำตาล"
+      "selectVehicleAndSugarType": "กรุณาเลือกรถขนส่งและประเภทน้ำตาล",
+      "missingData": "ข้อมูลการนับยังไม่ครบ",
+      "missingRowData": "กรุณากรอกข้อมูลแถวที่ {missingRows} ให้ครบก่อนบันทึก"
     },
     "saveMessages": {
       "error": "เกิดข้อผิดพลาด",

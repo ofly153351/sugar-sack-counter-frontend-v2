@@ -7,7 +7,8 @@ interface CountPageProps {
 
 export default async function CountPage({ searchParams }: CountPageProps) {
   const { tab } = await searchParams;
-  const initialTab = tab === "boxes" ? "boxes" : "bags";
+  const initialTab =
+    tab === "bags" || tab === "boxes" ? tab : undefined;
 
   return (
     <Suspense fallback={<div className="p-6">Loading...</div>}>

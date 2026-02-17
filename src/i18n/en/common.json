@@ -122,7 +122,9 @@
     },
     "validation": {
       "requiredFields": "Incomplete information",
-      "selectVehicleAndSugarType": "Please select transportation vehicle and sugar type"
+      "selectVehicleAndSugarType": "Please select transportation vehicle and sugar type",
+      "missingData": "Counting data is incomplete",
+      "missingRowData": "Please complete row(s) {missingRows} before saving"
     },
     "saveMessages": {
       "error": "Error",

@@ -4,7 +4,6 @@ import {
   Image as ImageIcon,
   X,
   Brain,
-  Settings,
   Trash2,
   Maximize2,
   Save,
@@ -76,7 +75,6 @@ export default function BoxRow({
     totalCount: number;
   } | null>(null);
   const [autoDetectEnabled, setAutoDetectEnabled] = useState(true);
-  const [showSettings, setShowSettings] = useState(false);
   const [detectionType, setDetectionType] = useState<"sack" | "box" | "both">(
     "box"
   );
@@ -984,143 +982,6 @@ export default function BoxRow({
             </button>
           </div>
 
-          <div className="relative ml-auto">
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="flex items-center px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              title="ตั้งค่า AI"
-            >
-              <Settings className="w-4 h-4 mr-1" />
-              AI Settings
-            </button>
-
-            {showSettings && (
-              <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-gray-300 rounded-lg shadow-lg z-50 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Auto-detect AI
-                  </span>
-                  <button
-                    onClick={() => handleAutoDetectToggle(!autoDetectEnabled)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                      autoDetectEnabled ? "bg-green-500" : "bg-gray-300"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                        autoDetectEnabled ? "translate-x-6" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between mb-2 mt-3">
-                  <span className="text-sm font-medium text-gray-700">
-                    ประเภทการตรวจจับ
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => handleDetectionTypeChange("sack")}
-                      className={`px-2 py-1 text-xs rounded ${
-                        detectionType === "sack"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                      }`}
-                    >
-                      กระสอบ
-                    </button>
-                    <button
-                      onClick={() => handleDetectionTypeChange("box")}
-                      className={`px-2 py-1 text-xs rounded ${
-                        detectionType === "box"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                      }`}
-                    >
-                      กล่อง
-                    </button>
-                    <button
-                      onClick={() => handleDetectionTypeChange("both")}
-                      className={`px-2 py-1 text-xs rounded ${
-                        detectionType === "both"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                      }`}
-                    >
-                      ทั้งสอง
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mb-2 mt-3">
-                  <span className="text-sm font-medium text-gray-700">
-                    บันทึก MinIO
-                  </span>
-                  <button
-                    onClick={() => handleSaveToMinIOToggle(!saveToMinIOEnabled)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                      saveToMinIOEnabled ? "bg-purple-500" : "bg-gray-300"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                        saveToMinIOEnabled ? "translate-x-6" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between mb-2 mt-3">
-                  <span className="text-sm font-medium text-gray-700">
-                    แสดงการแจ้งเตือน
-                  </span>
-                  <button
-                    onClick={() => {
-                      const current =
-                        localStorage.getItem("ai_show_notifications") !==
-                        "false";
-                      localStorage.setItem(
-                        "ai_show_notifications",
-                        (!current).toString()
-                      );
-                    }}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                      localStorage.getItem("ai_show_notifications") !== "false"
-                        ? "bg-blue-500"
-                        : "bg-gray-300"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                        localStorage.getItem("ai_show_notifications") !==
-                        "false"
-                          ? "translate-x-6"
-                          : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500">
-                  {autoDetectEnabled
-                    ? `AI จะตรวจจับ${
-                        detectionType === "sack"
-                          ? "กระสอบ"
-                          : detectionType === "box"
-                          ? "กล่อง"
-                          : "กระสอบและกล่อง"
-                      }อัตโนมัติหลังอัปโหลดรูปภาพ`
-                    : "AI จะไม่ตรวจจับอัตโนมัติ ต้องกดปุ่มตรวจจับเอง"}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {saveToMinIOEnabled
-                    ? "จะบันทึกภาพอัตโนมัติ"
-                    : "จะไม่บันทึกภาพอัตโนมัติ"}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {localStorage.getItem("ai_show_notifications") !== "false"
-                    ? "จะแสดงการแจ้งเตือนผลลัพธ์ AI"
-                    : "จะไม่แสดงการแจ้งเตือนผลลัพธ์ AI"}
-                </p>
-              </div>
-            )}
-          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">

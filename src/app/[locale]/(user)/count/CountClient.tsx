@@ -7,6 +7,7 @@ import Tabs from "@/components/count/Tabs";
 import { Plus, Loader2, Bug } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useCountManager } from "@/hooks/useCount";
 import Swal from "sweetalert2";
 import type {
@@ -24,13 +25,18 @@ interface CountPageProps {
 // CountPage
 export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   const t = useTranslations("count");
-  const [currentTab, setCurrentTab] = useState<"bags" | "boxes">(initialTab);
+  const router = useRouter();
+  const pathname = usePathname();
+  const locale = pathname.split("/")[1] || "th";
+  const [currentTab, setCurrentTab] = useState<"bags" | "boxes">(
+    initialTab === "boxes" ? "boxes" : "bags"
+  );
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>("");
   const [selectedSugarTypeId, setSelectedSugarTypeId] = useState<string>("");
   const [rows, setRows] = useState<number[]>([1]);
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [isSessionStarted, setIsSessionStarted] = useState(false);
+  const [isSessionStarted, setIsSessionStarted] = useState(true);
   const [sackRowsData, setSackRowsData] = useState<{
     [key: number]: SackRowFormData;
   }>({});
@@ -91,7 +97,6 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
         console.log("🔄 [DEBUG] Tab changed, resetting counting session ID");
         setCountingSessionId("");
         setTempSessionId("");
-        setIsSessionStarted(false);
       }
       prevTabRef.current = currentTab;
     }
@@ -272,7 +277,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
       }
     }
 
-    setIsSessionStarted(false);
+    setIsSessionStarted(true);
     setRows([1]);
     setSackRowsData({});
     setBoxRowsData({});
@@ -280,6 +285,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     setTempSessionId("");
     setResetTrigger((prev) => prev + 1);
     setHasSaved(false);
+    router.push(`/${locale}/home`);
   };
 
   const handleSave = async () => {
@@ -507,6 +513,12 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     []
   );
 
+  const missingRows =
+    currentTab === "bags"
+      ? rows.filter((rowNumber) => !sackRowsData[rowNumber])
+      : rows.filter((rowNumber) => !boxRowsData[rowNumber]);
+  const hasMissingRowData = missingRows.length > 0;
+
   // Show loading while fetching essential data or waiting for client
   if (!isClient) {
     return (
@@ -599,49 +611,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           </p>
         </div>
 
-        {!isSessionStarted && (
-          <div className="mb-6 flex flex-col items-center text-center gap-4 bg-blue-50 border border-blue-200 rounded-xl p-6">
-            <div>
-              <h2 className="text-lg font-semibold text-blue-900">
-                {t("startCounting", { defaultValue: "เริ่มการนับ" })}
-              </h2>
-              <p className="text-sm text-blue-700 mt-1">
-                {t("startCountingHint", {
-                  defaultValue: "เลือกประเภทการนับเพื่อเริ่มสร้างเซสชัน",
-                })}
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <button
-                onClick={() => {
-                  setCurrentTab("bags");
-                  setIsSessionStarted(true);
-                }}
-                title={t("startCountingTooltip", {
-                  defaultValue: "สร้างเซสชันและปลดล็อกแบบฟอร์ม",
-                })}
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                {t("startButtons.bags", { defaultValue: "นับกระสอบ" })}
-              </button>
-              <button
-                onClick={() => {
-                  setCurrentTab("boxes");
-                  setIsSessionStarted(true);
-                }}
-                title={t("startCountingTooltip", {
-                  defaultValue: "สร้างเซสชันและปลดล็อกแบบฟอร์ม",
-                })}
-                className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                {t("startButtons.boxes", { defaultValue: "นับกล่องหหห" })}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {isSessionStarted && (
-          <>
+        <>
             <div className="mb-4 flex justify-start">
               <button
                 onClick={handleBackToStart}
@@ -831,7 +801,8 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                   !selectedVehicleId ||
                   !selectedSugarTypeId ||
                   !countingSessionId ||
-                  rows.length === 0
+                  rows.length === 0 ||
+                  hasMissingRowData
                 }
                 className="flex items-center justify-center gap-2 px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -845,8 +816,24 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                 )}
               </button>
             </div>
-          </>
-        )}
+            {hasMissingRowData && (
+              <div className="mt-3 text-center">
+                <p className="text-sm font-medium text-amber-600">
+                  {t("validation.missingData", {
+                    defaultValue: "ข้อมูลไม่ครบถ้วน",
+                  })}
+                </p>
+                <p className="text-xs text-amber-500 mt-1">
+                  {t("validation.missingRowData", {
+                    missingRows: missingRows.join(", "),
+                    defaultValue: `กรุณากรอกข้อมูลสำหรับแถวที่ ${missingRows.join(
+                      ", "
+                    )}`,
+                  })}
+                </p>
+              </div>
+            )}
+        </>
       </div>
     </div>
   );
