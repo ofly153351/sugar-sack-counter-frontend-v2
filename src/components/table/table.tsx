@@ -405,6 +405,26 @@ export default function Table({
                               </option>
                             ))}
                           </select>
+                        ) : (type === "bags" || type === "box") &&
+                          h.key === "no" &&
+                          showExpandButton ? (
+                          <div className="inline-flex items-center gap-2">
+                            <ChevronRight
+                              title={isExpanded ? "ย่อรายละเอียด" : "ดูรายละเอียด"}
+                              className={`h-3.5 w-3.5 transition-all duration-300 ${
+                                isExpanded
+                                  ? "rotate-90 text-blue-700"
+                                  : "rotate-0 text-slate-500"
+                              }`}
+                            />
+                            <span
+                              className={`transition-colors ${
+                                isExpanded ? "text-blue-700" : "text-slate-700"
+                              }`}
+                            >
+                              {row[h.key]}
+                            </span>
+                          </div>
                         ) : (
                           row[h.key]
                         )}
@@ -430,7 +450,7 @@ export default function Table({
                             e.stopPropagation();
                             handleDelete(row);
                           }}
-                          className="p-1.5 sm:p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
+                          className="flex items-center justify-center p-1.5 sm:p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
                         >
                           <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </button>
