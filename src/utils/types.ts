@@ -254,7 +254,7 @@ export interface Vehicle {
   vehicleTypeId: string | number;
   vehicleType?: VehicleType;
   driverName: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "maintenance";
   createdAt?: string;
   updatedAt?: string;
 }
@@ -389,14 +389,12 @@ export interface ApiUser {
 export interface VehicleType {
   id: string | number;
   name: string;
-  description?: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface VehicleTypeFormData {
   name: string;
-  description?: string;
 }
 
 export interface VehicleFormData {
@@ -404,7 +402,7 @@ export interface VehicleFormData {
   licensePlate: string;
   vehicleTypeId: string | number;
   driverName: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "maintenance";
 }
 
 export interface ApiVehicle {
@@ -414,7 +412,7 @@ export interface ApiVehicle {
   vehicleTypeId: string | number;
   vehicleType?: VehicleType;
   driverName: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "maintenance";
   createdAt?: string;
   updatedAt?: string;
 }

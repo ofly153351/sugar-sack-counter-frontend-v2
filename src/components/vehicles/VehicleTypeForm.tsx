@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 
 interface VehicleTypeFormProps {
   onCancel: () => void;
-  onSave: (vehicleTypeData: { name: string; description?: string }) => void;
+  onSave: (vehicleTypeData: { name: string }) => void;
   isLoading?: boolean;
 }
 
@@ -17,7 +17,6 @@ export function VehicleTypeForm({
 }: VehicleTypeFormProps) {
   const t = useTranslations("vehicle.form");
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
 
   const handleSubmit = () => {
     if (!name.trim()) {
@@ -25,12 +24,7 @@ export function VehicleTypeForm({
       return;
     }
 
-    const vehicleTypeData = {
-      name: name.trim(),
-      description: description.trim() || undefined,
-    };
-
-    onSave(vehicleTypeData);
+    onSave({ name: name.trim() });
   };
 
   return (
@@ -48,22 +42,6 @@ export function VehicleTypeForm({
           disabled={isLoading}
         />
         <p className="text-sm text-gray-500 mt-1">{t("vehicleTypeNameHint")}</p>
-      </div>
-
-      <div>
-        <label className="block font-semibold mb-1">
-          {t("vehicleTypeDescription")}
-        </label>
-        <textarea
-          className="w-full border border-gray-300 rounded px-3 py-2 min-h-[100px]"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={t("vehicleTypeDescriptionPlaceholder")}
-          disabled={isLoading}
-        />
-        <p className="text-sm text-gray-500 mt-1">
-          {t("vehicleTypeDescriptionHint")}
-        </p>
       </div>
 
       <div className="flex justify-end gap-2 mt-4">

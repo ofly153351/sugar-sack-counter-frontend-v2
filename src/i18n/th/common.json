@@ -41,7 +41,8 @@
       "VehicleInfo": "ข้อมูลรถขนส่ง",
       "SugarBagsInfo": "ข้อมูลการนับกระสอบน้ำตาล",
       "SugarBoxsInfo": "ข้อมูลการนับกล่องน้ำตาล",
-      "Users": "จัดการข้อมูลผู้ใช้"
+      "Users": "จัดการข้อมูลผู้ใช้",
+      "EmployeeInfo": "ข้อมูลพนักงาน"
     },
     "metrics": {
       "sacksToday": "จำนวนกระสอบวันนี้",
@@ -223,7 +224,8 @@
     "searchPlaceholder": "ค้นหาด้วยรหัสรถ, ทะเบียน, คนขับ...",
     "filter": {
       "type": "ประเภทรถ",
-      "search": "ค้นหา"
+      "search": "ค้นหา",
+      "allTypes": "ทั้งหมด"
     },
     "delete": {
       "confirmTitle": "ต้องการลบข้อมูลนี้?",
@@ -264,12 +266,9 @@
       "cancel": "ยกเลิก",
       "createVehicleType": "สร้างประเภทรถใหม่",
       "vehicleTypeName": "ชื่อประเภทรถ",
-      "vehicleTypeDescription": "คำอธิบาย (ไม่จำเป็น)",
       "vehicleTypeNamePlaceholder": "เช่น รถบรรทุก 12 ล้อ, รถกระบะ",
       "driverNamePlaceholder": "เช่น สมชาย ใจดี",
-      "vehicleTypeDescriptionPlaceholder": "เช่น รถบรรทุกขนาดใหญ่พิเศษสำหรับขนส่งน้ำตาล",
       "vehicleTypeNameHint": "ชื่อประเภทรถต้องไม่ซ้ำกับที่มีอยู่ในระบบ",
-      "vehicleTypeDescriptionHint": "คำอธิบายเพิ่มเติมเกี่ยวกับประเภทรถนี้",
       "createVehicleTypeButton": "สร้างประเภทรถ",
       "creatingVehicleType": "กำลังสร้าง..."
     },
@@ -384,8 +383,88 @@
       "retry": "ลองใหม่"
     }
   },
+  "employeeInfo": {
+    "title": "ข้อมูลพนักงาน",
+    "addEmployee": "เพิ่มข้อมูลพนักงาน",
+    "editEmployee": "แก้ไขข้อมูลพนักงาน",
+    "searchPlaceholder": "ค้นหาข้อมูลพนักงาน...",
+    "loading": "กำลังโหลดข้อมูลพนักงาน...",
+    "noData": "ไม่พบข้อมูลพนักงาน",
+    "table": {
+      "employeeCode": "รหัสพนักงาน",
+      "titlePrefix": "คำนำหน้า",
+      "firstName": "ชื่อ",
+      "lastName": "สกุล",
+      "department": "แผนก",
+      "status": "สถานะ",
+      "actions": "จัดการ"
+    },
+    "form": {
+      "employeeCode": "รหัสพนักงาน",
+      "titlePrefix": "คำนำหน้า",
+      "firstName": "ชื่อ",
+      "lastName": "นามสกุล",
+      "department": "แผนก",
+      "username": "ชื่อผู้ใช้",
+      "password": "รหัสผ่าน",
+      "passwordOptional": "รหัสผ่าน (เว้นว่างหากไม่เปลี่ยน)",
+      "phone": "เบอร์โทรศัพท์",
+      "email": "อีเมล"
+    },
+    "detail": {
+      "title": "รายละเอียดพนักงาน",
+      "employeeCode": "รหัสพนักงาน",
+      "titlePrefix": "คำนำหน้า",
+      "firstName": "ชื่อ",
+      "lastName": "นามสกุล",
+      "department": "แผนก",
+      "status": "สถานะ",
+      "phone": "เบอร์โทรศัพท์",
+      "email": "อีเมล"
+    },
+    "status": {
+      "active": "ใช้งาน",
+      "inactive": "ไม่ใช้งาน"
+    },
+    "validation": {
+      "title": "ข้อมูลไม่ครบ",
+      "requiredFields": "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน",
+      "passwordMin": "รหัสผ่านต้องอย่างน้อย 6 ตัวอักษร"
+    },
+    "delete": {
+      "confirmTitle": "ยืนยันการลบ",
+      "confirmText": "ต้องการลบข้อมูลพนักงาน {name} ใช่หรือไม่",
+      "successTitle": "ลบสำเร็จ",
+      "successText": "ลบข้อมูลพนักงานเรียบร้อยแล้ว",
+      "errorTitle": "ลบไม่สำเร็จ",
+      "errorText": "ไม่สามารถลบข้อมูลพนักงานได้"
+    },
+    "save": {
+      "createSuccessTitle": "เพิ่มข้อมูลสำเร็จ",
+      "createSuccessText": "เพิ่มข้อมูลพนักงานเรียบร้อยแล้ว",
+      "updateSuccessTitle": "แก้ไขข้อมูลสำเร็จ",
+      "updateSuccessText": "อัปเดตข้อมูลพนักงานเรียบร้อยแล้ว",
+      "errorTitle": "บันทึกไม่สำเร็จ",
+      "errorText": "ไม่สามารถบันทึกข้อมูลพนักงานได้"
+    },
+    "errors": {
+      "loadError": "ไม่สามารถโหลดข้อมูลพนักงานได้",
+      "unknown": "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ"
+    },
+    "buttons": {
+      "view": "ดูรายละเอียด",
+      "edit": "แก้ไข",
+      "delete": "ลบ",
+      "save": "บันทึก",
+      "cancel": "ยกเลิก",
+      "close": "ปิด",
+      "ok": "ตกลง",
+      "retry": "ลองใหม่"
+    }
+  },
   "table": {
     "actions": "จัดการ",
+    "edit": "แก้ไข",
     "noData": "— ไม่พบข้อมูล —",
     "delete": {
       "confirmButton": "ลบข้อมูล",

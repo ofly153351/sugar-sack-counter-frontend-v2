@@ -63,7 +63,8 @@
       "SugarBagsInfo": "Sugar Bags Information",
       "SugarBoxsInfo": "Sugar Boxes Information",
       "VehicleInfo": "VehicleInfo",
-      "Users": "Manage Users"
+      "Users": "Manage Users",
+      "EmployeeInfo": "Employee Information"
     },
     "metrics": {
       "sacksToday": "Sacks Today",
@@ -254,7 +255,8 @@
     "searchPlaceholder": "Search by vehicle code, license plate, driver...",
     "filter": {
       "type": "Vehicle Type",
-      "search": "Search"
+      "search": "Search",
+      "allTypes": "All types"
     },
     "delete": {
       "confirmTitle": "Confirm Delete",
@@ -295,12 +297,9 @@
       "cancel": "Cancel",
       "createVehicleType": "Create Vehicle Type",
       "vehicleTypeName": "Vehicle Type Name",
-      "vehicleTypeDescription": "Description (Optional)",
       "vehicleTypeNamePlaceholder": "e.g., 12-Wheel Truck, Pickup Truck",
       "driverNamePlaceholder": "e.g., John Smith",
-      "vehicleTypeDescriptionPlaceholder": "e.g., Extra large truck for sugar transportation",
       "vehicleTypeNameHint": "Vehicle type name must be unique",
-      "vehicleTypeDescriptionHint": "Additional description about this vehicle type",
       "createVehicleTypeButton": "Create Vehicle Type",
       "creatingVehicleType": "Creating..."
     },
@@ -405,6 +404,85 @@
       "retry": "Retry"
     }
   },
+  "employeeInfo": {
+    "title": "Employee Information",
+    "addEmployee": "Add Employee",
+    "editEmployee": "Edit Employee",
+    "searchPlaceholder": "Search employee information...",
+    "loading": "Loading employee data...",
+    "noData": "No employee data found",
+    "table": {
+      "employeeCode": "Employee Code",
+      "titlePrefix": "Title",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "department": "Department",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "employeeCode": "Employee Code",
+      "titlePrefix": "Title",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "department": "Department",
+      "username": "Username",
+      "password": "Password",
+      "passwordOptional": "Password (leave blank to keep unchanged)",
+      "phone": "Phone Number",
+      "email": "Email"
+    },
+    "detail": {
+      "title": "Employee Details",
+      "employeeCode": "Employee Code",
+      "titlePrefix": "Title",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "department": "Department",
+      "status": "Status",
+      "phone": "Phone Number",
+      "email": "Email"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "validation": {
+      "title": "Incomplete Data",
+      "requiredFields": "Please fill in all required fields",
+      "passwordMin": "Password must be at least 6 characters"
+    },
+    "delete": {
+      "confirmTitle": "Confirm Deletion",
+      "confirmText": "Are you sure you want to delete employee {name}?",
+      "successTitle": "Deleted",
+      "successText": "Employee deleted successfully",
+      "errorTitle": "Delete Failed",
+      "errorText": "Unable to delete employee"
+    },
+    "save": {
+      "createSuccessTitle": "Created",
+      "createSuccessText": "Employee created successfully",
+      "updateSuccessTitle": "Updated",
+      "updateSuccessText": "Employee updated successfully",
+      "errorTitle": "Save Failed",
+      "errorText": "Unable to save employee data"
+    },
+    "errors": {
+      "loadError": "Failed to load employee data",
+      "unknown": "Unknown error occurred"
+    },
+    "buttons": {
+      "view": "View Details",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close",
+      "ok": "OK",
+      "retry": "Retry"
+    }
+  },
   "buttons": {
     "ok": "OK",
     "cancel": "Cancel",
@@ -412,6 +490,7 @@
   },
   "table": {
     "actions": "Actions",
+    "edit": "Edit",
     "noData": "— No data found —",
     "delete": {
       "confirmButton": "Delete",

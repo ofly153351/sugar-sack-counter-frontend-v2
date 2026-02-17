@@ -37,18 +37,17 @@ export default function VehicleInfoPage() {
     setVehicleTypeModalOpen(true);
   };
 
-  const handleSaveVehicleType = async (vehicleTypeData: {
-    name: string;
-    description?: string;
-  }) => {
+  const handleSaveVehicleType = async (vehicleTypeData: { name: string }) => {
     try {
       await vehicleTypesManager.createVehicleType(vehicleTypeData);
       setVehicleTypeModalOpen(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "ไม่สามารถสร้างประเภทรถได้";
       console.error("❌ Error creating vehicle type:", err);
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: err.message || "ไม่สามารถสร้างประเภทรถได้",
+        text: errorMessage,
         icon: "error",
         confirmButtonText: "ตกลง",
       });
@@ -67,23 +66,25 @@ export default function VehicleInfoPage() {
 
       if (editVehicle && editVehicle.id) {
         // Update existing vehicle
-        vehiclesManager.updateVehicle({
+        await vehiclesManager.updateVehicleAsync({
           id: editVehicle.id,
           data: vehicleData,
         });
       } else {
         // Create new vehicle
-        vehiclesManager.createVehicle(vehicleData);
+        await vehiclesManager.createVehicleAsync(vehicleData);
       }
 
       // Close modal
       setModalOpen(false);
       setEditVehicle(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : undefined;
       console.error("❌ Error saving vehicle:", err);
       Swal.fire(
         t("vehicle.save.error", { defaultValue: "เกิดข้อผิดพลาด" }),
-        err.message ||
+        errorMessage ||
           t("vehicle.save.errorMessage", {
             defaultValue: "ไม่สามารถบันทึกรถได้",
           }),
@@ -115,6 +116,7 @@ export default function VehicleInfoPage() {
       status: vehicle.status,
     })
   );
+  const vehicleTypeNames = vehicleTypesManager.vehicleTypes.map((type) => type.name);
 
   if (vehiclesManager.isLoading) {
     return (
@@ -162,6 +164,7 @@ export default function VehicleInfoPage() {
         onEdit={handleEdit}
         onDelete={vehiclesManager.deleteVehicle}
         isLoading={vehiclesManager.isLoading}
+        vehicleTypes={vehicleTypeNames}
       />
 
       <VehicleModal

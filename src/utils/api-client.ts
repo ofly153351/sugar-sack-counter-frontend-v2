@@ -1,7 +1,7 @@
 // src/utils/api-client.ts
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import { API_CONFIG } from "./config";
+import { API_CONFIG, AUTH_CONFIG } from "./config";
 
 /**
  * Create axios instance with base configuration
@@ -31,6 +31,22 @@ const createApiClient = (): AxiosInstance => {
   // Request interceptor
   instance.interceptors.request.use(
     (config) => {
+      if (typeof window !== "undefined" && !config.headers?.Authorization) {
+        const cookieToken = document.cookie
+          .split(";")
+          .map((cookie) => cookie.trim())
+          .find((cookie) =>
+            cookie.startsWith(`${AUTH_CONFIG.COOKIE_TOKEN}=`)
+          )
+          ?.split("=")[1];
+        const localStorageToken = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY);
+        const token = cookieToken || localStorageToken;
+
+        if (token) {
+          config.headers.Authorization = `Bearer ${decodeURIComponent(token)}`;
+        }
+      }
+
       // Authentication is handled automatically by browser via HttpOnly cookies
       // The access_token cookie will be sent automatically to same-origin requests
 

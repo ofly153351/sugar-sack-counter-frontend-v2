@@ -7,6 +7,7 @@ import {
   FileText,
   Forklift,
   LayoutDashboard,
+  UserRound,
   UserCog,
 } from "lucide-react";
 import Link from "next/link";
@@ -73,6 +74,12 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
       label: dict.dashboard.sidebar.Users,
       href: `/${locale}/admin/Users`,
       icon: UserCog,
+    },
+    {
+      key: "EmployeeInfo",
+      label: dict.dashboard.sidebar.EmployeeInfo,
+      href: `/${locale}/admin/EmployeeInfo`,
+      icon: UserRound,
     },
   ];
 

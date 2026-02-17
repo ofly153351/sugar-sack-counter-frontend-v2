@@ -4,14 +4,16 @@ import Table from "@/components/table/table";
 import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface Vehicle {
   no: number;
+  id?: string | number;
   vehicleCode: string;
   licensePlate: string;
   vehicleType: string;
   driverName: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "maintenance";
 }
 
 interface VehiclesTableProps {
@@ -19,20 +21,22 @@ interface VehiclesTableProps {
   onEdit: (vehicle: Vehicle) => void;
   onDelete: (vehicle: Vehicle) => void;
   isLoading?: boolean;
+  vehicleTypes?: string[];
 }
-
-const vehicleTypes = ["ทั้งหมด", "รถบรรทุก", "รถกระบะ"];
 
 export function VehiclesTable({
   vehicles,
   onEdit,
   onDelete,
   isLoading = false,
+  vehicleTypes = [],
 }: VehiclesTableProps) {
   const t = useTranslations();
+  const allTypesLabel = t("vehicle.filter.allTypes", { defaultValue: "ทั้งหมด" });
+  const filterOptions = [allTypesLabel, ...vehicleTypes];
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("ทั้งหมด");
-  const [activeFilter, setActiveFilter] = useState("ทั้งหมด");
+  const [filterType, setFilterType] = useState(allTypesLabel);
+  const [activeFilter, setActiveFilter] = useState(allTypesLabel);
 
   const handleSearch = () => {
     setActiveFilter(filterType);
@@ -41,7 +45,7 @@ export function VehiclesTable({
   const filteredVehicles = vehicles.filter((vehicle) => {
     // Apply type filter
     const typeMatch =
-      activeFilter === "ทั้งหมด" || vehicle.vehicleType === activeFilter;
+      activeFilter === allTypesLabel || vehicle.vehicleType === activeFilter;
 
     // Apply search filter
     const searchTerm = search.toLowerCase();
@@ -86,7 +90,12 @@ export function VehiclesTable({
   return (
     <div className="space-y-4">
       {/* Filter Section */}
-      <div className="mb-6 p-4 border border-gray-200 rounded-lg shadow-sm bg-white">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="mb-6 p-4 border border-gray-200 rounded-lg shadow-sm bg-white"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Type Filter */}
           <div>
@@ -99,7 +108,7 @@ export function VehiclesTable({
                 onChange={(e) => setFilterType(e.target.value)}
                 className="flex-1 border border-gray-300 px-4 py-2.5 rounded-lg shadow-sm appearance-none bg-white focus:border-gray-500 focus:ring-1 focus:ring-gray-500 outline-none pr-10"
               >
-                {vehicleTypes.map((type) => (
+                {filterOptions.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>
@@ -136,7 +145,7 @@ export function VehiclesTable({
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Table */}
       {filteredVehicles.length === 0 ? (
@@ -146,7 +155,7 @@ export function VehiclesTable({
               defaultValue: "No vehicles found",
             })}
           </p>
-          {(search || activeFilter !== "ทั้งหมด") && (
+          {(search || activeFilter !== allTypesLabel) && (
             <p className="text-gray-400 mt-2">
               {t("vehicle.tryDifferentSearch", {
                 defaultValue: "Try a different search term or",
@@ -154,8 +163,8 @@ export function VehiclesTable({
               <button
                 onClick={() => {
                   setSearch("");
-                  setFilterType("ทั้งหมด");
-                  setActiveFilter("ทั้งหมด");
+                  setFilterType(allTypesLabel);
+                  setActiveFilter(allTypesLabel);
                 }}
                 className="text-blue-600 hover:underline"
               >
@@ -165,12 +174,18 @@ export function VehiclesTable({
           )}
         </div>
       ) : (
-        <Table
-          type="vehicle"
-          data={filteredVehicles}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+          <Table
+            type="vehicle"
+            data={filteredVehicles}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        </motion.div>
       )}
     </div>
   );

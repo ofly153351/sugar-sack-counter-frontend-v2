@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
 import { useTranslations } from "next-intl";
 
 interface VehicleType {
   id: string | number;
   name: string;
-  description?: string;
 }
 
 interface Vehicle {
@@ -18,7 +17,7 @@ interface Vehicle {
   vehicleType: string;
   vehicleTypeId: string | number;
   driverName: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "maintenance";
 }
 
 interface VehicleFormProps {
@@ -28,7 +27,7 @@ interface VehicleFormProps {
   vehicleTypes?: VehicleType[];
 }
 
-const statusOptions = ["active", "inactive"];
+const statusOptions = ["active", "inactive", "maintenance"] as const;
 
 export function VehicleForm({
   initialData,
@@ -47,12 +46,23 @@ export function VehicleForm({
     initialData?.vehicleTypeId || ""
   );
   const [driverName, setDriverName] = useState(initialData?.driverName || "");
-  const [status, setStatus] = useState<"active" | "inactive">(
+  const [status, setStatus] = useState<"active" | "inactive" | "maintenance">(
     initialData?.status || "active"
   );
+  const selectedVehicleTypeId = (() => {
+    if (vehicleTypeId) return vehicleTypeId;
+    if (vehicleTypes.length === 0) return "";
+
+    if (initialData?.vehicleType) {
+      const foundType = vehicleTypes.find((t) => t.name === initialData.vehicleType);
+      if (foundType) return foundType.id;
+    }
+
+    return vehicleTypes[0]?.id || "";
+  })();
 
   const handleSubmit = () => {
-    if (!vehicleCode || !licensePlate || !vehicleTypeId || !driverName) {
+    if (!vehicleCode || !licensePlate || !selectedVehicleTypeId || !driverName) {
       Swal.fire(t("requiredFields") || "กรุณากรอกข้อมูลให้ครบ", "", "warning");
       return;
     }
@@ -61,30 +71,13 @@ export function VehicleForm({
       id: initialData?.id,
       vehicleCode,
       licensePlate,
-      vehicleType: vehicleTypes.find((t) => t.id === vehicleTypeId)?.name || "",
-      vehicleTypeId,
+      vehicleType: vehicleTypes.find((t) => t.id === selectedVehicleTypeId)?.name || "",
+      vehicleTypeId: selectedVehicleTypeId,
       driverName,
       status,
     };
     onSave(vehicle);
   };
-
-  // Set initial vehicle type ID when vehicleTypes are loaded
-  useEffect(() => {
-    if (vehicleTypes.length > 0 && !vehicleTypeId && initialData?.vehicleType) {
-      const foundType = vehicleTypes.find(
-        (t) => t.name === initialData.vehicleType
-      );
-      if (foundType) {
-        setVehicleTypeId(foundType.id);
-      } else if (vehicleTypes[0]) {
-        setVehicleTypeId(vehicleTypes[0].id);
-      }
-    } else if (vehicleTypes.length > 0 && !vehicleTypeId) {
-      // Set default to first vehicle type if available
-      setVehicleTypeId(vehicleTypes[0].id);
-    }
-  }, [vehicleTypes, initialData, vehicleTypeId]);
 
   return (
     <div className="space-y-4">
@@ -111,7 +104,7 @@ export function VehicleForm({
       <div>
         <label className="block font-semibold mb-1">{t("vehicleType")}</label>
         <select
-          value={vehicleTypeId}
+          value={selectedVehicleTypeId}
           onChange={(e) => setVehicleTypeId(e.target.value)}
           className="w-full border border-gray-300 rounded px-3 py-2"
           disabled={vehicleTypes.length === 0}
@@ -147,7 +140,9 @@ export function VehicleForm({
         <label className="block font-semibold mb-1">{t("status")}</label>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value as "active" | "inactive")}
+          onChange={(e) =>
+            setStatus(e.target.value as "active" | "inactive" | "maintenance")
+          }
           className="w-full border border-gray-300 rounded px-3 py-2"
         >
           {statusOptions.map((s) => (

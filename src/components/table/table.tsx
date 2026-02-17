@@ -3,6 +3,7 @@
 import React from "react";
 import {
   Trash2,
+  Pencil,
   Image as ImageIcon,
   Eye,
   X,
@@ -369,10 +370,16 @@ export default function Table({
                             className={`px-3 py-1 rounded-full text-xs font-medium ${
                               row.status === "active"
                                 ? "bg-green-100 text-green-700 border border-green-200"
-                                : "bg-red-100 text-red-700 border border-red-200"
+                                : row.status === "maintenance"
+                                  ? "bg-amber-100 text-amber-700 border border-amber-200"
+                                  : "bg-red-100 text-red-700 border border-red-200"
                             }`}
                           >
-                            {row.status === "active" ? "Active" : "Inactive"}
+                            {row.status === "active"
+                              ? "Active"
+                              : row.status === "maintenance"
+                                ? "Maintenance"
+                                : "Inactive"}
                           </span>
                         ) : type === "users" && h.key === "role" ? (
                           <select
@@ -405,7 +412,19 @@ export default function Table({
                     ))}
 
                     <td className="px-2 sm:px-6 py-2 sm:py-4 text-center">
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {onEdit && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit(row);
+                            }}
+                            className="p-1.5 sm:p-2 rounded-md bg-blue-100 text-blue-600 hover:bg-blue-200 transition shadow-sm"
+                            title={t("table.edit", { defaultValue: "แก้ไข" })}
+                          >
+                            <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
