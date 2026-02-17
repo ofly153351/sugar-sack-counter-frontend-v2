@@ -41,7 +41,11 @@ export default function UsersPage() {
         user.email?.toLowerCase().includes(keyword) ||
         user.phone?.toLowerCase().includes(keyword)
       );
-    });
+    })
+    .map((user, index) => ({
+      ...user,
+      no: index + 1,
+    }));
 
   const isLoading = usersManager.isLoading;
   const isError = usersManager.isError;
@@ -139,9 +143,10 @@ export default function UsersPage() {
           },
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("❌ Error saving user:", err);
-      Swal.fire(t("save.error"), err.message || t("save.error"), "error");
+      const errorMessage = err instanceof Error ? err.message : t("save.error");
+      Swal.fire(t("save.error"), errorMessage, "error");
     }
   };
 
