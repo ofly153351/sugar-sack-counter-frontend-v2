@@ -296,6 +296,8 @@ export const useVehiclesManager = () => {
 import {
   fetchVehicleTypes,
   createVehicleType,
+  updateVehicleType,
+  deleteVehicleType,
   getVehicleTypeByName,
   type VehicleType,
   type VehicleTypeFormData,
@@ -330,7 +332,6 @@ export const useVehicleTypeByName = (name: string) => {
  */
 export const useCreateVehicleType = () => {
   const queryClient = useQueryClient();
-  const t = useTranslations("vehicle");
 
   return useMutation({
     mutationFn: createVehicleType,
@@ -362,11 +363,80 @@ export const useCreateVehicleType = () => {
 };
 
 /**
+ * Hook สำหรับแก้ไขประเภทรถ
+ */
+export const useUpdateVehicleType = () => {
+  const queryClient = useQueryClient();
+  const t = useTranslations("vehicle.form");
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string | number; data: VehicleTypeFormData }) =>
+      updateVehicleType(id, data),
+    onSuccess: (data: VehicleType, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["vehicleTypes"] });
+      queryClient.setQueryData(["vehicleTypes", variables.id], data);
+
+      Swal.fire({
+        title: t("updateVehicleTypeSuccessTitle", { defaultValue: "แก้ไขสำเร็จ!" }),
+        text: t("updateVehicleTypeSuccessMessage", {
+          name: data.name,
+          defaultValue: `อัปเดตประเภทรถเป็น "${data.name}" เรียบร้อย`,
+        }),
+        icon: "success",
+        confirmButtonText: t("ok", { defaultValue: "ตกลง" }),
+      });
+    },
+    onError: (error: Error) => {
+      console.error("❌ Error updating vehicle type:", error);
+      Swal.fire({
+        title: t("errorTitle", { defaultValue: "เกิดข้อผิดพลาด" }),
+        text: error.message || t("updateVehicleTypeErrorMessage", { defaultValue: "ไม่สามารถแก้ไขประเภทรถได้" }),
+        icon: "error",
+        confirmButtonText: t("ok", { defaultValue: "ตกลง" }),
+      });
+    },
+  });
+};
+
+/**
+ * Hook สำหรับลบประเภทรถ
+ */
+export const useDeleteVehicleType = () => {
+  const queryClient = useQueryClient();
+  const t = useTranslations("vehicle.form");
+
+  return useMutation({
+    mutationFn: deleteVehicleType,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vehicleTypes"] });
+
+      Swal.fire({
+        title: t("deleteVehicleTypeSuccessTitle", { defaultValue: "ลบสำเร็จ!" }),
+        text: t("deleteVehicleTypeSuccessMessage", { defaultValue: "ลบประเภทรถเรียบร้อยแล้ว" }),
+        icon: "success",
+        confirmButtonText: t("ok", { defaultValue: "ตกลง" }),
+      });
+    },
+    onError: (error: Error) => {
+      console.error("❌ Error deleting vehicle type:", error);
+      Swal.fire({
+        title: t("errorTitle", { defaultValue: "เกิดข้อผิดพลาด" }),
+        text: error.message || t("deleteVehicleTypeErrorMessage", { defaultValue: "ไม่สามารถลบประเภทรถได้" }),
+        icon: "error",
+        confirmButtonText: t("ok", { defaultValue: "ตกลง" }),
+      });
+    },
+  });
+};
+
+/**
  * Hook สำหรับจัดการ vehicle types ทั้งหมด
  */
 export const useVehicleTypesManager = () => {
   const vehicleTypesQuery = useVehicleTypes();
   const createMutation = useCreateVehicleType();
+  const updateMutation = useUpdateVehicleType();
+  const deleteMutation = useDeleteVehicleType();
 
   return {
     // Queries
@@ -380,8 +450,18 @@ export const useVehicleTypesManager = () => {
     createVehicleType: createMutation.mutate,
     createVehicleTypeAsync: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    updateVehicleType: updateMutation.mutate,
+    updateVehicleTypeAsync: updateMutation.mutateAsync,
+    isUpdating: updateMutation.isPending,
+    deleteVehicleType: deleteMutation.mutate,
+    deleteVehicleTypeAsync: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
 
     // Combined status
-    isPending: vehicleTypesQuery.isLoading || createMutation.isPending,
+    isPending:
+      vehicleTypesQuery.isLoading ||
+      createMutation.isPending ||
+      updateMutation.isPending ||
+      deleteMutation.isPending,
   };
 };

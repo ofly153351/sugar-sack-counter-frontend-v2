@@ -26,9 +26,16 @@ import {
 export const fetchVehicleTypes = async (): Promise<VehicleType[]> => {
   try {
     console.log("📡 Fetching vehicle types from API...");
-    const response = await api.get("/vehicle-types");
+    const response = await api.get("/vehicle-types/options");
     console.log("✅ Vehicle types API response received");
-    return response.data;
+
+    // Backend contract for options endpoint: [{ id, name }]
+    return Array.isArray(response.data)
+      ? response.data.map((item) => ({
+          id: item.id,
+          name: item.name,
+        }))
+      : [];
   } catch (error: any) {
     console.error("❌ Error fetching vehicle types:", error);
     throw new Error(error.message || "Failed to load vehicle types");
@@ -50,6 +57,56 @@ export const createVehicleType = async (
     console.error("❌ Error creating vehicle type:", error);
 
     let errorMessage = "Failed to create vehicle type";
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    throw new Error(errorMessage);
+  }
+};
+
+/**
+ * Update vehicle type by ID
+ */
+export const updateVehicleType = async (
+  vehicleTypeId: string | number,
+  vehicleTypeData: VehicleTypeFormData
+): Promise<VehicleType> => {
+  try {
+    console.log(`✏️ Updating vehicle type with ID: ${vehicleTypeId}`);
+    const response = await api.patch(`/vehicle-types/${vehicleTypeId}`, vehicleTypeData);
+    console.log("✅ Vehicle type updated successfully:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Error updating vehicle type:", error);
+
+    let errorMessage = "Failed to update vehicle type";
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    throw new Error(errorMessage);
+  }
+};
+
+/**
+ * Delete vehicle type by ID
+ */
+export const deleteVehicleType = async (
+  vehicleTypeId: string | number
+): Promise<void> => {
+  try {
+    console.log(`🗑️ Deleting vehicle type with ID: ${vehicleTypeId}`);
+    await api.delete(`/vehicle-types/${vehicleTypeId}`);
+    console.log("✅ Vehicle type deleted successfully");
+  } catch (error: any) {
+    console.error("❌ Error deleting vehicle type:", error);
+
+    let errorMessage = "Failed to delete vehicle type";
     if (error.response?.data?.message) {
       errorMessage = error.response.data.message;
     } else if (error.message) {
@@ -472,6 +529,8 @@ export default {
   // Vehicle Type functions
   fetchVehicleTypes,
   createVehicleType,
+  updateVehicleType,
+  deleteVehicleType,
   getVehicleTypeByName,
 
   // Vehicle functions

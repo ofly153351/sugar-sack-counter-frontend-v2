@@ -38,6 +38,24 @@ export default function VehicleInfoPage() {
   };
 
   const handleSaveVehicleType = async (vehicleTypeData: { name: string }) => {
+    const normalizedName = vehicleTypeData.name.trim().toLowerCase();
+    const existingType = vehicleTypesManager.vehicleTypes.find(
+      (type) => type.name.trim().toLowerCase() === normalizedName
+    );
+
+    if (existingType) {
+      Swal.fire({
+        title: t("vehicle.form.errorTitle", { defaultValue: "ข้อมูลซ้ำ" }),
+        text: t("vehicle.form.duplicateVehicleTypeMessage", {
+          name: existingType.name,
+          defaultValue: `มีประเภทรถ "${existingType.name}" อยู่แล้ว`,
+        }),
+        icon: "warning",
+        confirmButtonText: t("vehicle.buttons.ok", { defaultValue: "ตกลง" }),
+      });
+      return;
+    }
+
     try {
       await vehicleTypesManager.createVehicleType(vehicleTypeData);
       setVehicleTypeModalOpen(false);
@@ -52,6 +70,61 @@ export default function VehicleInfoPage() {
         confirmButtonText: "ตกลง",
       });
     }
+  };
+
+  const handleUpdateVehicleType = async (
+    vehicleTypeId: string | number,
+    vehicleTypeData: { name: string }
+  ) => {
+    const normalizedName = vehicleTypeData.name.trim().toLowerCase();
+    const existingType = vehicleTypesManager.vehicleTypes.find(
+      (type) =>
+        String(type.id) !== String(vehicleTypeId) &&
+        type.name.trim().toLowerCase() === normalizedName
+    );
+
+    if (existingType) {
+      Swal.fire({
+        title: t("vehicle.form.errorTitle", { defaultValue: "ข้อมูลซ้ำ" }),
+        text: t("vehicle.form.duplicateVehicleTypeMessage", {
+          name: existingType.name,
+          defaultValue: `มีประเภทรถ "${existingType.name}" อยู่แล้ว`,
+        }),
+        icon: "warning",
+        confirmButtonText: t("vehicle.buttons.ok", { defaultValue: "ตกลง" }),
+      });
+      return;
+    }
+
+    await vehicleTypesManager.updateVehicleTypeAsync({
+      id: vehicleTypeId,
+      data: { name: vehicleTypeData.name.trim() },
+    });
+  };
+
+  const handleDeleteVehicleType = async (
+    vehicleTypeId: string | number,
+    vehicleTypeName: string
+  ) => {
+    const result = await Swal.fire({
+      title: t("vehicle.form.confirmDeleteVehicleTypeTitle", {
+        defaultValue: "ยืนยันการลบประเภทรถ",
+      }),
+      text: t("vehicle.form.confirmDeleteVehicleTypeMessage", {
+        name: vehicleTypeName,
+        defaultValue: `ต้องการลบประเภทรถ "${vehicleTypeName}" ใช่หรือไม่`,
+      }),
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#94a3b8",
+      confirmButtonText: t("vehicle.form.deleteButton", { defaultValue: "ลบ" }),
+      cancelButtonText: t("vehicle.buttons.cancel", { defaultValue: "ยกเลิก" }),
+    });
+
+    if (!result.isConfirmed) return;
+
+    await vehicleTypesManager.deleteVehicleTypeAsync(vehicleTypeId);
   };
 
   const handleSave = async (vehicle: Vehicle) => {
@@ -179,7 +252,13 @@ export default function VehicleInfoPage() {
         isOpen={vehicleTypeModalOpen}
         onClose={() => setVehicleTypeModalOpen(false)}
         onSave={handleSaveVehicleType}
+        onUpdate={handleUpdateVehicleType}
+        onDelete={handleDeleteVehicleType}
         isLoading={vehicleTypesManager.isCreating}
+        vehicleTypes={vehicleTypesManager.vehicleTypes}
+        isVehicleTypesLoading={vehicleTypesManager.isLoading}
+        isUpdating={vehicleTypesManager.isUpdating}
+        isDeleting={vehicleTypesManager.isDeleting}
       />
     </div>
   );
