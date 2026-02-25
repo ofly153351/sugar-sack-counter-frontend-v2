@@ -291,6 +291,8 @@
       "vehicleType": "Vehicle Type",
       "driver": "Driver",
       "driverName": "Driver Name",
+      "selectDriver": "Select driver",
+      "loadingDrivers": "Loading users...",
       "status": "Status",
       "selectVehicleType": "Select vehicle type",
       "loadingVehicleTypes": "Loading vehicle types...",

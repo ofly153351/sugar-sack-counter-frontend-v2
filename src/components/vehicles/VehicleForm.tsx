@@ -16,8 +16,14 @@ interface Vehicle {
   licensePlate: string;
   vehicleType: string;
   vehicleTypeId: string | number;
+  driverUserId?: string | number;
   driverName: string;
   status: "active" | "inactive" | "maintenance";
+}
+
+interface DriverUserOption {
+  value: string | number;
+  label: string;
 }
 
 interface VehicleFormProps {
@@ -25,6 +31,7 @@ interface VehicleFormProps {
   onCancel: () => void;
   onSave: (vehicle: Vehicle) => void;
   vehicleTypes?: VehicleType[];
+  driverUsers?: DriverUserOption[];
 }
 
 const statusOptions = ["active", "inactive", "maintenance"] as const;
@@ -34,6 +41,7 @@ export function VehicleForm({
   onCancel,
   onSave,
   vehicleTypes = [],
+  driverUsers = [],
 }: VehicleFormProps) {
   const t = useTranslations("vehicle.form");
   const [vehicleCode, setVehicleCode] = useState(
@@ -45,7 +53,9 @@ export function VehicleForm({
   const [vehicleTypeId, setVehicleTypeId] = useState<string | number>(
     initialData?.vehicleTypeId || ""
   );
-  const [driverName, setDriverName] = useState(initialData?.driverName || "");
+  const [driverUserId, setDriverUserId] = useState<string | number>(
+    initialData?.driverUserId || ""
+  );
   const [status, setStatus] = useState<"active" | "inactive" | "maintenance">(
     initialData?.status || "active"
   );
@@ -60,9 +70,29 @@ export function VehicleForm({
 
     return vehicleTypes[0]?.id || "";
   })();
+  const selectedDriverUserId = (() => {
+    if (driverUserId) return driverUserId;
+    if (driverUsers.length === 0) return "";
+
+    if (initialData?.driverUserId) {
+      return initialData.driverUserId;
+    }
+
+    return driverUsers[0]?.value || "";
+  })();
+  const selectedDriverLabel =
+    driverUsers.find(
+      (driver) => String(driver.value) === String(selectedDriverUserId)
+    )?.label ||
+    "";
 
   const handleSubmit = () => {
-    if (!vehicleCode || !licensePlate || !selectedVehicleTypeId || !driverName) {
+    if (
+      !vehicleCode ||
+      !licensePlate ||
+      !selectedVehicleTypeId ||
+      !selectedDriverUserId
+    ) {
       Swal.fire(t("requiredFields") || "กรุณากรอกข้อมูลให้ครบ", "", "warning");
       return;
     }
@@ -71,9 +101,13 @@ export function VehicleForm({
       id: initialData?.id,
       vehicleCode,
       licensePlate,
-      vehicleType: vehicleTypes.find((t) => t.id === selectedVehicleTypeId)?.name || "",
+      vehicleType:
+        vehicleTypes.find(
+          (t) => String(t.id) === String(selectedVehicleTypeId)
+        )?.name || "",
       vehicleTypeId: selectedVehicleTypeId,
-      driverName,
+      driverUserId: selectedDriverUserId,
+      driverName: selectedDriverLabel,
       status,
     };
     onSave(vehicle);
@@ -104,7 +138,7 @@ export function VehicleForm({
       <div>
         <label className="block font-semibold mb-1">{t("vehicleType")}</label>
         <select
-          value={selectedVehicleTypeId}
+          value={String(selectedVehicleTypeId)}
           onChange={(e) => setVehicleTypeId(e.target.value)}
           className="w-full border border-gray-300 rounded px-3 py-2"
           disabled={vehicleTypes.length === 0}
@@ -115,7 +149,7 @@ export function VehicleForm({
               : t("selectVehicleType")}
           </option>
           {vehicleTypes.map((type) => (
-            <option key={type.id} value={type.id}>
+            <option key={type.id} value={String(type.id)}>
               {type.name}
             </option>
           ))}
@@ -128,13 +162,24 @@ export function VehicleForm({
       </div>
       <div>
         <label className="block font-semibold mb-1">{t("driver")}</label>
-        <input
-          type="text"
+        <select
+          value={String(selectedDriverUserId)}
+          onChange={(e) => setDriverUserId(e.target.value)}
           className="w-full border border-gray-300 rounded px-3 py-2"
-          value={driverName}
-          onChange={(e) => setDriverName(e.target.value)}
-          placeholder={t("driverNamePlaceholder") || t("driver")}
-        />
+          disabled={driverUsers.length === 0}
+        >
+          <option value="">
+            {driverUsers.length === 0 ? t("loadingDrivers") : t("selectDriver")}
+          </option>
+          {driverUsers.map((driver) => (
+            <option key={driver.value} value={String(driver.value)}>
+              {driver.label}
+            </option>
+          ))}
+        </select>
+        {driverUsers.length === 0 && (
+          <p className="text-sm text-gray-500 mt-1">{t("loadingDrivers")}</p>
+        )}
       </div>
       <div>
         <label className="block font-semibold mb-1">{t("status")}</label>

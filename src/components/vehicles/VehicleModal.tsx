@@ -17,8 +17,14 @@ interface Vehicle {
   licensePlate: string;
   vehicleType: string;
   vehicleTypeId: string | number;
+  driverUserId?: string | number;
   driverName: string;
   status: "active" | "inactive" | "maintenance";
+}
+
+interface DriverUserOption {
+  value: string | number;
+  label: string;
 }
 
 interface VehicleModalProps {
@@ -27,6 +33,7 @@ interface VehicleModalProps {
   initialData?: Vehicle | null;
   onSave: (vehicle: Vehicle) => void;
   vehicleTypes?: VehicleType[];
+  driverUsers?: DriverUserOption[];
 }
 
 export function VehicleModal({
@@ -35,6 +42,7 @@ export function VehicleModal({
   initialData,
   onSave,
   vehicleTypes = [],
+  driverUsers = [],
 }: VehicleModalProps) {
   const t = useTranslations();
 
@@ -79,6 +87,7 @@ export function VehicleModal({
               onCancel={onClose}
               onSave={handleSave}
               vehicleTypes={vehicleTypes}
+              driverUsers={driverUsers}
             />
           </motion.div>
         </motion.div>
