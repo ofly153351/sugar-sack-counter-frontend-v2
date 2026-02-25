@@ -82,20 +82,22 @@ export function VehicleTypeModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={{ duration: 0.24, ease: "easeOut" }}
-            className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative"
+            className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              onClick={handleClose}
-              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
-              disabled={isLoading}
-            >
-              <X size={20} />
-            </button>
-
-            <h2 className="text-xl font-bold mb-4">
-              {t("createVehicleType", { defaultValue: "สร้างประเภทรถใหม่" })}
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">
+                {t("createVehicleType", { defaultValue: "สร้างประเภทรถใหม่" })}
+              </h2>
+              <button
+                onClick={handleClose}
+                className="text-gray-600 hover:text-black transition-colors"
+                disabled={isLoading}
+                aria-label="Close modal"
+              >
+                <X size={22} />
+              </button>
+            </div>
 
             <p className="text-gray-600 mb-6">
               เพิ่มประเภทรถใหม่สำหรับใช้ในการบันทึกข้อมูลรถขนส่ง
@@ -107,13 +109,13 @@ export function VehicleTypeModal({
               whileHover={{ y: -1, scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 280, damping: 18 }}
-              className="mb-5 group inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-gradient-to-r from-sky-50 to-cyan-50 px-3.5 py-2 text-sm font-semibold text-sky-900 shadow-sm hover:shadow-md transition-all duration-200"
+              className="mb-5 group inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100 transition-all duration-200"
             >
               <List className="w-4 h-4 transition-transform duration-200 group-hover:rotate-6" />
               {t("existingVehicleTypes", {
                 defaultValue: "ดูประเภทรถที่มีในระบบ",
               })}
-              <span className="rounded-full border border-sky-300 bg-white px-2 py-0.5 text-xs shadow-sm">
+              <span className="rounded-full border border-blue-200 bg-white px-2 py-0.5 text-xs text-blue-700 shadow-sm">
                 {vehicleTypes.length}
               </span>
             </motion.button>
@@ -131,7 +133,7 @@ export function VehicleTypeModal({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.18 }}
-                  className="fixed inset-0 z-[60] bg-black/45 backdrop-blur-[2px] flex items-center justify-center p-4"
+                  className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4"
                   onClick={() => setIsTypeListOpen(false)}
                 >
                   <motion.div
@@ -139,25 +141,25 @@ export function VehicleTypeModal({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 12, scale: 0.98 }}
                     transition={{ duration: 0.24, ease: "easeOut" }}
-                    className="w-full max-w-lg overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-2xl"
+                    className="w-full max-w-lg overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="bg-gradient-to-r from-sky-50 via-cyan-50 to-teal-50 px-5 py-4 border-b border-sky-100">
+                    <div className="px-5 py-4 border-b border-gray-200 bg-gray-50">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-sky-950">
+                        <h3 className="text-lg font-bold text-gray-900">
                           {t("existingVehicleTypes", {
                             defaultValue: "ประเภทรถที่มีในระบบตอนนี้",
                           })}
                         </h3>
                         <button
                           onClick={() => setIsTypeListOpen(false)}
-                          className="rounded-lg p-1 text-gray-500 hover:bg-white/70 hover:text-gray-700 transition-colors"
+                          className="text-gray-600 hover:text-black transition-colors"
                           aria-label="Close"
                         >
                           <X className="w-5 h-5" />
                         </button>
                       </div>
-                      <p className="mt-1 text-sm text-sky-800">
+                      <p className="mt-1 text-sm text-gray-600">
                         {vehicleTypes.length}{" "}
                         {t("typesCountUnit", { defaultValue: "ประเภท" })}
                       </p>
@@ -193,7 +195,7 @@ export function VehicleTypeModal({
                                 hidden: { opacity: 0, y: 6 },
                                 show: { opacity: 1, y: 0 },
                               }}
-                              className="rounded-xl border border-sky-100 bg-sky-50/50 px-3 py-2 text-sm text-sky-900"
+                              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800"
                             >
                               {editingTypeId === type.id ? (
                                 <div className="flex items-center gap-2">
@@ -201,13 +203,13 @@ export function VehicleTypeModal({
                                     type="text"
                                     value={editingName}
                                     onChange={(e) => setEditingName(e.target.value)}
-                                    className="flex-1 rounded-lg border border-sky-200 bg-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
+                                    className="flex-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                                     disabled={isUpdating || isDeleting}
                                   />
                                   <button
                                     type="button"
                                     onClick={handleConfirmEdit}
-                                    className="inline-flex items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 p-1.5 text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+                                    className="inline-flex items-center justify-center rounded-lg border border-green-200 bg-green-50 p-1.5 text-green-700 hover:bg-green-100 disabled:opacity-50"
                                     disabled={isUpdating || isDeleting || !editingName.trim()}
                                     aria-label="Save"
                                   >
@@ -231,7 +233,7 @@ export function VehicleTypeModal({
                                       <button
                                         type="button"
                                         onClick={() => handleStartEdit(type.id, type.name)}
-                                        className="inline-flex items-center justify-center rounded-lg border border-sky-200 bg-white p-1.5 text-sky-700 hover:bg-sky-100 disabled:opacity-50"
+                                        className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-white p-1.5 text-blue-700 hover:bg-blue-50 disabled:opacity-50"
                                         disabled={isUpdating || isDeleting}
                                         aria-label="Edit"
                                       >

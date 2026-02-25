@@ -19,6 +19,8 @@ import { API_CONFIG } from "@/utils/config";
 interface TableProps {
   type: "vehicle" | "bags" | "box" | "users" | "products";
   data?: Record<string, any>[];
+  sortOrder?: "asc" | "desc";
+  onSortOrderChange?: (value: "asc" | "desc") => void;
   onEdit?: (item: Record<string, any>) => void;
   onDelete?: (item: Record<string, any>) => void;
   onRoleChange?: (
@@ -31,6 +33,8 @@ interface TableProps {
 export default function Table({
   type,
   data = [],
+  sortOrder = "asc",
+  onSortOrderChange,
   onEdit,
   onDelete,
   onRoleChange,
@@ -339,7 +343,35 @@ export default function Table({
                   key={h.key}
                   className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words"
                 >
-                  {h.label}
+                  {onSortOrderChange &&
+                  ((type === "products" && h.key === "productCode") ||
+                    (type === "users" && h.key === "empCode")) ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onSortOrderChange(sortOrder === "asc" ? "desc" : "asc")
+                      }
+                      className="inline-flex items-center gap-1.5 hover:text-blue-900 transition-colors"
+                      aria-label={
+                        type === "users"
+                          ? t("users.sort.label", {
+                              defaultValue: "Sort by employee code",
+                            })
+                          : t("products.sort.label", {
+                              defaultValue: "Sort by product code",
+                            })
+                      }
+                    >
+                      <span>{h.label}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${
+                          sortOrder === "asc" ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  ) : (
+                    h.label
+                  )}
                 </th>
               ))}
 

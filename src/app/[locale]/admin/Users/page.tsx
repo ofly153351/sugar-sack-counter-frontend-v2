@@ -17,6 +17,7 @@ export default function UsersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const { user: currentUser } = useUserStore();
 
   // Use React Query hooks
@@ -41,6 +42,13 @@ export default function UsersPage() {
         user.email?.toLowerCase().includes(keyword) ||
         user.phone?.toLowerCase().includes(keyword)
       );
+    })
+    .sort((a, b) => {
+      const compared = (a.empCode ?? "").localeCompare(b.empCode ?? "", undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+      return sortOrder === "asc" ? compared : -compared;
     })
     .map((user, index) => ({
       ...user,
@@ -195,7 +203,9 @@ export default function UsersPage() {
       <UsersTable
         users={filteredUsers}
         search={search}
+        sortOrder={sortOrder}
         onSearchChange={setSearch}
+        onSortOrderChange={setSortOrder}
         onEdit={handleEdit}
         onDelete={handleDelete}
         isLoading={isLoading}

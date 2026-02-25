@@ -14,7 +14,9 @@ interface Product {
 interface ProductsTableProps {
   products: Product[];
   search: string;
+  sortOrder: "asc" | "desc";
   onSearchChange: (value: string) => void;
+  onSortOrderChange: (value: "asc" | "desc") => void;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   isLoading?: boolean;
@@ -23,7 +25,9 @@ interface ProductsTableProps {
 export function ProductsTable({
   products,
   search,
+  sortOrder,
   onSearchChange,
+  onSortOrderChange,
   onEdit,
   onDelete,
   isLoading = false,
@@ -86,7 +90,14 @@ export function ProductsTable({
           )}
         </div>
       ) : (
-        <Table type="products" data={products} onEdit={onEdit} onDelete={onDelete} />
+        <Table
+          type="products"
+          data={products}
+          sortOrder={sortOrder}
+          onSortOrderChange={onSortOrderChange}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       )}
     </div>
   );

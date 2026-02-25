@@ -364,6 +364,11 @@
     "refresh": "Refresh",
     "loading": "Loading users...",
     "tryDifferentSearch": "Try a different search term or",
+    "sort": {
+      "label": "Sort by employee code",
+      "asc": "Employee code: ascending",
+      "desc": "Employee code: descending"
+    },
     "table": {
       "no": "NO.",
       "empCode": "Employee Code",
@@ -430,6 +435,11 @@
     "noProducts": "No products found",
     "noProductsInSystem": "No products in the system",
     "search": "Search by product code or product name",
+    "sort": {
+      "label": "Sort by product code",
+      "asc": "Product code: ascending",
+      "desc": "Product code: descending"
+    },
     "tryDifferentSearch": "Try a different search term or",
     "clearSearch": "clear search",
     "table": {

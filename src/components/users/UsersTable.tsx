@@ -8,7 +8,9 @@ import { useTranslations } from "next-intl";
 interface UsersTableProps {
   users: User[];
   search: string;
+  sortOrder: "asc" | "desc";
   onSearchChange: (value: string) => void;
+  onSortOrderChange: (value: "asc" | "desc") => void;
   onEdit: (user: User) => void;
   onDelete: (user: User) => void;
   onRoleChange?: (user: User, role: "admin" | "user" | "operator" | "viewer") => void;
@@ -19,7 +21,9 @@ interface UsersTableProps {
 export function UsersTable({
   users,
   search,
+  sortOrder,
   onSearchChange,
+  onSortOrderChange,
   onEdit,
   onDelete,
   onRoleChange,
@@ -89,6 +93,8 @@ export function UsersTable({
         <Table
           type="users"
           data={users}
+          sortOrder={sortOrder}
+          onSortOrderChange={onSortOrderChange}
           onEdit={onEdit}
           onDelete={onDelete}
           onRoleChange={onRoleChange}

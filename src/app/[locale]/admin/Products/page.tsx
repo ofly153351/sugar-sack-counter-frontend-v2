@@ -19,6 +19,7 @@ export default function ProductsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const productsManager = useProductsManager();
 
@@ -31,6 +32,17 @@ export default function ProductsPage() {
         productCode.includes(keyword) ||
         productName.includes(keyword)
       );
+    })
+    .sort((a, b) => {
+      const compared = (a.productCode ?? "").localeCompare(
+        b.productCode ?? "",
+        undefined,
+        {
+          numeric: true,
+          sensitivity: "base",
+        }
+      );
+      return sortOrder === "asc" ? compared : -compared;
     })
     .map((product, index) => ({
       no: index + 1,
@@ -134,7 +146,9 @@ export default function ProductsPage() {
       <ProductsTable
         products={filteredProducts}
         search={search}
+        sortOrder={sortOrder}
         onSearchChange={setSearch}
+        onSortOrderChange={setSortOrder}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
