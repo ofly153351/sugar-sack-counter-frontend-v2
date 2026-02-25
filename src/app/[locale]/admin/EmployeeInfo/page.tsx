@@ -9,7 +9,6 @@ import { AppModal } from "@/components/modal/AppModal";
 import { UserAccountCredentialsFields } from "@/components/users/UserAccountCredentialsFields";
 import {
   deleteUser as deleteUserApi,
-  type CreateUserMinimalPayload,
   type UserFormData,
 } from "@/utils/admin/users/user-api";
 
@@ -195,7 +194,7 @@ export default function EmployeeInfoPage() {
     };
 
   const handleSave = () => {
-    if (!formData.username.trim()) {
+    if (editingEmployee && !formData.username.trim()) {
       Swal.fire({
         title: t("validation.title"),
         text: t("validation.requiredFields"),
@@ -205,14 +204,32 @@ export default function EmployeeInfoPage() {
       return;
     }
 
-    if (!editingEmployee && !formData.password.trim()) {
-      Swal.fire({
-        title: t("validation.title"),
-        text: t("validation.requiredFields"),
-        icon: "warning",
-        confirmButtonText: t("buttons.ok"),
-      });
-      return;
+    if (!editingEmployee) {
+      const requiredForCreate: Array<keyof EmployeeFormData> = [
+        "employeeCode",
+        "title",
+        "firstName",
+        "lastName",
+        "phone",
+        "email",
+        "username",
+        "password",
+        "confirmPassword",
+      ];
+
+      const hasMissingRequired = requiredForCreate.some(
+        (field) => !String(formData[field]).trim()
+      );
+
+      if (hasMissingRequired) {
+        Swal.fire({
+          title: t("validation.title"),
+          text: t("validation.requiredFields"),
+          icon: "warning",
+          confirmButtonText: t("buttons.ok"),
+        });
+        return;
+      }
     }
 
     if (!editingEmployee && formData.password.trim().length < 6) {
@@ -279,9 +296,15 @@ export default function EmployeeInfoPage() {
       return;
     }
 
-    const payload: CreateUserMinimalPayload = {
+    const payload: UserFormData = {
+      email: formData.email.trim(),
       username: formData.username.trim(),
       password: formData.password.trim(),
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      employeeCode: formData.employeeCode.trim(),
+      phone: formData.phone.trim(),
+      title: formData.title.trim(),
     };
 
     usersManager.createUser(payload, {
@@ -481,13 +504,17 @@ export default function EmployeeInfoPage() {
                     <label htmlFor="titlePrefix" className="mb-1 block text-sm font-medium text-slate-700">
                       {t("form.titlePrefix")}
                     </label>
-                    <input
+                    <select
                       id="titlePrefix"
                       value={formData.title}
                       onChange={handleFormChange("title")}
-                      placeholder={t("form.titlePrefix")}
                       className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                    />
+                    >
+                      <option value="">{t("form.selectTitle")}</option>
+                      <option value="นาย">{t("form.titleOptions.mr")}</option>
+                      <option value="นาง">{t("form.titleOptions.mrs")}</option>
+                      <option value="นางสาว">{t("form.titleOptions.ms")}</option>
+                    </select>
                   </div>
                   <div>
                     <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-slate-700">
@@ -574,32 +601,118 @@ export default function EmployeeInfoPage() {
               </div>
             </>
           ) : (
-            <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-              <p className="mb-3 text-sm font-semibold text-slate-700">
-                {t("form.accountSectionTitle")}
-              </p>
-              <UserAccountCredentialsFields
-                idPrefix="employee-create"
-                username={formData.username}
-                password={formData.password}
-                confirmPassword={formData.confirmPassword}
-                onUsernameChange={(value) =>
-                  setFormData((prev) => ({ ...prev, username: value }))
-                }
-                onPasswordChange={(value) =>
-                  setFormData((prev) => ({ ...prev, password: value }))
-                }
-                onConfirmPasswordChange={(value) =>
-                  setFormData((prev) => ({ ...prev, confirmPassword: value }))
-                }
-                usernameLabel={t("form.username")}
-                passwordLabel={t("form.password")}
-                confirmPasswordLabel={t("form.confirmPassword")}
-                usernameRequired
-                passwordRequired
-                confirmPasswordRequired
-              />
-            </div>
+            <>
+              <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <p className="mb-3 text-sm font-semibold text-slate-700">
+                  {t("form.employeeSectionTitle")}
+                </p>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="employeeCode" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.employeeCode")} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="employeeCode"
+                      value={formData.employeeCode}
+                      onChange={handleFormChange("employeeCode")}
+                      placeholder={t("form.employeeCode")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="titlePrefix" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.titlePrefix")} <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="titlePrefix"
+                      value={formData.title}
+                      onChange={handleFormChange("title")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    >
+                      <option value="">{t("form.selectTitle")}</option>
+                      <option value="นาย">{t("form.titleOptions.mr")}</option>
+                      <option value="นาง">{t("form.titleOptions.mrs")}</option>
+                      <option value="นางสาว">{t("form.titleOptions.ms")}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.firstName")} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={handleFormChange("firstName")}
+                      placeholder={t("form.firstName")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.lastName")} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={handleFormChange("lastName")}
+                      placeholder={t("form.lastName")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.phone")} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={handleFormChange("phone")}
+                      placeholder={t("form.phone")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.email")} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="email"
+                      value={formData.email}
+                      onChange={handleFormChange("email")}
+                      placeholder={t("form.email")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <p className="mb-3 text-sm font-semibold text-slate-700">
+                  {t("form.accountSectionTitle")}
+                </p>
+                <UserAccountCredentialsFields
+                  idPrefix="employee-create"
+                  username={formData.username}
+                  password={formData.password}
+                  confirmPassword={formData.confirmPassword}
+                  onUsernameChange={(value) =>
+                    setFormData((prev) => ({ ...prev, username: value }))
+                  }
+                  onPasswordChange={(value) =>
+                    setFormData((prev) => ({ ...prev, password: value }))
+                  }
+                  onConfirmPasswordChange={(value) =>
+                    setFormData((prev) => ({ ...prev, confirmPassword: value }))
+                  }
+                  usernameLabel={t("form.username")}
+                  passwordLabel={t("form.password")}
+                  confirmPasswordLabel={t("form.confirmPassword")}
+                  usernameRequired
+                  passwordRequired
+                  confirmPasswordRequired
+                />
+              </div>
+            </>
           )}
         </div>
 

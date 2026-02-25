@@ -467,6 +467,12 @@
       "accountSectionTitle": "ข้อมูลบัญชีผู้ใช้",
       "employeeCode": "รหัสพนักงาน",
       "titlePrefix": "คำนำหน้า",
+      "selectTitle": "เลือกคำนำหน้า",
+      "titleOptions": {
+        "mr": "นาย",
+        "ms": "นางสาว",
+        "mrs": "นาง"
+      },
       "firstName": "ชื่อ",
       "lastName": "นามสกุล",
       "department": "สิทธิ์ผู้ใช้งาน",

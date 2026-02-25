@@ -477,6 +477,12 @@
     "table": {
       "employeeCode": "Employee Code",
       "titlePrefix": "Title",
+      "selectTitle": "Select title",
+      "titleOptions": {
+        "mr": "Mr.",
+        "ms": "Ms.",
+        "mrs": "Mrs."
+      },
       "firstName": "First Name",
       "lastName": "Last Name",
       "department": "User Role",
