@@ -13,6 +13,7 @@ import {
   useVehiclesManager,
   useVehicleTypesManager,
 } from "@/hooks/useVehicles";
+import { useUsers } from "@/hooks/useUsers";
 import type {
   Vehicle,
   VehicleFormData,
@@ -27,6 +28,7 @@ export default function VehicleInfoPage() {
   // Use React Query hooks
   const vehiclesManager = useVehiclesManager();
   const vehicleTypesManager = useVehicleTypesManager();
+  const usersQuery = useUsers();
 
   const handleEdit = (vehicle: Vehicle) => {
     setEditVehicle(vehicle);
@@ -60,7 +62,7 @@ export default function VehicleInfoPage() {
         vehicleCode: vehicle.vehicleCode,
         licensePlate: vehicle.licensePlate,
         vehicleTypeId: vehicle.vehicleTypeId,
-        driverName: vehicle.driverName,
+        driverUserId: vehicle.driverUserId || "",
         status: vehicle.status,
       };
 
@@ -112,10 +114,29 @@ export default function VehicleInfoPage() {
       licensePlate: vehicle.licensePlate,
       vehicleType: vehicle.vehicleType?.name || "Unknown",
       vehicleTypeId: vehicle.vehicleTypeId,
-      driverName: vehicle.driverName,
+      driverUserId: vehicle.driverUserId,
+      driverName:
+        vehicle.driverName ||
+        [
+          vehicle.driver?.firstName || vehicle.driver?.firstname || "",
+          vehicle.driver?.lastName || vehicle.driver?.lastname || "",
+        ]
+          .join(" ")
+          .trim() ||
+        vehicle.driver?.username ||
+        "-",
       status: vehicle.status,
     })
   );
+  const driverUsers = (usersQuery.data || []).map((user) => {
+    const fullName = `${user.firstname || user.firstName || ""} ${
+      user.lastname || user.lastName || ""
+    }`.trim();
+    return {
+      value: user.id,
+      label: fullName || user.username || "-",
+    };
+  });
   const vehicleTypeNames = vehicleTypesManager.vehicleTypes.map((type) => type.name);
 
   if (vehiclesManager.isLoading) {
@@ -173,6 +194,7 @@ export default function VehicleInfoPage() {
         initialData={editVehicle}
         onSave={handleSave}
         vehicleTypes={vehicleTypesManager.vehicleTypes}
+        driverUsers={driverUsers}
       />
 
       <VehicleTypeModal

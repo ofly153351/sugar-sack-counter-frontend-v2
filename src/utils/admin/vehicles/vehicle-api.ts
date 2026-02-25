@@ -81,6 +81,22 @@ export const getVehicleTypeByName = async (
 
 // ========== Vehicle API Functions ==========
 
+const resolveDriverName = (vehicle: ApiVehicle): string => {
+  if (vehicle.driverName?.trim()) {
+    return vehicle.driverName;
+  }
+
+  const firstName = vehicle.driver?.firstName || vehicle.driver?.firstname || "";
+  const lastName = vehicle.driver?.lastName || vehicle.driver?.lastname || "";
+  const fullName = `${firstName} ${lastName}`.trim();
+
+  if (fullName) {
+    return fullName;
+  }
+
+  return vehicle.driver?.username || "-";
+};
+
 /**
  * Fetch all vehicles from API
  */
@@ -98,7 +114,9 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
       vehicleType: vehicle.vehicleType,
-      driverName: vehicle.driverName,
+      driverUserId: vehicle.driverUserId,
+      driverName: resolveDriverName(vehicle),
+      driver: vehicle.driver,
       status: vehicle.status,
       createdAt: vehicle.createdAt,
       updatedAt: vehicle.updatedAt,
@@ -126,7 +144,9 @@ export const fetchActiveVehicles = async (): Promise<Vehicle[]> => {
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
       vehicleType: vehicle.vehicleType,
-      driverName: vehicle.driverName,
+      driverUserId: vehicle.driverUserId,
+      driverName: resolveDriverName(vehicle),
+      driver: vehicle.driver,
       status: vehicle.status,
       createdAt: vehicle.createdAt,
       updatedAt: vehicle.updatedAt,
@@ -278,7 +298,9 @@ export const getVehicleById = async (
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
       vehicleType: vehicle.vehicleType,
-      driverName: vehicle.driverName,
+      driverUserId: vehicle.driverUserId,
+      driverName: resolveDriverName(vehicle),
+      driver: vehicle.driver,
       status: vehicle.status,
       createdAt: vehicle.createdAt,
       updatedAt: vehicle.updatedAt,
@@ -318,7 +340,9 @@ export const getVehicleByCode = async (
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
       vehicleType: vehicle.vehicleType,
-      driverName: vehicle.driverName,
+      driverUserId: vehicle.driverUserId,
+      driverName: resolveDriverName(vehicle),
+      driver: vehicle.driver,
       status: vehicle.status,
       createdAt: vehicle.createdAt,
       updatedAt: vehicle.updatedAt,
@@ -358,7 +382,9 @@ export const getVehicleByLicensePlate = async (
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
       vehicleType: vehicle.vehicleType,
-      driverName: vehicle.driverName,
+      driverUserId: vehicle.driverUserId,
+      driverName: resolveDriverName(vehicle),
+      driver: vehicle.driver,
       status: vehicle.status,
       createdAt: vehicle.createdAt,
       updatedAt: vehicle.updatedAt,
@@ -385,7 +411,7 @@ export const convertToVehicleFormData = (vehicle: Vehicle): VehicleFormData => {
     vehicleCode: vehicle.vehicleCode,
     licensePlate: vehicle.licensePlate,
     vehicleTypeId: vehicle.vehicleTypeId,
-    driverName: vehicle.driverName,
+    driverUserId: vehicle.driverUserId || "",
     status: vehicle.status,
   };
 
@@ -412,8 +438,8 @@ export const validateVehicleData = (
     errors.push("Vehicle type is required");
   }
 
-  if (!vehicleData.driverName?.trim()) {
-    errors.push("Driver name is required");
+  if (!vehicleData.driverUserId) {
+    errors.push("Driver user is required");
   }
 
   if (!vehicleData.status?.trim()) {

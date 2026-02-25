@@ -260,6 +260,8 @@
       "vehicleType": "ประเภทรถ",
       "driver": "คนขับ",
       "driverName": "ชื่อคนขับ",
+      "selectDriver": "เลือกคนขับ",
+      "loadingDrivers": "กำลังโหลดข้อมูลผู้ใช้...",
       "status": "สถานะ",
       "selectVehicleType": "เลือกประเภทรถ",
       "loadingVehicleTypes": "กำลังโหลดข้อมูลประเภทรถ...",
