@@ -495,7 +495,7 @@
       "titlePrefix": "Title",
       "firstName": "First Name",
       "lastName": "Last Name",
-      "department": "Department",
+      "department": "User Role",
       "status": "Status",
       "actions": "Actions"
     },
@@ -506,7 +506,7 @@
       "titlePrefix": "Title",
       "firstName": "First Name",
       "lastName": "Last Name",
-      "department": "Department",
+      "department": "User Role",
       "username": "Username",
       "password": "Password",
       "passwordOptional": "Password (leave blank to keep unchanged)",
@@ -519,7 +519,7 @@
       "titlePrefix": "Title",
       "firstName": "First Name",
       "lastName": "Last Name",
-      "department": "Department",
+      "department": "User Role",
       "status": "Status",
       "phone": "Phone Number",
       "email": "Email"

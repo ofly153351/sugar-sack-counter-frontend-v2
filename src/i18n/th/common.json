@@ -474,7 +474,7 @@
       "titlePrefix": "คำนำหน้า",
       "firstName": "ชื่อ",
       "lastName": "สกุล",
-      "department": "แผนก",
+      "department": "สิทธิ์ผู้ใช้งาน",
       "status": "สถานะ",
       "actions": "จัดการ"
     },
@@ -485,7 +485,7 @@
       "titlePrefix": "คำนำหน้า",
       "firstName": "ชื่อ",
       "lastName": "นามสกุล",
-      "department": "แผนก",
+      "department": "สิทธิ์ผู้ใช้งาน",
       "username": "ชื่อผู้ใช้",
       "password": "รหัสผ่าน",
       "passwordOptional": "รหัสผ่าน (เว้นว่างหากไม่เปลี่ยน)",
@@ -498,7 +498,7 @@
       "titlePrefix": "คำนำหน้า",
       "firstName": "ชื่อ",
       "lastName": "นามสกุล",
-      "department": "แผนก",
+      "department": "สิทธิ์ผู้ใช้งาน",
       "status": "สถานะ",
       "phone": "เบอร์โทรศัพท์",
       "email": "อีเมล"
