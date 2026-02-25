@@ -321,3 +321,8 @@ Edit `ai-api.ts` to modify:
 The AI integration provides real-time person detection for uploaded images in the Sugar Sack Counter application. The system is designed for reliability, performance, and ease of use, with fallback mechanisms for when the AI service is unavailable.
 
 For questions or issues, refer to the troubleshooting section or contact the development team.
+
+
+
+
+
