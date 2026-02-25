@@ -206,6 +206,7 @@ export default function UsersPage() {
         currentUserId={currentUser?.id}
         currentUsername={currentUser?.username}
         currentEmail={currentUser?.email}
+        currentEmployeeCode={currentUser?.employeeCode}
         onSearchChange={setSearch}
         onSortOrderChange={setSortOrder}
         onEdit={handleEdit}
