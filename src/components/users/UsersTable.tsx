@@ -8,7 +8,12 @@ import { useTranslations } from "next-intl";
 interface UsersTableProps {
   users: User[];
   search: string;
+  sortOrder: "asc" | "desc";
+  currentUserId?: string;
+  currentUsername?: string;
+  currentEmail?: string;
   onSearchChange: (value: string) => void;
+  onSortOrderChange: (value: "asc" | "desc") => void;
   onEdit: (user: User) => void;
   onDelete: (user: User) => void;
   onRoleChange?: (user: User, role: "admin" | "user" | "operator" | "viewer") => void;
@@ -19,7 +24,12 @@ interface UsersTableProps {
 export function UsersTable({
   users,
   search,
+  sortOrder,
+  currentUserId,
+  currentUsername,
+  currentEmail,
   onSearchChange,
+  onSortOrderChange,
   onEdit,
   onDelete,
   onRoleChange,
@@ -89,9 +99,25 @@ export function UsersTable({
         <Table
           type="users"
           data={users}
+          sortOrder={sortOrder}
+          onSortOrderChange={onSortOrderChange}
           onEdit={onEdit}
           onDelete={onDelete}
           onRoleChange={onRoleChange}
+          isRoleSelectable={(userRow) => {
+            const isSelfById =
+              !!currentUserId && String(userRow.id) === String(currentUserId);
+            const isSelfByUsername =
+              !!currentUsername &&
+              String(userRow.username || "").toLowerCase() ===
+                String(currentUsername).toLowerCase();
+            const isSelfByEmail =
+              !!currentEmail &&
+              String(userRow.email || "").toLowerCase() ===
+                String(currentEmail).toLowerCase();
+
+            return !(isSelfById || isSelfByUsername || isSelfByEmail);
+          }}
           isRoleUpdating={isRoleUpdating}
         />
       )}

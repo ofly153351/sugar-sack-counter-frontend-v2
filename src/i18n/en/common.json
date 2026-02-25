@@ -375,7 +375,10 @@
       "requiredFields": "Please fill in all required fields",
       "passwordRequired": "Please enter password",
       "passwordMismatch": "Passwords do not match",
-      "invalidEmail": "Invalid email format"
+      "invalidEmail": "Invalid email format",
+      "editModeHint": "Only username and password can be edited. Other profile fields are read-only.",
+      "readOnlySectionTitle": "Read-only information",
+      "passwordOptional": "Leave password blank if you do not want to change it"
     },
     "delete": {
       "confirm": "Are you sure you want to delete this user?",
@@ -457,6 +460,11 @@
     "searchPlaceholder": "Search employee information...",
     "loading": "Loading employee data...",
     "noData": "No employee data found",
+    "sort": {
+      "label": "Sort by employee code",
+      "asc": "Employee code: ascending",
+      "desc": "Employee code: descending"
+    },
     "table": {
       "employeeCode": "Employee Code",
       "titlePrefix": "Title",
@@ -467,6 +475,8 @@
       "actions": "Actions"
     },
     "form": {
+      "employeeSectionTitle": "Employee Information",
+      "accountSectionTitle": "Account Information",
       "employeeCode": "Employee Code",
       "titlePrefix": "Title",
       "firstName": "First Name",

@@ -1,7 +1,7 @@
 "use client";
 
 import { type ChangeEvent, useMemo, useState } from "react";
-import { Eye, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ChevronDown, Eye, Pencil, Plus, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Swal from "sweetalert2";
 import { useTranslations } from "next-intl";
@@ -62,6 +62,7 @@ export default function EmployeeInfoPage() {
   const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [employeeCodeSortOrder, setEmployeeCodeSortOrder] = useState<"asc" | "desc">("asc");
   const [editingEmployee, setEditingEmployee] = useState<EmployeeRow | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeRow | null>(null);
   const [formData, setFormData] = useState<EmployeeFormData>(DEFAULT_FORM);
@@ -91,9 +92,8 @@ export default function EmployeeInfoPage() {
 
   const filteredEmployees = useMemo(() => {
     const keyword = search.trim().toLowerCase();
-    if (!keyword) return employees;
-
-    return employees.filter((emp) => {
+    const filtered = employees.filter((emp) => {
+      if (!keyword) return true;
       return (
         emp.employeeCode.toLowerCase().includes(keyword) ||
         emp.title.toLowerCase().includes(keyword) ||
@@ -105,7 +105,16 @@ export default function EmployeeInfoPage() {
         emp.username.toLowerCase().includes(keyword)
       );
     });
-  }, [employees, search]);
+
+    return filtered.sort((a, b) => {
+      const compared = (a.employeeCode ?? "").localeCompare(
+        b.employeeCode ?? "",
+        undefined,
+        { numeric: true, sensitivity: "base" }
+      );
+      return employeeCodeSortOrder === "asc" ? compared : -compared;
+    });
+  }, [employees, search, employeeCodeSortOrder]);
 
   const openCreateModal = () => {
     setEditingEmployee(null);
@@ -349,7 +358,30 @@ export default function EmployeeInfoPage() {
         <table className="min-w-[980px] w-full divide-y divide-slate-200">
           <thead className="bg-blue-500/10">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.employeeCode")}</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEmployeeCodeSortOrder((prev) =>
+                      prev === "asc" ? "desc" : "asc"
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 hover:text-blue-900 transition-colors"
+                  title={
+                    employeeCodeSortOrder === "asc"
+                      ? t("sort.desc")
+                      : t("sort.asc")
+                  }
+                  aria-label={t("sort.label")}
+                >
+                  <span>{t("table.employeeCode")}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${
+                      employeeCodeSortOrder === "asc" ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+              </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.titlePrefix")}</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.firstName")}</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.lastName")}</th>
@@ -445,55 +477,118 @@ export default function EmployeeInfoPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 sm:gap-4">
-                <input
-                  value={formData.employeeCode}
-                  onChange={handleFormChange("employeeCode")}
-                  placeholder={t("form.employeeCode")}
-                  className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"
-                />
-                <input
-                  value={formData.title}
-                  onChange={handleFormChange("title")}
-                  placeholder={t("form.titlePrefix")}
-                  className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"
-                />
-                <input
-                  value={formData.firstName}
-                  onChange={handleFormChange("firstName")}
-                  placeholder={t("form.firstName")}
-                  className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"
-                />
-                <input
-                  value={formData.lastName}
-                  onChange={handleFormChange("lastName")}
-                  placeholder={t("form.lastName")}
-                  className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"
-                />
-                <input
-                  value={formData.phone}
-                  onChange={handleFormChange("phone")}
-                  placeholder={t("form.phone")}
-                  className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"
-                />
-                <input
-                  value={formData.email}
-                  onChange={handleFormChange("email")}
-                  placeholder={t("form.email")}
-                  className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"
-                />
-                <input
-                  value={formData.username}
-                  onChange={handleFormChange("username")}
-                  placeholder={t("form.username")}
-                  className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"
-                />
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={handleFormChange("password")}
-                  placeholder={editingEmployee ? t("form.passwordOptional") : t("form.password")}
-                  className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"
-                />
+                <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                  <p className="mb-3 text-sm font-semibold text-slate-700">
+                    {t("form.employeeSectionTitle")}
+                  </p>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="employeeCode" className="mb-1 block text-sm font-medium text-slate-700">
+                        {t("form.employeeCode")}
+                      </label>
+                      <input
+                        id="employeeCode"
+                        value={formData.employeeCode}
+                        onChange={handleFormChange("employeeCode")}
+                        placeholder={t("form.employeeCode")}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="titlePrefix" className="mb-1 block text-sm font-medium text-slate-700">
+                        {t("form.titlePrefix")}
+                      </label>
+                      <input
+                        id="titlePrefix"
+                        value={formData.title}
+                        onChange={handleFormChange("title")}
+                        placeholder={t("form.titlePrefix")}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-slate-700">
+                        {t("form.firstName")} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="firstName"
+                        value={formData.firstName}
+                        onChange={handleFormChange("firstName")}
+                        placeholder={t("form.firstName")}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="lastName" className="mb-1 block text-sm font-medium text-slate-700">
+                        {t("form.lastName")} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="lastName"
+                        value={formData.lastName}
+                        onChange={handleFormChange("lastName")}
+                        placeholder={t("form.lastName")}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="phone" className="mb-1 block text-sm font-medium text-slate-700">
+                        {t("form.phone")}
+                      </label>
+                      <input
+                        id="phone"
+                        value={formData.phone}
+                        onChange={handleFormChange("phone")}
+                        placeholder={t("form.phone")}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
+                        {t("form.email")} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="email"
+                        value={formData.email}
+                        onChange={handleFormChange("email")}
+                        placeholder={t("form.email")}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                  <p className="mb-3 text-sm font-semibold text-slate-700">
+                    {t("form.accountSectionTitle")}
+                  </p>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="username" className="mb-1 block text-sm font-medium text-slate-700">
+                        {t("form.username")} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="username"
+                        value={formData.username}
+                        onChange={handleFormChange("username")}
+                        placeholder={t("form.username")}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
+                        {editingEmployee ? t("form.passwordOptional") : t("form.password")}
+                      </label>
+                      <input
+                        id="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={handleFormChange("password")}
+                        placeholder={editingEmployee ? t("form.passwordOptional") : t("form.password")}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50/70 px-5 py-4">

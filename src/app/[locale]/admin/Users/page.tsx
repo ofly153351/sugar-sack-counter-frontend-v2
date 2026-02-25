@@ -17,20 +17,13 @@ export default function UsersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const { user: currentUser } = useUserStore();
 
   // Use React Query hooks
   const usersManager = useUsersManager();
   // Filter users client-side based on search
   const filteredUsers = usersManager.users
-    .filter((user) => {
-      if (!currentUser) return true;
-      return !(
-        (currentUser.id && user.id === currentUser.id) ||
-        (currentUser.username && user.username === currentUser.username) ||
-        (currentUser.email && user.email === currentUser.email)
-      );
-    })
     .filter((user) => {
       const keyword = search.toLowerCase();
       return (
@@ -41,6 +34,13 @@ export default function UsersPage() {
         user.email?.toLowerCase().includes(keyword) ||
         user.phone?.toLowerCase().includes(keyword)
       );
+    })
+    .sort((a, b) => {
+      const compared = (a.empCode ?? "").localeCompare(b.empCode ?? "", undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+      return sortOrder === "asc" ? compared : -compared;
     })
     .map((user, index) => ({
       ...user,
@@ -90,13 +90,19 @@ export default function UsersPage() {
 
   const handleSave = async (user: User) => {
     try {
-      const userData: UserFormData = convertToUserFormData(user);
-
       if (editUser) {
         // Update existing user
         const userId = editUser.id || editUser.no;
+        const updateData: Partial<UserFormData> = {
+          username: user.username,
+        };
+
+        if (user.password?.trim()) {
+          updateData.password = user.password.trim();
+        }
+
         usersManager.updateUser(
-          { id: userId, data: userData },
+          { id: userId, data: updateData },
           {
             onSuccess: () => {
               // Show success message
@@ -121,6 +127,7 @@ export default function UsersPage() {
         );
       } else {
         // Create new user
+        const userData: UserFormData = convertToUserFormData(user);
         usersManager.createUser(userData, {
           onSuccess: () => {
             // Show success message
@@ -195,7 +202,12 @@ export default function UsersPage() {
       <UsersTable
         users={filteredUsers}
         search={search}
+        sortOrder={sortOrder}
+        currentUserId={currentUser?.id}
+        currentUsername={currentUser?.username}
+        currentEmail={currentUser?.email}
         onSearchChange={setSearch}
+        onSortOrderChange={setSortOrder}
         onEdit={handleEdit}
         onDelete={handleDelete}
         isLoading={isLoading}
