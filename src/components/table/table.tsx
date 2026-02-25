@@ -195,6 +195,10 @@ export default function Table({
             label: t("users.table.empCode", { defaultValue: "Employee Code" }),
           },
           {
+            key: "username",
+            label: t("users.table.username", { defaultValue: "Username" }),
+          },
+          {
             key: "firstname",
             label: t("users.table.firstname", { defaultValue: "First Name" }),
           },

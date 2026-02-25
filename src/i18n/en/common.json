@@ -372,6 +372,7 @@
     "table": {
       "no": "NO.",
       "empCode": "Employee Code",
+      "username": "Username",
       "firstname": "First Name",
       "lastname": "Last Name",
       "manualTotal": "Manual Total",
@@ -496,6 +497,12 @@
     "table": {
       "employeeCode": "Employee Code",
       "titlePrefix": "Title",
+      "selectTitle": "Select title",
+      "titleOptions": {
+        "mr": "Mr.",
+        "ms": "Ms.",
+        "mrs": "Mrs."
+      },
       "firstName": "First Name",
       "lastName": "Last Name",
       "department": "User Role",

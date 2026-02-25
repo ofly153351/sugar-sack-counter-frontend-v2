@@ -160,11 +160,6 @@ export default function UsersPage() {
     }
   };
 
-  const handleAddUser = () => {
-    setEditUser(null);
-    setModalOpen(true);
-  };
-
   const handleCloseModal = () => {
     setModalOpen(false);
     setEditUser(null);
@@ -200,7 +195,7 @@ export default function UsersPage() {
 
   return (
     <div className="p-3 sm:p-6">
-      <UsersHeader onAddUser={handleAddUser} />
+      <UsersHeader />
 
       <UsersTable
         users={filteredUsers}
