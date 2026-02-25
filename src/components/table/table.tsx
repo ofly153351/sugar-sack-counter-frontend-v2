@@ -300,7 +300,7 @@ export default function Table({
                   <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
                 </th>
               ))}
-              <th className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words">
+              <th className="px-2 sm:px-6 py-2 sm:py-4 text-center text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words">
                 <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
               </th>
             </tr>
@@ -317,7 +317,7 @@ export default function Table({
                   </td>
                 ))}
                 <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal text-xs sm:text-sm break-words">
-                  <div className="flex space-x-2">
+                  <div className="flex justify-center space-x-2">
                     <div className="h-8 w-8 bg-gray-100 rounded animate-pulse"></div>
                     <div className="h-8 w-8 bg-gray-100 rounded animate-pulse"></div>
                   </div>
@@ -345,7 +345,7 @@ export default function Table({
                 </th>
               ))}
 
-              <th className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words">
+              <th className="px-2 sm:px-6 py-2 sm:py-4 text-center  text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words">
                 {t("table.actions", { defaultValue: "Actions" })}
               </th>
             </tr>
