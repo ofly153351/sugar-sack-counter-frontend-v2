@@ -1054,7 +1054,6 @@ export default function BoxRow({
             ref={fileInputRef}
             onChange={handleFileSelect}
             accept="image/*"
-            capture="environment"
             className="hidden"
           />
         </div>
