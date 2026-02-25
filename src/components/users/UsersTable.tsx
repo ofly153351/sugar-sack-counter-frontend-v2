@@ -12,6 +12,7 @@ interface UsersTableProps {
   currentUserId?: string;
   currentUsername?: string;
   currentEmail?: string;
+  currentEmployeeCode?: string;
   onSearchChange: (value: string) => void;
   onSortOrderChange: (value: "asc" | "desc") => void;
   onEdit: (user: User) => void;
@@ -28,6 +29,7 @@ export function UsersTable({
   currentUserId,
   currentUsername,
   currentEmail,
+  currentEmployeeCode,
   onSearchChange,
   onSortOrderChange,
   onEdit,
@@ -115,8 +117,17 @@ export function UsersTable({
               !!currentEmail &&
               String(userRow.email || "").toLowerCase() ===
                 String(currentEmail).toLowerCase();
+            const isSelfByEmployeeCode =
+              !!currentEmployeeCode &&
+              String(userRow.empCode || "").toLowerCase() ===
+                String(currentEmployeeCode).toLowerCase();
 
-            return !(isSelfById || isSelfByUsername || isSelfByEmail);
+            return !(
+              isSelfById ||
+              isSelfByUsername ||
+              isSelfByEmail ||
+              isSelfByEmployeeCode
+            );
           }}
           isRoleUpdating={isRoleUpdating}
         />
