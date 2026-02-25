@@ -357,6 +357,7 @@
     "table": {
       "no": "NO.",
       "empCode": "Employee Code",
+      "username": "Username",
       "firstname": "First Name",
       "lastname": "Last Name",
       "manualTotal": "Manual Total",

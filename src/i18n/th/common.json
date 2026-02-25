@@ -336,6 +336,7 @@
     "table": {
       "no": "NO.",
       "empCode": "รหัสพนักงาน",
+      "username": "ชื่อบัญชีผู้ใช้งาน",
       "firstname": "ชื่อ",
       "lastname": "นามสกุล",
       "manualTotal": "รวม (Manual)",

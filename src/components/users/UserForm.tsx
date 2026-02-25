@@ -100,47 +100,7 @@ export function UserForm({ initialData, onCancel, onSave }: UserFormProps) {
         )}
       </div>
 
-      {isEditMode && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
-          <p className="text-sm font-semibold text-slate-700">
-            {t("form.readOnlySectionTitle", {
-              defaultValue: "ข้อมูลอ่านอย่างเดียว",
-            })}
-          </p>
 
-          <div>
-            <label className="block mb-1 font-medium">{t("form.employeeCode")}</label>
-            <input value={empCode} className={readOnlyInputClass} disabled />
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label className="block mb-1 font-medium">{t("form.firstName")}</label>
-              <input value={firstname} className={readOnlyInputClass} disabled />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">{t("form.lastName")}</label>
-              <input value={lastname} className={readOnlyInputClass} disabled />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label className="block mb-1 font-medium">{t("form.phone")}</label>
-              <input value={phone} className={readOnlyInputClass} disabled />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">{t("form.email")}</label>
-              <input value={email} className={readOnlyInputClass} disabled />
-            </div>
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">{t("form.title")}</label>
-            <input value={title} className={readOnlyInputClass} disabled />
-          </div>
-        </div>
-      )}
 
       {/* Buttons */}
       <div className="mt-5 flex justify-end gap-2 border-t border-slate-200 bg-slate-50/70 px-5 py-4 -mx-5 -mb-5">
