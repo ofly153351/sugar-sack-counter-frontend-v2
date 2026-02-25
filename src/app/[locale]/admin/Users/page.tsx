@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
 import {
-  convertToUserFormData,
   type User,
+  type CreateUserMinimalPayload,
   type UserFormData,
 } from "@/utils/admin/users/user-api";
 import { UsersHeader, UsersTable, UserModal } from "@/components/users";
@@ -127,7 +127,10 @@ export default function UsersPage() {
         );
       } else {
         // Create new user
-        const userData: UserFormData = convertToUserFormData(user);
+        const userData: CreateUserMinimalPayload = {
+          username: user.username?.trim() || "",
+          password: user.password?.trim() || "",
+        };
         usersManager.createUser(userData, {
           onSuccess: () => {
             // Show success message

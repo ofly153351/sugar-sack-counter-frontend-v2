@@ -1,13 +1,15 @@
 "use client";
 
 import { type ChangeEvent, useMemo, useState } from "react";
-import { ChevronDown, Eye, Pencil, Plus, Trash2, X } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { useTranslations } from "next-intl";
 import { useUsersManager } from "@/hooks/useUsers";
+import { AppModal } from "@/components/modal/AppModal";
+import { UserAccountCredentialsFields } from "@/components/users/UserAccountCredentialsFields";
 import {
   deleteUser as deleteUserApi,
+  type CreateUserMinimalPayload,
   type UserFormData,
 } from "@/utils/admin/users/user-api";
 
@@ -42,6 +44,7 @@ interface EmployeeFormData {
   email: string;
   username: string;
   password: string;
+  confirmPassword: string;
 }
 
 const DEFAULT_FORM: EmployeeFormData = {
@@ -53,6 +56,7 @@ const DEFAULT_FORM: EmployeeFormData = {
   email: "",
   username: "",
   password: "",
+  confirmPassword: "",
 };
 
 export default function EmployeeInfoPage() {
@@ -133,6 +137,7 @@ export default function EmployeeInfoPage() {
       email: employee.email,
       username: employee.username,
       password: "",
+      confirmPassword: "",
     });
     setFormOpen(true);
   };
@@ -190,18 +195,17 @@ export default function EmployeeInfoPage() {
     };
 
   const handleSave = () => {
-    const requiredForAll: Array<keyof EmployeeFormData> = [
-      "email",
-      "username",
-      "firstName",
-      "lastName",
-    ];
+    if (!formData.username.trim()) {
+      Swal.fire({
+        title: t("validation.title"),
+        text: t("validation.requiredFields"),
+        icon: "warning",
+        confirmButtonText: t("buttons.ok"),
+      });
+      return;
+    }
 
-    const hasMissingRequired = requiredForAll.some(
-      (field) => !String(formData[field]).trim()
-    );
-
-    if (hasMissingRequired) {
+    if (!editingEmployee && !formData.password.trim()) {
       Swal.fire({
         title: t("validation.title"),
         text: t("validation.requiredFields"),
@@ -221,20 +225,33 @@ export default function EmployeeInfoPage() {
       return;
     }
 
-    const payload: UserFormData = {
-      email: formData.email.trim(),
-      username: formData.username.trim(),
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      employeeCode: formData.employeeCode.trim(),
-      phone: formData.phone.trim(),
-      title: formData.title.trim(),
-      ...(formData.password.trim()
-        ? { password: formData.password.trim() }
-        : {}),
-    };
+    if (
+      !editingEmployee &&
+      formData.password.trim() !== formData.confirmPassword.trim()
+    ) {
+      Swal.fire({
+        title: t("validation.title"),
+        text: t("validation.passwordMismatch"),
+        icon: "warning",
+        confirmButtonText: t("buttons.ok"),
+      });
+      return;
+    }
 
     if (editingEmployee) {
+      const payload: UserFormData = {
+        email: formData.email.trim(),
+        username: formData.username.trim(),
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        employeeCode: formData.employeeCode.trim(),
+        phone: formData.phone.trim(),
+        title: formData.title.trim(),
+        ...(formData.password.trim()
+          ? { password: formData.password.trim() }
+          : {}),
+      };
+
       usersManager.updateUser(
         { id: editingEmployee.id, data: payload },
         {
@@ -262,6 +279,11 @@ export default function EmployeeInfoPage() {
       return;
     }
 
+    const payload: CreateUserMinimalPayload = {
+      username: formData.username.trim(),
+      password: formData.password.trim(),
+    };
+
     usersManager.createUser(payload, {
       onSuccess: async () => {
         setFormOpen(false);
@@ -288,18 +310,6 @@ export default function EmployeeInfoPage() {
     status === "active"
       ? "bg-green-100 text-green-700 border border-green-200"
       : "bg-red-100 text-red-700 border border-red-200";
-
-  const modalBackdrop = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-    exit: { opacity: 0 },
-  };
-
-  const modalPanel = {
-    hidden: { opacity: 0, y: 20, scale: 0.97 },
-    visible: { opacity: 1, y: 0, scale: 1 },
-    exit: { opacity: 0, y: 12, scale: 0.98 },
-  };
 
   if (usersManager.isLoading) {
     return (
@@ -385,7 +395,6 @@ export default function EmployeeInfoPage() {
               <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.titlePrefix")}</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.firstName")}</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.lastName")}</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.department")}</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.status")}</th>
               <th className="px-4 py-3 text-center text-sm font-semibold text-blue-700">{t("table.actions")}</th>
             </tr>
@@ -393,7 +402,7 @@ export default function EmployeeInfoPage() {
           <tbody className="divide-y divide-slate-100">
             {filteredEmployees.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-500 italic">
+                <td colSpan={6} className="px-4 py-8 text-center text-slate-500 italic">
                   {t("noData")}
                 </td>
               </tr>
@@ -404,7 +413,6 @@ export default function EmployeeInfoPage() {
                   <td className="px-4 py-3 text-sm text-slate-700">{employee.title}</td>
                   <td className="px-4 py-3 text-sm text-slate-700">{employee.firstName}</td>
                   <td className="px-4 py-3 text-sm text-slate-700">{employee.lastName}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{employee.department}</td>
                   <td className="px-4 py-3 text-sm">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(employee.status)}`}>
                       {employee.status === "active"
@@ -444,228 +452,205 @@ export default function EmployeeInfoPage() {
         </table>
       </div>
 
-      <AnimatePresence>
-        {formOpen && (
-          <motion.div
-            variants={modalBackdrop}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 backdrop-blur-sm p-4"
+      <AppModal
+        isOpen={formOpen}
+        onClose={() => setFormOpen(false)}
+        title={editingEmployee ? t("editEmployee") : t("addEmployee")}
+      >
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+          {editingEmployee ? (
+            <>
+              <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <p className="mb-3 text-sm font-semibold text-slate-700">
+                  {t("form.employeeSectionTitle")}
+                </p>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="employeeCode" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.employeeCode")}
+                    </label>
+                    <input
+                      id="employeeCode"
+                      value={formData.employeeCode}
+                      onChange={handleFormChange("employeeCode")}
+                      placeholder={t("form.employeeCode")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="titlePrefix" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.titlePrefix")}
+                    </label>
+                    <input
+                      id="titlePrefix"
+                      value={formData.title}
+                      onChange={handleFormChange("title")}
+                      placeholder={t("form.titlePrefix")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.firstName")}
+                    </label>
+                    <input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={handleFormChange("firstName")}
+                      placeholder={t("form.firstName")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.lastName")}
+                    </label>
+                    <input
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={handleFormChange("lastName")}
+                      placeholder={t("form.lastName")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.phone")}
+                    </label>
+                    <input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={handleFormChange("phone")}
+                      placeholder={t("form.phone")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.email")}
+                    </label>
+                    <input
+                      id="email"
+                      value={formData.email}
+                      onChange={handleFormChange("email")}
+                      placeholder={t("form.email")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <p className="mb-3 text-sm font-semibold text-slate-700">
+                  {t("form.accountSectionTitle")}
+                </p>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="username" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.username")} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="username"
+                      value={formData.username}
+                      onChange={handleFormChange("username")}
+                      placeholder={t("form.username")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
+                      {t("form.passwordOptional")}
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={handleFormChange("password")}
+                      placeholder={t("form.passwordOptional")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+              <p className="mb-3 text-sm font-semibold text-slate-700">
+                {t("form.accountSectionTitle")}
+              </p>
+              <UserAccountCredentialsFields
+                idPrefix="employee-create"
+                username={formData.username}
+                password={formData.password}
+                confirmPassword={formData.confirmPassword}
+                onUsernameChange={(value) =>
+                  setFormData((prev) => ({ ...prev, username: value }))
+                }
+                onPasswordChange={(value) =>
+                  setFormData((prev) => ({ ...prev, password: value }))
+                }
+                onConfirmPasswordChange={(value) =>
+                  setFormData((prev) => ({ ...prev, confirmPassword: value }))
+                }
+                usernameLabel={t("form.username")}
+                passwordLabel={t("form.password")}
+                confirmPasswordLabel={t("form.confirmPassword")}
+                usernameRequired
+                passwordRequired
+                confirmPasswordRequired
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="mt-5 flex justify-end gap-2 border-t border-slate-200 bg-slate-50/70 px-5 py-4 -mx-5 -mb-5">
+          <button
             onClick={() => setFormOpen(false)}
+            className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-white transition"
           >
-            <motion.div
-              variants={modalPanel}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ duration: 0.24, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)]"
-            >
-              <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-sky-50 via-white to-blue-50 px-5 py-4">
-                <h2 className="text-lg font-semibold text-slate-800">
-                  {editingEmployee ? t("editEmployee") : t("addEmployee")}
-                </h2>
-                <button
-                  onClick={() => setFormOpen(false)}
-                  className="rounded-full p-1.5 text-slate-500 hover:bg-white/80 hover:text-slate-700 transition"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 sm:gap-4">
-                <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-                  <p className="mb-3 text-sm font-semibold text-slate-700">
-                    {t("form.employeeSectionTitle")}
-                  </p>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="employeeCode" className="mb-1 block text-sm font-medium text-slate-700">
-                        {t("form.employeeCode")}
-                      </label>
-                      <input
-                        id="employeeCode"
-                        value={formData.employeeCode}
-                        onChange={handleFormChange("employeeCode")}
-                        placeholder={t("form.employeeCode")}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="titlePrefix" className="mb-1 block text-sm font-medium text-slate-700">
-                        {t("form.titlePrefix")}
-                      </label>
-                      <input
-                        id="titlePrefix"
-                        value={formData.title}
-                        onChange={handleFormChange("title")}
-                        placeholder={t("form.titlePrefix")}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-slate-700">
-                        {t("form.firstName")} <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        id="firstName"
-                        value={formData.firstName}
-                        onChange={handleFormChange("firstName")}
-                        placeholder={t("form.firstName")}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="lastName" className="mb-1 block text-sm font-medium text-slate-700">
-                        {t("form.lastName")} <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        id="lastName"
-                        value={formData.lastName}
-                        onChange={handleFormChange("lastName")}
-                        placeholder={t("form.lastName")}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="phone" className="mb-1 block text-sm font-medium text-slate-700">
-                        {t("form.phone")}
-                      </label>
-                      <input
-                        id="phone"
-                        value={formData.phone}
-                        onChange={handleFormChange("phone")}
-                        placeholder={t("form.phone")}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
-                        {t("form.email")} <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        id="email"
-                        value={formData.email}
-                        onChange={handleFormChange("email")}
-                        placeholder={t("form.email")}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-                  <p className="mb-3 text-sm font-semibold text-slate-700">
-                    {t("form.accountSectionTitle")}
-                  </p>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="username" className="mb-1 block text-sm font-medium text-slate-700">
-                        {t("form.username")} <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        id="username"
-                        value={formData.username}
-                        onChange={handleFormChange("username")}
-                        placeholder={t("form.username")}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
-                        {editingEmployee ? t("form.passwordOptional") : t("form.password")}
-                      </label>
-                      <input
-                        id="password"
-                        type="password"
-                        value={formData.password}
-                        onChange={handleFormChange("password")}
-                        placeholder={editingEmployee ? t("form.passwordOptional") : t("form.password")}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50/70 px-5 py-4">
-                <button
-                  onClick={() => setFormOpen(false)}
-                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-white transition"
-                >
-                  {t("buttons.cancel")}
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={usersManager.isProcessing}
-                  className="rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:from-sky-700 hover:to-blue-700 transition disabled:opacity-60"
-                >
-                  {t("buttons.save")}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {detailOpen && selectedEmployee && (
-          <motion.div
-            variants={modalBackdrop}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 backdrop-blur-sm p-4"
-            onClick={() => setDetailOpen(false)}
+            {t("buttons.cancel")}
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={usersManager.isProcessing}
+            className="rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:from-sky-700 hover:to-blue-700 transition disabled:opacity-60"
           >
-            <motion.div
-              variants={modalPanel}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ duration: 0.24, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)]"
-            >
-              <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-cyan-50 via-white to-sky-50 px-5 py-4">
-                <h2 className="text-lg font-semibold text-slate-800">
-                  {t("detail.title")}
-                </h2>
-                <button
-                  onClick={() => setDetailOpen(false)}
-                  className="rounded-full p-1.5 text-slate-500 hover:bg-white/80 hover:text-slate-700 transition"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+            {t("buttons.save")}
+          </button>
+        </div>
+      </AppModal>
 
-              <div className="grid grid-cols-1 gap-2.5 px-5 py-4 text-sm text-slate-700">
-                <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.employeeCode")}:</strong> {selectedEmployee.employeeCode}</div>
-                <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.titlePrefix")}:</strong> {selectedEmployee.title}</div>
-                <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.firstName")}:</strong> {selectedEmployee.firstName}</div>
-                <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.lastName")}:</strong> {selectedEmployee.lastName}</div>
-                <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.department")}:</strong> {selectedEmployee.department}</div>
-                <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.status")}:</strong> {selectedEmployee.status === "active" ? t("status.active") : t("status.inactive")}</div>
-                <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.phone")}:</strong> {selectedEmployee.phone || "-"}</div>
-                <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.email")}:</strong> {selectedEmployee.email || "-"}</div>
-              </div>
+      <AppModal
+        isOpen={detailOpen && !!selectedEmployee}
+        onClose={() => setDetailOpen(false)}
+        title={t("detail.title")}
+        maxWidthClassName="max-w-lg"
+        headerClassName="border-b border-slate-200 bg-gradient-to-r from-cyan-50 via-white to-sky-50"
+      >
+        {selectedEmployee && (
+          <>
+            <div className="grid grid-cols-1 gap-2.5 text-sm text-slate-700">
+              <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.employeeCode")}:</strong> {selectedEmployee.employeeCode}</div>
+              <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.titlePrefix")}:</strong> {selectedEmployee.title}</div>
+              <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.firstName")}:</strong> {selectedEmployee.firstName}</div>
+              <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.lastName")}:</strong> {selectedEmployee.lastName}</div>
+              <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.department")}:</strong> {selectedEmployee.department}</div>
+              <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.status")}:</strong> {selectedEmployee.status === "active" ? t("status.active") : t("status.inactive")}</div>
+              <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.phone")}:</strong> {selectedEmployee.phone || "-"}</div>
+              <div className="rounded-lg bg-slate-50 px-3 py-2"><strong>{t("detail.email")}:</strong> {selectedEmployee.email || "-"}</div>
+            </div>
 
-              <div className="flex justify-end border-t border-slate-200 bg-slate-50/70 px-5 py-4">
-                <button
-                  onClick={() => setDetailOpen(false)}
-                  className="rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:from-sky-700 hover:to-blue-700 transition"
-                >
-                  {t("buttons.close")}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
+            <div className="mt-5 flex justify-end border-t border-slate-200 bg-slate-50/70 px-5 py-4 -mx-5 -mb-5">
+              <button
+                onClick={() => setDetailOpen(false)}
+                className="rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:from-sky-700 hover:to-blue-700 transition"
+              >
+                {t("buttons.close")}
+              </button>
+            </div>
+          </>
         )}
-      </AnimatePresence>
+      </AppModal>
     </div>
   );
 }
