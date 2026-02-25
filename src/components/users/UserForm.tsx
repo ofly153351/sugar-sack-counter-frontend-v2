@@ -13,6 +13,7 @@ interface UserFormProps {
 
 export function UserForm({ initialData, onCancel, onSave }: UserFormProps) {
   const t = useTranslations("users");
+  const isEditMode = !!initialData;
   const [username, setUsername] = useState(initialData?.username || "");
   const [empCode, setEmpCode] = useState(initialData?.empCode || "");
   const [firstname, setFirstname] = useState(initialData?.firstname || "");
@@ -21,32 +22,43 @@ export function UserForm({ initialData, onCancel, onSave }: UserFormProps) {
   const [email, setEmail] = useState(initialData?.email || "");
   const [password, setPassword] = useState(initialData?.password || "");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [title, setTitle] = useState("Mr.");
+  const [title, setTitle] = useState(initialData?.title || "Mr.");
+
+  const readOnlyInputClass =
+    "w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-500 cursor-not-allowed";
+  const editableInputClass =
+    "w-full border border-gray-300 rounded-lg px-3 py-2";
 
   const handleSubmit = () => {
-    // For edit mode, password is optional
-    const isEditMode = !!initialData;
-
-    if (!username || !empCode || !firstname || !lastname || !phone || !email) {
+    if (!username.trim()) {
       Swal.fire(t("form.requiredFields"), "", "warning");
       return;
     }
 
-    // For new users, password is required
+    if (
+      !isEditMode &&
+      (!empCode.trim() ||
+        !firstname.trim() ||
+        !lastname.trim() ||
+        !phone.trim() ||
+        !email.trim())
+    ) {
+      Swal.fire(t("form.requiredFields"), "", "warning");
+      return;
+    }
+
     if (!isEditMode && (!password || !confirmPassword)) {
       Swal.fire(t("form.passwordRequired"), "", "warning");
       return;
     }
 
-    // Check password match only if password is provided
     if (password && password !== confirmPassword) {
       Swal.fire(t("form.passwordMismatch"), "", "error");
       return;
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!isEditMode && !emailRegex.test(email)) {
       Swal.fire(t("form.invalidEmail"), "", "error");
       return;
     }
@@ -67,133 +79,180 @@ export function UserForm({ initialData, onCancel, onSave }: UserFormProps) {
 
   return (
     <div className="space-y-4">
-      {/* Username */}
-      <div>
-        <label className="block mb-1 font-medium">
-          {t("form.username")} <span className="text-red-500">*</span>
-        </label>
-        <input
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2"
-          placeholder={t("form.username")}
-        />
-      </div>
 
-      {/* Employee Code */}
-      <div>
-        <label className="block mb-1 font-medium">
-          {t("form.employeeCode")} <span className="text-red-500">*</span>
-        </label>
-        <input
-          value={empCode}
-          onChange={(e) => setEmpCode(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2"
-          placeholder={t("form.employeeCode")}
-        />
-      </div>
 
-      {/* First Name + Last Name */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="rounded-lg border border-gray-200 p-4 space-y-3">
+        <p className="text-sm font-semibold text-gray-700">
+          {isEditMode ? "ข้อมูลที่แก้ไขได้" : "ข้อมูลผู้ใช้"}
+        </p>
         <div>
-          <label className="block mb-1 font-medium">
-            {t("form.firstName")} <span className="text-red-500">*</span>
-          </label>
+          <label className="block mb-1 font-medium">{t("form.username")} <span className="text-red-500">*</span></label>
           <input
-            value={firstname}
-            onChange={(e) => setFirstname(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            placeholder={t("form.firstName")}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className={editableInputClass}
+            placeholder={t("form.username")}
           />
         </div>
 
-        <div>
-          <label className="block mb-1 font-medium">
-            {t("form.lastName")} <span className="text-red-500">*</span>
-          </label>
-          <input
-            value={lastname}
-            onChange={(e) => setLastname(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            placeholder={t("form.lastName")}
-          />
-        </div>
-      </div>
-
-      {/* Phone + Email */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block mb-1 font-medium">
-            {t("form.phone")} <span className="text-red-500">*</span>
-          </label>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            placeholder={t("form.phone")}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">
-            {t("form.email")} <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            placeholder={t("form.email")}
-          />
-        </div>
-      </div>
-
-      {/* Password fields (only for new users or when changing password) */}
-      {!initialData && (
-        <>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block mb-1 font-medium">
-              {t("form.password")} <span className="text-red-500">*</span>
-            </label>
+            <label className="block mb-1 font-medium">{t("form.password")} {!isEditMode && <span className="text-red-500">*</span>}</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              className={editableInputClass}
               placeholder={t("form.password")}
             />
           </div>
 
           <div>
-            <label className="block mb-1 font-medium">
-              {t("form.confirmPassword")}{" "}
-              <span className="text-red-500">*</span>
-            </label>
+            <label className="block mb-1 font-medium">{t("form.confirmPassword")} {!isEditMode && <span className="text-red-500">*</span>}</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              className={editableInputClass}
               placeholder={t("form.confirmPassword")}
             />
+          </div>
+        </div>
+        {isEditMode && (
+          <p className="text-xs text-red-500">
+            {t("form.passwordOptional", {
+              defaultValue: "เว้นรหัสผ่านว่างไว้ได้ หากไม่ต้องการเปลี่ยนรหัสผ่าน",
+            })}
+          </p>
+        )}
+      </div>
+
+      {isEditMode && (
+        <div className="rounded-lg border border-gray-200 p-4 space-y-3">
+          <p className="text-sm font-semibold text-gray-700">
+            {t("form.readOnlySectionTitle", {
+              defaultValue: "ข้อมูลอ่านอย่างเดียว",
+            })}
+          </p>
+
+          <div>
+            <label className="block mb-1 font-medium">{t("form.employeeCode")}</label>
+            <input value={empCode} className={readOnlyInputClass} disabled />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block mb-1 font-medium">{t("form.firstName")}</label>
+              <input value={firstname} className={readOnlyInputClass} disabled />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">{t("form.lastName")}</label>
+              <input value={lastname} className={readOnlyInputClass} disabled />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block mb-1 font-medium">{t("form.phone")}</label>
+              <input value={phone} className={readOnlyInputClass} disabled />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">{t("form.email")}</label>
+              <input value={email} className={readOnlyInputClass} disabled />
+            </div>
+          </div>
+
+          <div>
+            <label className="block mb-1 font-medium">{t("form.title")}</label>
+            <input value={title} className={readOnlyInputClass} disabled />
+          </div>
+        </div>
+      )}
+
+      {!isEditMode && (
+        <div>
+          <label className="block mb-1 font-medium">{t("form.title")}</label>
+          <select
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className={editableInputClass}
+          >
+            <option value="Mr.">Mr.</option>
+            <option value="Mrs.">Mrs.</option>
+            <option value="Ms.">Ms.</option>
+            <option value="Dr.">Dr.</option>
+          </select>
+        </div>
+      )}
+
+      {!isEditMode && (
+        <>
+          <div>
+            <label className="block mb-1 font-medium">
+              {t("form.employeeCode")} <span className="text-red-500">*</span>
+            </label>
+            <input
+              value={empCode}
+              onChange={(e) => setEmpCode(e.target.value)}
+              className={editableInputClass}
+              placeholder={t("form.employeeCode")}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block mb-1 font-medium">
+                {t("form.firstName")} <span className="text-red-500">*</span>
+              </label>
+              <input
+                value={firstname}
+                onChange={(e) => setFirstname(e.target.value)}
+                className={editableInputClass}
+                placeholder={t("form.firstName")}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">
+                {t("form.lastName")} <span className="text-red-500">*</span>
+              </label>
+              <input
+                value={lastname}
+                onChange={(e) => setLastname(e.target.value)}
+                className={editableInputClass}
+                placeholder={t("form.lastName")}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block mb-1 font-medium">
+                {t("form.phone")} <span className="text-red-500">*</span>
+              </label>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className={editableInputClass}
+                placeholder={t("form.phone")}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">
+                {t("form.email")} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={editableInputClass}
+                placeholder={t("form.email")}
+              />
+            </div>
           </div>
         </>
       )}
 
-      {/* Title */}
-      <div>
-        <label className="block mb-1 font-medium">{t("form.title")}</label>
-        <select
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2"
-        >
-          <option value="Mr.">Mr.</option>
-          <option value="Mrs.">Mrs.</option>
-          <option value="Ms.">Ms.</option>
-          <option value="Dr.">Dr.</option>
-        </select>
-      </div>
+
 
       {/* Buttons */}
       <div className="flex justify-end gap-3 pt-4">

@@ -27,6 +27,7 @@ interface TableProps {
     item: Record<string, any>,
     role: "admin" | "user" | "operator" | "viewer"
   ) => void;
+  isRoleSelectable?: (item: Record<string, any>) => boolean;
   isRoleUpdating?: boolean;
 }
 
@@ -38,6 +39,7 @@ export default function Table({
   onEdit,
   onDelete,
   onRoleChange,
+  isRoleSelectable,
   isRoleUpdating = false,
 }: TableProps) {
   const t = useTranslations();
@@ -442,7 +444,11 @@ export default function Table({
                                   | "viewer"
                               )
                             }
-                            disabled={!onRoleChange || isRoleUpdating}
+                            disabled={
+                              !onRoleChange ||
+                              isRoleUpdating ||
+                              (isRoleSelectable ? !isRoleSelectable(row) : false)
+                            }
                             className="min-w-[140px] rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
                           >
                             {roleOptions.map((role) => (

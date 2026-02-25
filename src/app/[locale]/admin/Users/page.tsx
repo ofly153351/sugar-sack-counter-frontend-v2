@@ -25,14 +25,6 @@ export default function UsersPage() {
   // Filter users client-side based on search
   const filteredUsers = usersManager.users
     .filter((user) => {
-      if (!currentUser) return true;
-      return !(
-        (currentUser.id && user.id === currentUser.id) ||
-        (currentUser.username && user.username === currentUser.username) ||
-        (currentUser.email && user.email === currentUser.email)
-      );
-    })
-    .filter((user) => {
       const keyword = search.toLowerCase();
       return (
         user.empCode.toLowerCase().includes(keyword) ||
@@ -98,13 +90,19 @@ export default function UsersPage() {
 
   const handleSave = async (user: User) => {
     try {
-      const userData: UserFormData = convertToUserFormData(user);
-
       if (editUser) {
         // Update existing user
         const userId = editUser.id || editUser.no;
+        const updateData: Partial<UserFormData> = {
+          username: user.username,
+        };
+
+        if (user.password?.trim()) {
+          updateData.password = user.password.trim();
+        }
+
         usersManager.updateUser(
-          { id: userId, data: userData },
+          { id: userId, data: updateData },
           {
             onSuccess: () => {
               // Show success message
@@ -129,6 +127,7 @@ export default function UsersPage() {
         );
       } else {
         // Create new user
+        const userData: UserFormData = convertToUserFormData(user);
         usersManager.createUser(userData, {
           onSuccess: () => {
             // Show success message
