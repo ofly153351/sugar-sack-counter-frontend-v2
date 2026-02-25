@@ -19,6 +19,8 @@ import { API_CONFIG } from "@/utils/config";
 interface TableProps {
   type: "vehicle" | "bags" | "box" | "users" | "products";
   data?: Record<string, any>[];
+  sortOrder?: "asc" | "desc";
+  onSortOrderChange?: (value: "asc" | "desc") => void;
   onEdit?: (item: Record<string, any>) => void;
   onDelete?: (item: Record<string, any>) => void;
   onRoleChange?: (
@@ -32,6 +34,8 @@ interface TableProps {
 export default function Table({
   type,
   data = [],
+  sortOrder,
+  onSortOrderChange,
   onEdit,
   onDelete,
   onRoleChange,
@@ -341,7 +345,39 @@ export default function Table({
                   key={h.key}
                   className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words"
                 >
-                  {h.label}
+                  {type === "users" &&
+                  h.key === "empCode" &&
+                  sortOrder &&
+                  onSortOrderChange ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onSortOrderChange(sortOrder === "asc" ? "desc" : "asc")
+                      }
+                      className="inline-flex items-center gap-1.5 hover:text-blue-900 transition-colors"
+                      title={
+                        sortOrder === "asc"
+                          ? t("users.sort.desc", {
+                              defaultValue: "Employee code: descending",
+                            })
+                          : t("users.sort.asc", {
+                              defaultValue: "Employee code: ascending",
+                            })
+                      }
+                      aria-label={t("users.sort.label", {
+                        defaultValue: "Sort by employee code",
+                      })}
+                    >
+                      <span>{h.label}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${
+                          sortOrder === "asc" ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  ) : (
+                    h.label
+                  )}
                 </th>
               ))}
 

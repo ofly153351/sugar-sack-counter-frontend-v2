@@ -2,9 +2,15 @@
 
 import { api } from "../../api-client";
 import { API_CONFIG } from "../../config";
-import { User, UserFormData, ApiUser } from "../../types";
+import type { User, UserFormData, ApiUser } from "../../types";
+
+export type { User, UserFormData, ApiUser } from "../../types";
 
 // Types are now imported from src/utils/types.ts
+export interface CreateUserMinimalPayload {
+  username: string;
+  password: string;
+}
 
 /**
  * Fetch all users from API
@@ -19,7 +25,7 @@ export const fetchUsers = async (): Promise<User[]> => {
 
     return apiUsers.map((user, index) => ({
       no: index + 1,
-      empCode: user.employeeCode || user.empCode || `EMP${user.id}`,
+      empCode: user.employeeCode || user.empCode || "-",
       firstname: user.firstName || user.firstname || "",
       lastname: user.lastName || user.lastname || "",
       role: user.role || "user", // Keep role for compatibility but use backend value
@@ -39,7 +45,9 @@ export const fetchUsers = async (): Promise<User[]> => {
 /**
  * Create a new user
  */
-export const createUser = async (userData: UserFormData): Promise<ApiUser> => {
+export const createUser = async (
+  userData: CreateUserMinimalPayload
+): Promise<ApiUser> => {
   try {
     console.log("➕ Creating new user:", userData);
     const response = await api.post("/users", userData);
@@ -189,7 +197,7 @@ export const getUserById = async (userId: string | number): Promise<User> => {
 
     return {
       no: 1, // Will be updated by parent component
-      empCode: user.employeeCode || user.empCode || `EMP${user.id}`,
+      empCode: user.employeeCode || user.empCode || "-",
       firstname: user.firstName || user.firstname || "",
       lastname: user.lastName || user.lastname || "",
       role: user.role || "พนักงาน",

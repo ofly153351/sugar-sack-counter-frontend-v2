@@ -349,6 +349,11 @@
     "refresh": "Refresh",
     "loading": "Loading users...",
     "tryDifferentSearch": "Try a different search term or",
+    "sort": {
+      "label": "Sort by employee code",
+      "asc": "Employee code: ascending",
+      "desc": "Employee code: descending"
+    },
     "table": {
       "no": "NO.",
       "empCode": "Employee Code",
@@ -370,10 +375,13 @@
       "email": "Email",
       "title": "Title",
       "role": "Role",
+      "accountSectionTitle": "Account Information",
+      "editableSectionTitle": "Account Information",
       "save": "Save",
       "cancel": "Cancel",
       "requiredFields": "Please fill in all required fields",
       "passwordRequired": "Please enter password",
+      "passwordMin": "Password must be at least 6 characters",
       "passwordMismatch": "Passwords do not match",
       "invalidEmail": "Invalid email format",
       "editModeHint": "Only username and password can be edited. Other profile fields are read-only.",
@@ -484,6 +492,7 @@
       "department": "User Role",
       "username": "Username",
       "password": "Password",
+      "confirmPassword": "Confirm Password",
       "passwordOptional": "Password (leave blank to keep unchanged)",
       "phone": "Phone Number",
       "email": "Email"
@@ -506,7 +515,8 @@
     "validation": {
       "title": "Incomplete Data",
       "requiredFields": "Please fill in all required fields",
-      "passwordMin": "Password must be at least 6 characters"
+      "passwordMin": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords do not match"
     },
     "delete": {
       "confirmTitle": "Confirm Deletion",
