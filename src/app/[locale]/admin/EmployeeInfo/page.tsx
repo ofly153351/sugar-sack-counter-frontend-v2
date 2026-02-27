@@ -387,11 +387,100 @@ export default function EmployeeInfoPage() {
         />
       </div>
 
-      <div className="w-full max-w-full overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white">
+      <div className="space-y-3 lg:hidden">
+        {filteredEmployees.length === 0 ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-500 italic shadow-sm">
+            {t("noData")}
+          </div>
+        ) : (
+          filteredEmployees.map((employee) => (
+            <div
+              key={employee.id}
+              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+            >
+              <div className="space-y-2 text-sm">
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span className="font-medium text-slate-500">
+                    {t("table.employeeCode")}
+                  </span>
+                  <span className="text-slate-700 break-words">
+                    {employee.employeeCode}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span className="font-medium text-slate-500">
+                    {t("table.titlePrefix")}
+                  </span>
+                  <span className="text-slate-700 break-words">
+                    {employee.title}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span className="font-medium text-slate-500">
+                    {t("table.firstName")}
+                  </span>
+                  <span className="text-slate-700 break-words">
+                    {employee.firstName}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span className="font-medium text-slate-500">
+                    {t("table.lastName")}
+                  </span>
+                  <span className="text-slate-700 break-words">
+                    {employee.lastName}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span className="font-medium text-slate-500">
+                    {t("table.status")}
+                  </span>
+                  <span>
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(employee.status)}`}
+                    >
+                      {employee.status === "active"
+                        ? t("status.active")
+                        : t("status.inactive")}
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <div className="mt-3 border-t border-slate-100 pt-3">
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => openDetailModal(employee)}
+                    className="rounded-md bg-sky-100 p-2 text-sky-700 hover:bg-sky-200 transition"
+                    title={t("buttons.view")}
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => openEditModal(employee)}
+                    className="rounded-md bg-amber-100 p-2 text-amber-700 hover:bg-amber-200 transition"
+                    title={t("buttons.edit")}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(employee)}
+                    className="rounded-md bg-red-100 p-2 text-red-700 hover:bg-red-200 transition"
+                    title={t("buttons.delete")}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="hidden lg:block w-full max-w-full overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white">
         <table className="min-w-[980px] w-full divide-y divide-slate-200">
           <thead className="bg-blue-500/10">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">
+              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700 whitespace-nowrap">
                 <button
                   type="button"
                   onClick={() =>
@@ -415,29 +504,55 @@ export default function EmployeeInfoPage() {
                   />
                 </button>
               </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.titlePrefix")}</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.firstName")}</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.lastName")}</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700">{t("table.status")}</th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-blue-700">{t("table.actions")}</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700 whitespace-nowrap">
+                {t("table.titlePrefix")}
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700 whitespace-nowrap">
+                {t("table.firstName")}
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700 whitespace-nowrap">
+                {t("table.lastName")}
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-blue-700 whitespace-nowrap">
+                {t("table.status")}
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-semibold text-blue-700 whitespace-nowrap">
+                {t("table.actions")}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredEmployees.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-500 italic">
+                <td
+                  colSpan={6}
+                  className="px-4 py-8 text-center text-slate-500 italic"
+                >
                   {t("noData")}
                 </td>
               </tr>
             ) : (
               filteredEmployees.map((employee) => (
-                <tr key={employee.id} className="hover:bg-blue-50/40 transition-colors">
-                  <td className="px-4 py-3 text-sm text-slate-700">{employee.employeeCode}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{employee.title}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{employee.firstName}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{employee.lastName}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(employee.status)}`}>
+                <tr
+                  key={employee.id}
+                  className="hover:bg-blue-50/40 transition-colors"
+                >
+                  <td className="px-4 py-3 text-sm text-slate-700 whitespace-nowrap">
+                    {employee.employeeCode}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-700 whitespace-nowrap">
+                    {employee.title}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-700 whitespace-nowrap">
+                    {employee.firstName}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-700 whitespace-nowrap">
+                    {employee.lastName}
+                  </td>
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(employee.status)}`}
+                    >
                       {employee.status === "active"
                         ? t("status.active")
                         : t("status.inactive")}
