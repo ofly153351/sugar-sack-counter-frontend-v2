@@ -91,53 +91,40 @@ export default function UsersPage() {
   const handleSave = async (user: User) => {
     try {
       if (editUser) {
-        // Update existing user (username and password via dedicated endpoints)
+        // Update existing user
         const userId = editUser.id || editUser.no;
-        const nextUsername = user.username?.trim() || "";
-        const nextPassword = user.password?.trim() || "";
-        const currentUsername = editUser.username?.trim() || "";
+        const updateData: Partial<UserFormData> = {
+          username: user.username,
+        };
 
-        if (!nextUsername) {
-          Swal.fire({
-            title: t("form.requiredFields"),
-            icon: "warning",
-            confirmButtonText: t("buttons.ok"),
-          });
-          return;
+        if (user.password?.trim()) {
+          updateData.password = user.password.trim();
         }
 
-        const updateTasks: Promise<unknown>[] = [];
-        if (nextUsername !== currentUsername) {
-          const updateData: Partial<UserFormData> = { username: nextUsername };
-          updateTasks.push(
-            usersManager.updateUserAsync({ id: userId, data: updateData })
-          );
-        }
-
-        if (nextPassword) {
-          updateTasks.push(
-            usersManager.updateUserPasswordAsync({
-              id: userId,
-              password: nextPassword,
-            })
-          );
-        }
-
-        if (updateTasks.length === 0) {
-          setModalOpen(false);
-          setEditUser(null);
-          return;
-        }
-
-        await Promise.all(updateTasks);
-
-        Swal.fire({
-          title: t("save.updateSuccess"),
-          icon: "success",
-          confirmButtonText: t("buttons.ok"),
-        });
-        setModalOpen(false);
-        setEditUser(null);
+        usersManager.updateUser(
+          { id: userId, data: updateData },
+          {
+            onSuccess: () => {
+              // Show success message
+              Swal.fire({
+                title: t("save.updateSuccess"),
+                icon: "success",
+                confirmButtonText: t("buttons.ok"),
+              });
+              // Close modal
+              setModalOpen(false);
+              setEditUser(null);
+            },
+            onError: (error: Error) => {
+              Swal.fire({
+                title: t("save.error"),
+                text: error.message || t("save.error"),
+                icon: "error",
+                confirmButtonText: t("buttons.ok"),
+              });
+            },
+          }
+        );
       } else {
         // Create new user
         const userData: CreateUserMinimalPayload = {

@@ -1,16 +1,16 @@
 "use client";
 
-import { LogOut, User, Loader2, Edit, LayoutDashboard } from "lucide-react";
+import { LogOut, Settings, User, Loader2, Edit, LayoutDashboard } from "lucide-react";
 import Logo from "../logo/logo";
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { API_CONFIG } from "@/utils/config";
-import { api } from "@/utils/api-client";
 import {
   useUserStore,
   initializeUserFromToken,
+  getTokenFromCookies,
 } from "@/store/user-store";
 
 // Static import HeroUI components
@@ -37,21 +37,11 @@ export default function Nav() {
   const t = useTranslations();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isClient, setIsClient] = useState(false);
-  const [profileForm, setProfileForm] = useState({
-    email: "",
-    username: "",
-    title: "",
-    firstName: "",
-    lastName: "",
-    phone: "",
-    employeeCode: "",
-  });
 
   // Get user from Zustand store
-  const { user: currentUser, clearUser, updateUser: updateStoreUser } =
-    useUserStore();
+  const { user: currentUser, clearUser } = useUserStore();
 
   // Compute locale directly to avoid hydration mismatch
   const getCurrentLocale = () => {
@@ -84,11 +74,14 @@ export default function Nav() {
       pathname.includes("/auth");
 
     if (isAuthPage) {
+      setIsLoadingUser(false);
       return;
     }
 
     const loadCurrentUser = async () => {
       try {
+        setIsLoadingUser(true);
+
         // สำหรับ HttpOnly cookies เราไม่สามารถอ่าน token ได้จาก JavaScript
         // ดังนั้นเราจะเรียก initializeUserFromToken() โดยตรง
         // ซึ่งจะเรียก API /users/me และตรวจสอบ authentication ผ่าน cookies
@@ -96,6 +89,8 @@ export default function Nav() {
         await initializeUserFromToken();
       } catch (error) {
         console.error("Failed to load user data:", error);
+      } finally {
+        setIsLoadingUser(false);
       }
     };
 
@@ -179,68 +174,13 @@ export default function Nav() {
   };
 
   const handleEditProfile = () => {
-    if (currentUser) {
-      setProfileForm({
-        email: currentUser.email || "",
-        username: currentUser.username || "",
-        title: currentUser.title || "",
-        firstName: currentUser.firstName || "",
-        lastName: currentUser.lastName || "",
-        phone: currentUser.phone || "",
-        employeeCode: currentUser.employeeCode || "",
-      });
-    }
     setIsEditModalOpen(true);
   };
 
-  const handleSaveProfile = async () => {
-    if (!currentUser?.id) {
-      alert(
-        t("nav.saveProfileError", {
-          defaultValue: "ไม่พบรหัสผู้ใช้สำหรับอัปเดตโปรไฟล์",
-        })
-      );
-      return;
-    }
-
-    try {
-      setIsSavingProfile(true);
-      const payload = {
-        email: profileForm.email.trim(),
-        username: profileForm.username.trim(),
-        title: profileForm.title.trim(),
-        firstName: profileForm.firstName.trim(),
-        lastName: profileForm.lastName.trim(),
-        phone: profileForm.phone.trim(),
-        employeeCode: profileForm.employeeCode.trim(),
-      };
-
-      const response = await api.patch(`/users/${currentUser.id}`, payload);
-      const updatedUser = response.data as Partial<typeof payload> & {
-        id?: string;
-      };
-
-      updateStoreUser({
-        email: updatedUser.email ?? payload.email,
-        username: updatedUser.username ?? payload.username,
-        title: updatedUser.title ?? payload.title,
-        firstName: updatedUser.firstName ?? payload.firstName,
-        lastName: updatedUser.lastName ?? payload.lastName,
-        phone: updatedUser.phone ?? payload.phone,
-        employeeCode: updatedUser.employeeCode ?? payload.employeeCode,
-      });
-
-      setIsEditModalOpen(false);
-    } catch (error) {
-      console.error("Failed to update profile:", error);
-      alert(
-        t("nav.saveProfileError", {
-          defaultValue: "ไม่สามารถบันทึกโปรไฟล์ได้",
-        })
-      );
-    } finally {
-      setIsSavingProfile(false);
-    }
+  const handleSaveProfile = () => {
+    // TODO: Implement save profile logic
+    console.log("Saving profile:", currentUser);
+    setIsEditModalOpen(false);
   };
 
   // Get user display name
@@ -492,13 +432,7 @@ export default function Nav() {
                         </label>
                         <input
                           type="email"
-                          value={profileForm.email}
-                          onChange={(e) =>
-                            setProfileForm((prev) => ({
-                              ...prev,
-                              email: e.target.value,
-                            }))
-                          }
+                          defaultValue={currentUser?.email || ""}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         />
                       </div>
@@ -508,13 +442,7 @@ export default function Nav() {
                         </label>
                         <input
                           type="text"
-                          value={profileForm.username}
-                          onChange={(e) =>
-                            setProfileForm((prev) => ({
-                              ...prev,
-                              username: e.target.value,
-                            }))
-                          }
+                          defaultValue={currentUser?.username || ""}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         />
                       </div>
@@ -523,13 +451,7 @@ export default function Nav() {
                           {t("nav.title", { defaultValue: "คำนำหน้า" })}
                         </label>
                         <select
-                          value={profileForm.title}
-                          onChange={(e) =>
-                            setProfileForm((prev) => ({
-                              ...prev,
-                              title: e.target.value,
-                            }))
-                          }
+                          defaultValue={currentUser?.title || ""}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         >
                           <option value="">เลือกคำนำหน้า</option>
@@ -544,13 +466,7 @@ export default function Nav() {
                         </label>
                         <input
                           type="text"
-                          value={profileForm.firstName}
-                          onChange={(e) =>
-                            setProfileForm((prev) => ({
-                              ...prev,
-                              firstName: e.target.value,
-                            }))
-                          }
+                          defaultValue={currentUser?.firstName || ""}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         />
                       </div>
@@ -560,13 +476,7 @@ export default function Nav() {
                         </label>
                         <input
                           type="text"
-                          value={profileForm.lastName}
-                          onChange={(e) =>
-                            setProfileForm((prev) => ({
-                              ...prev,
-                              lastName: e.target.value,
-                            }))
-                          }
+                          defaultValue={currentUser?.lastName || ""}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         />
                       </div>
@@ -578,13 +488,7 @@ export default function Nav() {
                         </label>
                         <input
                           type="text"
-                          value={profileForm.phone}
-                          onChange={(e) =>
-                            setProfileForm((prev) => ({
-                              ...prev,
-                              phone: e.target.value,
-                            }))
-                          }
+                          defaultValue={currentUser?.phone || ""}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         />
                       </div>
@@ -596,13 +500,7 @@ export default function Nav() {
                         </label>
                         <input
                           type="text"
-                          value={profileForm.employeeCode}
-                          onChange={(e) =>
-                            setProfileForm((prev) => ({
-                              ...prev,
-                              employeeCode: e.target.value,
-                            }))
-                          }
+                          defaultValue={currentUser?.employeeCode || ""}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         />
                       </div>
@@ -634,14 +532,11 @@ export default function Nav() {
                   <Button
                     color="primary"
                     onPress={handleSaveProfile}
-                    isDisabled={isSavingProfile}
                     className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium shadow-md hover:from-blue-700 hover:to-blue-800 hover:shadow-lg rounded-lg transition-all"
                   >
-                    {isSavingProfile
-                      ? t("nav.saving", { defaultValue: "กำลังบันทึก..." })
-                      : t("nav.saveChanges", {
-                          defaultValue: "บันทึกการเปลี่ยนแปลง",
-                        })}
+                    {t("nav.saveChanges", {
+                      defaultValue: "บันทึกการเปลี่ยนแปลง",
+                    })}
                   </Button>
                 </div>
               </ModalFooter>

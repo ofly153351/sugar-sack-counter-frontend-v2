@@ -5,7 +5,6 @@ import {
   fetchUsers,
   createUser,
   updateUser,
-  updateUserPassword,
   updateUserRole,
   deleteUser,
   getUserById,
@@ -83,30 +82,6 @@ export function useUpdateUser() {
     },
     onError: (error: Error) => {
       console.error("❌ Error updating user:", error);
-    },
-  });
-}
-
-// Hook for updating user password (admin endpoint)
-export function useUpdateUserPassword() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      id,
-      password,
-    }: {
-      id: string | number;
-      password: string;
-    }) => updateUserPassword(id, password),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: userKeys.detail(variables.id),
-      });
-    },
-    onError: (error: Error) => {
-      console.error("❌ Error updating user password:", error);
     },
   });
 }
@@ -202,7 +177,6 @@ export function useUsersManager() {
   const usersQuery = useUsers();
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
-  const updateUserPasswordMutation = useUpdateUserPassword();
   const updateUserRoleMutation = useUpdateUserRole();
   const { confirmDelete } = useConfirmDeleteUser();
 
@@ -218,11 +192,7 @@ export function useUsersManager() {
     createUser: createUserMutation.mutate,
     isCreating: createUserMutation.isPending,
     updateUser: updateUserMutation.mutate,
-    updateUserAsync: updateUserMutation.mutateAsync,
     isUpdating: updateUserMutation.isPending,
-    updateUserPassword: updateUserPasswordMutation.mutate,
-    updateUserPasswordAsync: updateUserPasswordMutation.mutateAsync,
-    isUpdatingPassword: updateUserPasswordMutation.isPending,
     updateUserRole: updateUserRoleMutation.mutate,
     isUpdatingRole: updateUserRoleMutation.isPending,
     deleteUser: confirmDelete,
@@ -231,7 +201,6 @@ export function useUsersManager() {
     isProcessing:
       createUserMutation.isPending ||
       updateUserMutation.isPending ||
-      updateUserPasswordMutation.isPending ||
       updateUserRoleMutation.isPending,
   };
 }

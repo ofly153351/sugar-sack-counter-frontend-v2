@@ -122,34 +122,6 @@ export const updateUser = async (
 };
 
 /**
- * Update user password (admin)
- */
-export const updateUserPassword = async (
-  userId: string | number,
-  password: string
-): Promise<ApiUser> => {
-  try {
-    console.log(`🔐 Updating password for user ID: ${userId}`);
-    const response = await api.patch(`/admin/users/${userId}/password`, {
-      newPassword: password,
-    });
-    console.log("✅ User password updated successfully");
-    return response.data;
-  } catch (error: any) {
-    console.error("❌ Error updating user password:", error);
-
-    let errorMessage = "Failed to update user password";
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    throw new Error(errorMessage);
-  }
-};
-
-/**
  * Update user role (admin only)
  */
 export const updateUserRole = async (
