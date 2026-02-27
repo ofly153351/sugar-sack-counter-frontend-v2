@@ -91,40 +91,53 @@ export default function UsersPage() {
   const handleSave = async (user: User) => {
     try {
       if (editUser) {
-        // Update existing user
+        // Update existing user (username and password via dedicated endpoints)
         const userId = editUser.id || editUser.no;
-        const updateData: Partial<UserFormData> = {
-          username: user.username,
-        };
+        const nextUsername = user.username?.trim() || "";
+        const nextPassword = user.password?.trim() || "";
+        const currentUsername = editUser.username?.trim() || "";
 
-        if (user.password?.trim()) {
-          updateData.password = user.password.trim();
+        if (!nextUsername) {
+          Swal.fire({
+            title: t("form.requiredFields"),
+            icon: "warning",
+            confirmButtonText: t("buttons.ok"),
+          });
+          return;
         }
 
-        usersManager.updateUser(
-          { id: userId, data: updateData },
-          {
-            onSuccess: () => {
-              // Show success message
-              Swal.fire({
-                title: t("save.updateSuccess"),
-                icon: "success",
-                confirmButtonText: t("buttons.ok"),
-              });
-              // Close modal
-              setModalOpen(false);
-              setEditUser(null);
-            },
-            onError: (error: Error) => {
-              Swal.fire({
-                title: t("save.error"),
-                text: error.message || t("save.error"),
-                icon: "error",
-                confirmButtonText: t("buttons.ok"),
-              });
-            },
-          }
-        );
+        const updateTasks: Promise<unknown>[] = [];
+        if (nextUsername !== currentUsername) {
+          const updateData: Partial<UserFormData> = { username: nextUsername };
+          updateTasks.push(
+            usersManager.updateUserAsync({ id: userId, data: updateData })
+          );
+        }
+
+        if (nextPassword) {
+          updateTasks.push(
+            usersManager.updateUserPasswordAsync({
+              id: userId,
+              password: nextPassword,
+            })
+          );
+        }
+
+        if (updateTasks.length === 0) {
+          setModalOpen(false);
+          setEditUser(null);
+          return;
+        }
+
+        await Promise.all(updateTasks);
+
+        Swal.fire({
+          title: t("save.updateSuccess"),
+          icon: "success",
+          confirmButtonText: t("buttons.ok"),
+        });
+        setModalOpen(false);
+        setEditUser(null);
       } else {
         // Create new user
         const userData: CreateUserMinimalPayload = {
