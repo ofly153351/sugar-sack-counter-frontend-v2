@@ -5,6 +5,7 @@ import { ChevronDown, Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { useTranslations } from "next-intl";
 import { useUsersManager } from "@/hooks/useUsers";
+import { AdminSearchInput } from "@/components/admin/AdminSearchInput";
 import { AppModal } from "@/components/modal/AppModal";
 import { UserAccountCredentialsFields } from "@/components/users/UserAccountCredentialsFields";
 import {
@@ -377,15 +378,11 @@ export default function EmployeeInfoPage() {
         </button>
       </div>
 
-      <div className="max-w-md">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("searchPlaceholder")}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-      </div>
+      <AdminSearchInput
+        value={search}
+        onValueChange={setSearch}
+        placeholder={t("searchPlaceholder")}
+      />
 
       <div className="space-y-3 lg:hidden">
         {filteredEmployees.length === 0 ? (

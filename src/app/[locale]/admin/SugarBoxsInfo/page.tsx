@@ -1,6 +1,7 @@
 "use client";
 
 import Table from "@/components/table/table";
+import { AdminSearchInput } from "@/components/admin/AdminSearchInput";
 import { getDictionary } from "@/i18n/dictionaries";
 import { Locale } from "@/i18n/settings";
 import { useEffect, useState } from "react";
@@ -170,19 +171,12 @@ export default function Page({ params }: PageProps) {
         </div>
       </div>
 
-      {/* 🔍 ตัวกรองรหัสรถ */}
-      <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-white border border-gray-200 rounded-xl shadow-sm w-full sm:max-w-2xl">
-        <label className="block text-gray-700 font-semibold mb-2">
-          ค้นหารหัสรถ
-        </label>
-        <input
-          type="text"
-          placeholder="เช่น BX001, BX021..."
+      <div className="mb-4 sm:mb-6">
+        <AdminSearchInput
+          label="ค้นหารหัสรถ"
           value={searchCode}
-          onChange={(e) => setSearchCode(e.target.value)}
-          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg
-                     focus:outline-none focus:ring-2 focus:ring-blue-400
-                     focus:border-blue-400 transition"
+          onValueChange={setSearchCode}
+          placeholder="เช่น BX001, BX021..."
         />
       </div>
 
