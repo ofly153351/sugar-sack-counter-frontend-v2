@@ -1,7 +1,7 @@
 "use client";
 
 import Table from "@/components/table/table";
-import { Search } from "lucide-react";
+import { AdminSearchInput } from "@/components/admin/AdminSearchInput";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -125,24 +125,15 @@ export function VehiclesTable({
 
           {/* Search Filter */}
           <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              {t("vehicle.filter.search", { defaultValue: "ค้นหา" })}
-            </label>
-            <div className="relative">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-                size={18}
-              />
-              <input
-                type="text"
-                placeholder={t("vehicle.searchPlaceholder", {
-                  defaultValue: "ค้นหาด้วยรหัสรถ, ทะเบียน, คนขับ...",
-                })}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 focus:ring-1 focus:ring-gray-500 outline-none"
-              />
-            </div>
+            <AdminSearchInput
+              label={t("vehicle.filter.search", { defaultValue: "ค้นหา" })}
+              value={search}
+              onValueChange={setSearch}
+              placeholder={t("vehicle.searchPlaceholder", {
+                defaultValue: "ค้นหาด้วยรหัสรถ, ทะเบียน, คนขับ...",
+              })}
+              className="max-w-none"
+            />
           </div>
         </div>
       </motion.div>
