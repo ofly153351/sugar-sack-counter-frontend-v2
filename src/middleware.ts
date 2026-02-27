@@ -126,6 +126,10 @@ export default async function middleware(request: NextRequest) {
     try {
       const cookieHeader = request.headers.get("cookie") || "";
       const userData = await fetchUserData(cookieHeader);
+      if (!userData) {
+        // Token exists but is invalid/expired: allow auth page to avoid redirect loops.
+        return intlMiddleware(request);
+      }
       const userRole =
         userData?.role || userData?.user?.role || userData?.position;
       const redirectTo =
@@ -135,7 +139,8 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(redirectTo, request.url));
     } catch (error) {
       console.error("❌ Middleware: Auth page role check failed:", error);
-      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+      // Fail-open to auth page to prevent login<->home redirect loops.
+      return intlMiddleware(request);
     }
   }
 
