@@ -293,61 +293,223 @@ export default function Table({
     });
   };
 
+  const renderRoleSelect = (row: Record<string, any>) => (
+    <select
+      value={(row.role || "user") as string}
+      onChange={(e) =>
+        onRoleChange?.(
+          row,
+          e.target.value as "admin" | "user" | "operator" | "viewer"
+        )
+      }
+      disabled={
+        !onRoleChange ||
+        isRoleUpdating ||
+        (isRoleSelectable ? !isRoleSelectable(row) : false)
+      }
+      className="w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
+    >
+      {roleOptions.map((role) => (
+        <option key={role} value={role}>
+          {t(`users.roles.${role}`, {
+            defaultValue: role,
+          })}
+        </option>
+      ))}
+    </select>
+  );
+
+  const renderRowActions = (row: Record<string, any>, compact = false) => (
+    <div
+      className={`flex items-center ${
+        compact ? "justify-end" : "justify-center"
+      } gap-2`}
+    >
+      {onEdit && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(row);
+          }}
+          className="p-2 rounded-md bg-blue-100 text-blue-600 hover:bg-blue-200 transition shadow-sm"
+          title={t("table.edit", { defaultValue: "แก้ไข" })}
+        >
+          <Pencil className="w-4 h-4" />
+        </button>
+      )}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDelete(row);
+        }}
+        className="flex items-center justify-center p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+
   // Render loading state on server to avoid hydration mismatch
   if (!isClient) {
     return (
-      <div className="w-full max-w-full overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white overscroll-x-contain">
-        <table className="min-w-0 w-full table-fixed divide-y divide-slate-200">
-          <thead className="bg-blue-500/10">
-            <tr>
-              {Array.from({ length: 6 }).map((_, index) => (
-                <th
-                  key={index}
-                  className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words"
-                >
-                  <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                </th>
-              ))}
-              <th className="px-2 sm:px-6 py-2 sm:py-4 text-center text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words">
-                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 bg-white">
-            {Array.from({ length: 3 }).map((_, rowIndex) => (
-              <tr key={rowIndex}>
-                {Array.from({ length: 6 }).map((_, cellIndex) => (
-                  <td
-                    key={cellIndex}
-                    className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal text-xs sm:text-sm break-words"
-                  >
-                    <div className="h-4 bg-gray-100 rounded animate-pulse"></div>
-                  </td>
-                ))}
-                <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal text-xs sm:text-sm break-words">
-                  <div className="flex justify-center space-x-2">
-                    <div className="h-8 w-8 bg-gray-100 rounded animate-pulse"></div>
-                    <div className="h-8 w-8 bg-gray-100 rounded animate-pulse"></div>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={index}
+            className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+          >
+            <div className="h-4 w-1/3 bg-gray-200 rounded animate-pulse mb-3"></div>
+            <div className="space-y-2">
+              <div className="h-3 bg-gray-100 rounded animate-pulse"></div>
+              <div className="h-3 bg-gray-100 rounded animate-pulse"></div>
+              <div className="h-3 bg-gray-100 rounded animate-pulse"></div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
 
   return (
     <>
-      <div className="w-full max-w-full overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white overscroll-x-contain">
-        <table className="min-w-0 w-full table-fixed divide-y divide-slate-200">
+      <div className="space-y-3 lg:hidden">
+        {data.map((row, i) => {
+          const rowId = String(row.id ?? row.rawSession?.id ?? row.no ?? i);
+          const isExpanded = expandedRows.has(rowId);
+          const sackRows = row.sackSession?.sackRows ?? [];
+          const boxRows = row.boxSession?.boxRows ?? [];
+          const sessionType = row.sessionType ?? row.rawSession?.sessionType;
+          const isSackSession = sessionType === "sack";
+          const isBoxSession = sessionType === "box";
+          const childRows = isSackSession ? sackRows : boxRows;
+          const hasChildRows = childRows.length > 0;
+          const showExpandButton = (isSackSession || isBoxSession) && hasChildRows;
+
+          return (
+            <div
+              key={rowId}
+              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+            >
+              <div className="space-y-2">
+                {headers.map((h) => (
+                  <div
+                    key={h.key}
+                    className="grid grid-cols-[110px_1fr] items-start gap-2 text-sm"
+                  >
+                    <span className="font-medium text-slate-500">{h.label}</span>
+                    <div className="text-slate-700 break-words">
+                      {type === "vehicle" && h.key === "status" ? (
+                        <span
+                          className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                            row.status === "active"
+                              ? "bg-green-100 text-green-700 border border-green-200"
+                              : row.status === "maintenance"
+                                ? "bg-amber-100 text-amber-700 border border-amber-200"
+                                : "bg-red-100 text-red-700 border border-red-200"
+                          }`}
+                        >
+                          {row.status === "active"
+                            ? "Active"
+                            : row.status === "maintenance"
+                              ? "Maintenance"
+                              : "Inactive"}
+                        </span>
+                      ) : type === "users" && h.key === "role" ? (
+                        renderRoleSelect(row)
+                      ) : (
+                        row[h.key]
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {showExpandButton && (
+                <div className="mt-3 border-t border-slate-100 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => toggleRowExpansion(rowId)}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-blue-700"
+                  >
+                    <ChevronRight
+                      className={`h-4 w-4 transition-transform ${
+                        isExpanded ? "rotate-90" : ""
+                      }`}
+                    />
+                    {isExpanded ? "ซ่อนรายละเอียด" : "ดูรายละเอียด"}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="mt-3 space-y-3 rounded-lg border border-blue-100 bg-blue-50 p-3">
+                      {childRows.map((childRow: any, index: number) => (
+                        <div
+                          key={childRow.id || index}
+                          className="rounded-md border border-blue-100 bg-white p-3"
+                        >
+                          <div className="text-sm text-slate-700">
+                            แถวที่ {childRow.rowNumber || index + 1}
+                          </div>
+                          {isSackSession && (
+                            <div className="text-sm text-slate-700">
+                              น้ำหนัก: {childRow.weightType || "ไม่ระบุ"}
+                            </div>
+                          )}
+                          <div className="text-sm text-slate-700">
+                            {t(
+                              isSackSession
+                                ? "bags.table.manualCount"
+                                : "box.table.manualCount",
+                              { defaultValue: "Manual Count" }
+                            )}
+                            : {childRow.finalCount || 0}
+                          </div>
+                          <div className="text-sm text-slate-700">
+                            {t(
+                              isSackSession
+                                ? "bags.table.aiCount"
+                                : "box.table.aiCount",
+                              { defaultValue: "AI Count" }
+                            )}
+                            : {childRow.aiCount || 0}
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenImagesModal(row, childRow);
+                            }}
+                            className="mt-2 p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
+                            title="ดูรูปภาพ"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-3 border-t border-slate-100 pt-3">
+                {renderRowActions(row, true)}
+              </div>
+            </div>
+          );
+        })}
+        {data.length === 0 && (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-500 italic">
+            {t("table.noData", { defaultValue: "— No data found —" })}
+          </div>
+        )}
+      </div>
+
+      <div className="hidden lg:block w-full max-w-full overflow-x-auto rounded-xl shadow-lg border border-slate-200 bg-white overscroll-x-contain">
+        <table className="min-w-[900px] lg:min-w-full w-full table-auto divide-y divide-slate-200">
           <thead className="bg-blue-500/10">
             <tr>
               {headers.map((h) => (
                 <th
                   key={h.key}
-                  className="px-2 sm:px-6 py-2 sm:py-4 text-left text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words"
+                  className="px-4 py-3 text-left text-sm font-semibold text-blue-700 tracking-wide whitespace-nowrap"
                 >
                   {type === "users" &&
                   h.key === "empCode" &&
@@ -385,7 +547,7 @@ export default function Table({
                 </th>
               ))}
 
-              <th className="px-2 sm:px-6 py-2 sm:py-4 text-center  text-xs sm:text-sm font-semibold text-blue-700 tracking-wide break-words">
+              <th className="px-4 py-3 text-center text-sm font-semibold text-blue-700 tracking-wide whitespace-nowrap">
                 {t("table.actions", { defaultValue: "Actions" })}
               </th>
             </tr>
@@ -397,14 +559,12 @@ export default function Table({
               const isExpanded = expandedRows.has(rowId);
               const sackRows = row.sackSession?.sackRows ?? [];
               const boxRows = row.boxSession?.boxRows ?? [];
-              const sessionType =
-                row.sessionType ?? row.rawSession?.sessionType;
+              const sessionType = row.sessionType ?? row.rawSession?.sessionType;
               const isSackSession = sessionType === "sack";
               const isBoxSession = sessionType === "box";
               const childRows = isSackSession ? sackRows : boxRows;
               const hasChildRows = childRows.length > 0;
-              const showExpandButton =
-                (isSackSession || isBoxSession) && hasChildRows;
+              const showExpandButton = (isSackSession || isBoxSession) && hasChildRows;
 
               return (
                 <React.Fragment key={rowId}>
@@ -421,7 +581,7 @@ export default function Table({
                     {headers.map((h) => (
                       <td
                         key={h.key}
-                        className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal text-xs sm:text-[15px] text-slate-700 break-words"
+                        className="px-4 py-3 whitespace-nowrap text-sm text-slate-700"
                       >
                         {type === "vehicle" && h.key === "status" ? (
                           <span
@@ -440,33 +600,7 @@ export default function Table({
                                 : "Inactive"}
                           </span>
                         ) : type === "users" && h.key === "role" ? (
-                          <select
-                            value={(row.role || "user") as string}
-                            onChange={(e) =>
-                              onRoleChange?.(
-                                row,
-                                e.target.value as
-                                  | "admin"
-                                  | "user"
-                                  | "operator"
-                                  | "viewer"
-                              )
-                            }
-                            disabled={
-                              !onRoleChange ||
-                              isRoleUpdating ||
-                              (isRoleSelectable ? !isRoleSelectable(row) : false)
-                            }
-                            className="min-w-[140px] rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
-                          >
-                            {roleOptions.map((role) => (
-                              <option key={role} value={role}>
-                                {t(`users.roles.${role}`, {
-                                  defaultValue: role,
-                                })}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="min-w-[140px]">{renderRoleSelect(row)}</div>
                         ) : (type === "bags" || type === "box") &&
                           h.key === "no" &&
                           showExpandButton ? (
@@ -493,31 +627,7 @@ export default function Table({
                       </td>
                     ))}
 
-                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        {onEdit && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEdit(row);
-                            }}
-                            className="p-1.5 sm:p-2 rounded-md bg-blue-100 text-blue-600 hover:bg-blue-200 transition shadow-sm"
-                            title={t("table.edit", { defaultValue: "แก้ไข" })}
-                          >
-                            <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(row);
-                          }}
-                          className="flex items-center justify-center p-1.5 sm:p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition shadow-sm"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                      </div>
-                    </td>
+                    <td className="px-4 py-3 text-center">{renderRowActions(row)}</td>
                   </tr>
 
                   {showExpandButton && (
@@ -534,13 +644,13 @@ export default function Table({
                             <div className="p-4">
                               <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
                                 <ChevronDown className="w-4 h-4" />
-                              {isSackSession
-                                ? "รายละเอียดการนับกระสอบ"
-                                : "รายละเอียดการนับกล่อง"}
-                            </h4>
+                                {isSackSession
+                                  ? "รายละเอียดการนับกระสอบ"
+                                  : "รายละเอียดการนับกล่อง"}
+                              </h4>
                               {hasChildRows ? (
                                 <div className="overflow-x-auto">
-                                  <table className="min-w-full divide-y divide-blue-200">
+                                  <table className="min-w-[680px] w-full divide-y divide-blue-200">
                                     <thead className="bg-blue-100">
                                       <tr>
                                         <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
@@ -569,61 +679,61 @@ export default function Table({
                                         </th>
                                         <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
                                           รูปภาพ
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="bg-white divide-y divide-blue-100">
-                                    {childRows.map(
-                                      (childRow: any, index: number) => (
-                                        <tr
-                                          key={childRow.id || index}
-                                          className="hover:bg-blue-50"
-                                        >
-                                          <td className="px-4 py-2 text-sm text-gray-700">
-                                            {childRow.rowNumber || index + 1}
-                                          </td>
-                                          {isSackSession && (
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-blue-100">
+                                      {childRows.map(
+                                        (childRow: any, index: number) => (
+                                          <tr
+                                            key={childRow.id || index}
+                                            className="hover:bg-blue-50"
+                                          >
                                             <td className="px-4 py-2 text-sm text-gray-700">
-                                              {childRow.weightType || "ไม่ระบุ"}
+                                              {childRow.rowNumber || index + 1}
                                             </td>
-                                          )}
-                                          <td className="px-4 py-2 text-sm text-gray-700">
-                                            {childRow.finalCount || 0}
-                                          </td>
-                                          <td className="px-4 py-2 text-sm text-gray-700">
-                                            {childRow.aiCount || 0}
-                                          </td>
-                                          <td className="px-4 py-2 text-sm">
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleOpenImagesModal(
-                                                  row,
-                                                  childRow
-                                                );
-                                              }}
-                                              className="p-1.5 sm:p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
-                                              title="ดูรูปภาพ"
-                                            >
-                                              <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      )
-                                    )}
-                                  </tbody>
-                                </table>
-                                <p className="text-sm text-gray-600 mt-3">
-                                  รวม {childRows.length} แถว
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="text-center py-6">
-                                <p className="text-gray-500 italic">
-                                  No rows data
-                                </p>
-                              </div>
-                            )}
+                                            {isSackSession && (
+                                              <td className="px-4 py-2 text-sm text-gray-700">
+                                                {childRow.weightType || "ไม่ระบุ"}
+                                              </td>
+                                            )}
+                                            <td className="px-4 py-2 text-sm text-gray-700">
+                                              {childRow.finalCount || 0}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-700">
+                                              {childRow.aiCount || 0}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm">
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleOpenImagesModal(
+                                                    row,
+                                                    childRow
+                                                  );
+                                                }}
+                                                className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition shadow-sm"
+                                                title="ดูรูปภาพ"
+                                              >
+                                                <Eye className="w-4 h-4" />
+                                              </button>
+                                            </td>
+                                          </tr>
+                                        )
+                                      )}
+                                    </tbody>
+                                  </table>
+                                  <p className="text-sm text-gray-600 mt-3">
+                                    รวม {childRows.length} แถว
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="text-center py-6">
+                                  <p className="text-gray-500 italic">
+                                    No rows data
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
