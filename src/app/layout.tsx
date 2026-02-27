@@ -23,6 +23,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sugar Sack Counter",
   description: "Sugar sack counting application",
+  icons: {
+    icon: "/title-logo.png",
+    shortcut: "/title-logo.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 interface RootLayoutProps {
