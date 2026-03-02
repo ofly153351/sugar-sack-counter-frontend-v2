@@ -2,6 +2,24 @@
 
 import { Dictionary } from "@/i18n/dictionaries";
 import { useDashboardSummary } from "@/hooks/useDashboardSummary";
+import { TrendingUp } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 
 interface DashboardClientProps {
   dict: Dictionary;
@@ -16,39 +34,53 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
     refetch,
   } = useDashboardSummary();
 
-  const formatDateLabel = (dateStr: string) => {
-    // Use backend date string directly to avoid timezone shifts
-    return dateStr;
+  const formatMonthLabel = (monthNumber: string) => {
+    const month = Number(monthNumber);
+    if (month < 1 || month > 12) return monthNumber;
+    return new Date(Date.UTC(2026, month - 1, 1)).toLocaleDateString(undefined, {
+      month: "short",
+      timeZone: "UTC",
+    });
   };
 
-  const renderLargeGraph = (
-    points: { date: string; total: number }[],
-    colorClass: string,
-    unitLabel: string
-  ) => {
-    const max = Math.max(1, ...points.map((p) => p.total));
-    return (
-      <div className="flex items-end gap-3 h-48 md:h-56">
-        {points.map((p) => {
-          const height = Math.max(12, Math.round((p.total / max) * 200));
-          const label = formatDateLabel(p.date);
-          return (
-            <div key={p.date} className="flex-1 flex flex-col items-center">
-              <div
-                className={`w-full rounded-md ${colorClass} transition-all duration-700 ease-out`}
-                style={{ height }}
-                title={`${label}: ${p.total} ${unitLabel}`}
-                aria-label={`${label}: ${p.total} ${unitLabel}`}
-              />
-              <div className="mt-2 text-[11px] text-gray-500">
-                {label.slice(5)}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+  // Always render month axis as 1..12
+  const chartData = Array.from({ length: 12 }, (_, i) => ({
+    month: String(i + 1),
+    sacks: 0,
+    boxes: 0,
+  }));
+
+  (summary?.sacks?.last12Months || []).forEach((item) => {
+    const monthNumber = Number(item.month.split("-")[1]);
+    if (monthNumber >= 1 && monthNumber <= 12) {
+      chartData[monthNumber - 1].sacks = item.total;
+    }
+  });
+
+  (summary?.boxes?.last12Months || []).forEach((item) => {
+    const monthNumber = Number(item.month.split("-")[1]);
+    if (monthNumber >= 1 && monthNumber <= 12) {
+      chartData[monthNumber - 1].boxes = item.total;
+    }
+  });
+
+  const chartConfig = {
+    sacks: {
+      label: "กระสอบต่อเดือน",
+      color: "#2563eb",
+    },
+    boxes: {
+      label: "กล่องต่อเดือน",
+      color: "#16a34a",
+    },
+  } satisfies ChartConfig;
+
+  const latest = chartData[chartData.length - 1];
+  const previous = chartData[chartData.length - 2];
+  const latestTotal = (latest?.sacks || 0) + (latest?.boxes || 0);
+  const previousTotal = (previous?.sacks || 0) + (previous?.boxes || 0);
+  const trendPercent =
+    previousTotal > 0 ? ((latestTotal - previousTotal) / previousTotal) * 100 : 0;
 
   return (
     <main className="p-6">
@@ -81,28 +113,28 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
         <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-blue-800">
-              {dict.dashboard.metrics.sacksToday}
+              กระสอบต่อเดือน
             </h3>
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-blue-600 font-bold text-sm">SACK</span>
             </div>
           </div>
           <p className="text-4xl font-bold text-blue-700 mb-3">
-            {summary?.sacks?.today ?? 0}
+            {summary?.sacks?.thisMonth ?? 0}
           </p>
         </div>
 
         <div className="bg-gradient-to-br from-green-50 to-white p-6 rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-green-800">
-              {dict.dashboard.metrics.boxesToday}
+              กล่องต่อเดือน
             </h3>
             <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
               <span className="text-green-600 font-bold text-sm">BOX</span>
             </div>
           </div>
           <p className="text-4xl font-bold text-green-700 mb-3">
-            {summary?.boxes?.today ?? 0}
+            {summary?.boxes?.thisMonth ?? 0}
           </p>
         </div>
 
@@ -135,43 +167,69 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-blue-100 shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-blue-800">
-              {dict.dashboard.metrics.sacksToday}
-            </h3>
-            <span className="text-sm text-blue-600">
-              {dict.dashboard.last7Days}
-            </span>
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Summary - 12 Months</CardTitle>
+          <CardDescription>
+            {summary?.range?.startMonth} - {summary?.range?.endMonth}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {chartData.length > 0 ? (
+            <ChartContainer config={chartConfig}>
+              <BarChart
+                accessibilityLayer
+                data={chartData}
+                margin={{ left: 12, right: 12 }}
+              >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  interval={0}
+                  minTickGap={0}
+                  tickFormatter={(value) => formatMonthLabel(String(value))}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="line" />}
+                />
+                <Bar
+                  dataKey="boxes"
+                  fill="var(--color-boxes)"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="sacks"
+                  fill="var(--color-sacks)"
+                  radius={[4, 4, 0, 0]}
+                />
+                <ChartLegend content={<ChartLegendContent />} />
+              </BarChart>
+            </ChartContainer>
+          ) : (
+            <div className="py-10 text-center text-sm text-slate-500">
+              {dict.table.noData}
+            </div>
+          )}
+        </CardContent>
+        <CardFooter>
+          <div className="flex w-full items-start gap-2 text-sm">
+            <div className="grid gap-2">
+              <div className="flex items-center gap-2 leading-none font-medium text-slate-700">
+                {trendPercent >= 0 ? "Trending up" : "Trending down"} by{" "}
+                {Math.abs(trendPercent).toFixed(1)}% this month{" "}
+                <TrendingUp className="h-4 w-4" />
+              </div>
+              <div className="text-slate-500 flex items-center gap-2 leading-none">
+                {summary?.range?.startMonth} - {summary?.range?.endMonth}
+              </div>
+            </div>
           </div>
-          {summary?.sacks?.last7Days?.length
-            ? renderLargeGraph(
-                summary.sacks.last7Days,
-                "bg-gradient-to-t from-blue-700 to-blue-400",
-                dict.dashboard.units.sacks
-              )
-            : null}
-        </div>
-
-        <div className="bg-white rounded-2xl border border-emerald-100 shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-emerald-800">
-              {dict.dashboard.metrics.boxesToday}
-            </h3>
-            <span className="text-sm text-emerald-600">
-              {dict.dashboard.last7Days}
-            </span>
-          </div>
-          {summary?.boxes?.last7Days?.length
-            ? renderLargeGraph(
-                summary.boxes.last7Days,
-                "bg-gradient-to-t from-emerald-700 to-emerald-400",
-                dict.dashboard.units.boxes
-              )
-            : null}
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
     </main>
   );
 }
