@@ -21,6 +21,16 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 
+const getCurrentMonthKey = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+};
+
+const getMonthTotal = (
+  series: { month: string; total: number }[] | undefined,
+  monthKey: string
+) => series?.find((entry) => entry.month === monthKey)?.total ?? 0;
+
 interface DashboardClientProps {
   dict: Dictionary;
 }
@@ -33,6 +43,14 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
     error,
     refetch,
   } = useDashboardSummary();
+
+  const currentMonthKey = getCurrentMonthKey();
+  const currentMonthSacks =
+    summary?.sacks?.thisMonth ??
+    getMonthTotal(summary?.sacks?.last12Months, currentMonthKey);
+  const currentMonthBoxes =
+    summary?.boxes?.thisMonth ??
+    getMonthTotal(summary?.boxes?.last12Months, currentMonthKey);
 
   const formatMonthLabel = (monthNumber: string) => {
     const month = Number(monthNumber);
@@ -120,7 +138,7 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
             </div>
           </div>
           <p className="text-4xl font-bold text-blue-700 mb-3">
-            {summary?.sacks?.thisMonth ?? 0}
+            {currentMonthSacks}
           </p>
         </div>
 
@@ -134,7 +152,7 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
             </div>
           </div>
           <p className="text-4xl font-bold text-green-700 mb-3">
-            {summary?.boxes?.thisMonth ?? 0}
+            {currentMonthBoxes}
           </p>
         </div>
 
