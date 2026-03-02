@@ -1,24 +1,24 @@
 import { api } from "@/utils/api-client";
 
 export type DashboardSummaryPoint = {
-  date: string;
+  month: string;
   total: number;
 };
 
 export type DashboardSummary = {
   sacks: {
-    today: number;
-    last7Days: DashboardSummaryPoint[];
+    thisMonth: number;
+    last12Months: DashboardSummaryPoint[];
   };
   boxes: {
-    today: number;
-    last7Days: DashboardSummaryPoint[];
+    thisMonth: number;
+    last12Months: DashboardSummaryPoint[];
   };
   totalUsers: number;
   totalVehicles: number;
   range: {
-    startDate: string;
-    endDate: string;
+    startMonth: string;
+    endMonth: string;
   };
 };
 
@@ -28,12 +28,18 @@ export const fetchDashboardSummary = async (): Promise<DashboardSummary> => {
       "/admin/dashboard/summary"
     );
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     let errorMessage = "Failed to load dashboard summary";
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error.message) {
-      errorMessage = error.message;
+    if (typeof error === "object" && error !== null) {
+      const e = error as {
+        message?: string;
+        response?: { data?: { message?: string } };
+      };
+      if (e.response?.data?.message) {
+        errorMessage = e.response.data.message;
+      } else if (e.message) {
+        errorMessage = e.message;
+      }
     }
     throw new Error(errorMessage);
   }
