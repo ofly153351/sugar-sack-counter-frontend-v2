@@ -1086,13 +1086,8 @@ export default function BoxRow({
             inputMode="numeric"
             pattern="[0-9]*"
             value={aiCount || ""}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === "" || /^\d+$/.test(value)) {
-                setAiCount(value === "" ? null : Number(value));
-              }
-            }}
-            className="w-20 p-1 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            readOnly
+            className="w-20 p-1 text-center border rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed"
           />
           <span className="text-sm text-gray-600">{t("boxes")}</span>
         </div>

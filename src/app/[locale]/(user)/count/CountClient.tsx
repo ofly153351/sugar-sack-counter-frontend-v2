@@ -325,6 +325,24 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
         });
         return;
       }
+
+      const invalidRows = rows.filter((rowNumber) => {
+        const rowData = sackRowsData[rowNumber];
+        return !rowData || (rowData.aiCount ?? 0) <= 0 || rowData.finalCount <= 0;
+      });
+      if (invalidRows.length > 0) {
+        Swal.fire({
+          title: t("validation.missingData", {
+            defaultValue: "ข้อมูลไม่ครบถ้วน",
+          }),
+          text: `กรุณากรอกจำนวน Manual และ AI (มากกว่า 0) สำหรับแถวที่ ${invalidRows.join(
+            ", "
+          )}`,
+          icon: "warning",
+          confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+        });
+        return;
+      }
     } else {
       const missingRows = rows.filter((rowNumber) => !boxRowsData[rowNumber]);
       if (missingRows.length > 0) {
@@ -337,6 +355,24 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
               ", "
             )}`,
           }),
+          icon: "warning",
+          confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+        });
+        return;
+      }
+
+      const invalidRows = rows.filter((rowNumber) => {
+        const rowData = boxRowsData[rowNumber];
+        return !rowData || (rowData.aiCount ?? 0) <= 0 || rowData.finalCount <= 0;
+      });
+      if (invalidRows.length > 0) {
+        Swal.fire({
+          title: t("validation.missingData", {
+            defaultValue: "ข้อมูลไม่ครบถ้วน",
+          }),
+          text: `กรุณากรอกจำนวน Manual และ AI (มากกว่า 0) สำหรับแถวที่ ${invalidRows.join(
+            ", "
+          )}`,
           icon: "warning",
           confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
         });
@@ -518,6 +554,17 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
       ? rows.filter((rowNumber) => !sackRowsData[rowNumber])
       : rows.filter((rowNumber) => !boxRowsData[rowNumber]);
   const hasMissingRowData = missingRows.length > 0;
+  const invalidCountRows =
+    currentTab === "bags"
+      ? rows.filter((rowNumber) => {
+          const rowData = sackRowsData[rowNumber];
+          return !!rowData && ((rowData.aiCount ?? 0) <= 0 || rowData.finalCount <= 0);
+        })
+      : rows.filter((rowNumber) => {
+          const rowData = boxRowsData[rowNumber];
+          return !!rowData && ((rowData.aiCount ?? 0) <= 0 || rowData.finalCount <= 0);
+        });
+  const hasInvalidRowCounts = invalidCountRows.length > 0;
 
   // Show loading while fetching essential data or waiting for client
   if (!isClient) {
@@ -802,7 +849,8 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                   !selectedSugarTypeId ||
                   !countingSessionId ||
                   rows.length === 0 ||
-                  hasMissingRowData
+                  hasMissingRowData ||
+                  hasInvalidRowCounts
                 }
                 className="flex items-center justify-center gap-2 px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -816,21 +864,30 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                 )}
               </button>
             </div>
-            {hasMissingRowData && (
+            {(hasMissingRowData || hasInvalidRowCounts) && (
               <div className="mt-3 text-center">
                 <p className="text-sm font-medium text-amber-600">
                   {t("validation.missingData", {
                     defaultValue: "ข้อมูลไม่ครบถ้วน",
                   })}
                 </p>
-                <p className="text-xs text-amber-500 mt-1">
-                  {t("validation.missingRowData", {
-                    missingRows: missingRows.join(", "),
-                    defaultValue: `กรุณากรอกข้อมูลสำหรับแถวที่ ${missingRows.join(
+                {hasMissingRowData && (
+                  <p className="text-xs text-amber-500 mt-1">
+                    {t("validation.missingRowData", {
+                      missingRows: missingRows.join(", "),
+                      defaultValue: `กรุณากรอกข้อมูลสำหรับแถวที่ ${missingRows.join(
+                        ", "
+                      )}`,
+                    })}
+                  </p>
+                )}
+                {hasInvalidRowCounts && (
+                  <p className="text-xs text-amber-500 mt-1">
+                    {`กรุณากรอกจำนวน Manual และ AI ให้มากกว่า 0 สำหรับแถวที่ ${invalidCountRows.join(
                       ", "
-                    )}`,
-                  })}
-                </p>
+                    )}`}
+                  </p>
+                )}
               </div>
             )}
         </>
