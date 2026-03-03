@@ -97,7 +97,6 @@ export default function BagRow({
     details?: any;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const hasShownNoImageWarningRef = useRef(false);
 
   // Load AI settings from localStorage on component mount
   useEffect(() => {
@@ -134,7 +133,6 @@ export default function BagRow({
     setIsUploading(false);
     setIsDetecting(false);
     setIsSaving(false);
-    hasShownNoImageWarningRef.current = false;
 
     // Reset file input to allow fresh upload
     if (fileInputRef.current) {
@@ -330,7 +328,6 @@ export default function BagRow({
     }
 
     // Upload file and auto-detect AI
-    hasShownNoImageWarningRef.current = false;
     handleUploadFile(file);
 
     // Reset file input value to allow re-uploading the same file
@@ -667,32 +664,17 @@ export default function BagRow({
           prevDataRef.current = currentData;
         }
       } else {
-        // Wait until upload/detection/save pipeline finishes before warning.
-        if (isUploading || isDetecting || isSaving) return;
-
-        // Show warning only when user did not upload an image.
-        if (!imageFile && !hasShownNoImageWarningRef.current) {
-          hasShownNoImageWarningRef.current = true;
-          Swal.fire({
-            title: "ยังไม่ได้อัปโหลดรูปภาพ",
-            text: "กรุณาอัปโหลดรูปภาพก่อนบันทึกข้อมูล",
-            icon: "warning",
-            confirmButtonText: "ตกลง",
-          });
-        }
+        // Show warning if images are not saved to MinIO
+        console.warn("⚠️ Images not saved to MinIO - cannot send to backend");
+        Swal.fire({
+          title: "ภาพยังไม่ได้บันทึกใน MinIO",
+          text: "กรุณารอให้ระบบบันทึกภาพใน MinIO ก่อนบันทึกข้อมูล",
+          icon: "warning",
+          confirmButtonText: "ตกลง",
+        });
       }
     }
-  }, [
-    aiResult,
-    bagWeight,
-    manualCount,
-    onDataChange,
-    rowNumber,
-    imageFile,
-    isUploading,
-    isDetecting,
-    isSaving,
-  ]);
+  }, [aiResult, bagWeight, manualCount, onDataChange, rowNumber]);
 
   // Effect to send data when manual count changes
   useEffect(() => {
@@ -752,33 +734,17 @@ export default function BagRow({
           prevDataRef.current = currentData;
         }
       } else {
-        // Wait until upload/detection/save pipeline finishes before warning.
-        if (isUploading || isDetecting || isSaving) return;
-
-        // Show warning only when user did not upload an image.
-        if (!imageFile && !hasShownNoImageWarningRef.current) {
-          hasShownNoImageWarningRef.current = true;
-          Swal.fire({
-            title: "ยังไม่ได้อัปโหลดรูปภาพ",
-            text: "กรุณาอัปโหลดรูปภาพก่อนบันทึกข้อมูล",
-            icon: "warning",
-            confirmButtonText: "ตกลง",
-          });
-        }
+        // Show warning if images are not saved to MinIO
+        console.warn("⚠️ Images not saved to MinIO - cannot send to backend");
+        Swal.fire({
+          title: "ภาพยังไม่ได้บันทึกใน MinIO",
+          text: "กรุณารอให้ระบบบันทึกภาพใน MinIO ก่อนบันทึกข้อมูล",
+          icon: "warning",
+          confirmButtonText: "ตกลง",
+        });
       }
     }
-  }, [
-    manualCount,
-    aiCount,
-    bagWeight,
-    aiResult,
-    onDataChange,
-    rowNumber,
-    imageFile,
-    isUploading,
-    isDetecting,
-    isSaving,
-  ]);
+  }, [manualCount, aiCount, bagWeight, aiResult, onDataChange, rowNumber]);
 
   const handleClearAIData = () => {
     Swal.fire({
@@ -796,7 +762,6 @@ export default function BagRow({
         setImagePreview(null);
         setShowFullscreenImage(false);
         setFullscreenImageUrl(null);
-        hasShownNoImageWarningRef.current = false;
         // Also reset file input to allow re-uploading
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
@@ -1162,8 +1127,13 @@ export default function BagRow({
             inputMode="numeric"
             pattern="[0-9]*"
             value={aiCount || ""}
-            readOnly
-            className="w-20 p-1 text-center border rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed"
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "" || /^\d+$/.test(value)) {
+                setAiCount(value === "" ? null : Number(value));
+              }
+            }}
+            className="w-20 p-1 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
           />
           <span className="text-sm text-gray-600">{t("bags")}</span>
         </div>
