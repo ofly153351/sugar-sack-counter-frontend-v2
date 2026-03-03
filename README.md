@@ -65,6 +65,16 @@ The application supports multiple languages and includes:
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Documentation
+
+Project documentation has been organized under `docs/`:
+
+- [Documentation Index](./docs/README.md)
+- [AI Integration Guide](./docs/AI_INTEGRATION_README.md)
+- [Backend API Requirements](./docs/BACKEND_API_REQUIREMENTS.md)
+- [Image Upload Guide](./docs/IMAGE_UPLOAD_README.md)
+- [MinIO Troubleshooting](./docs/MINIO_TROUBLESHOOTING.md)
+
 ## Project Structure
 
 ```
