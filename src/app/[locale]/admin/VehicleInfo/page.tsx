@@ -14,23 +14,69 @@ import {
   useVehicleTypesManager,
 } from "@/hooks/useVehicles";
 import { useUsers } from "@/hooks/useUsers";
+import { useSugarTypes } from "@/hooks/useCount";
 import type {
   Vehicle,
   VehicleFormData,
 } from "@/utils/admin/vehicles/vehicle-api";
 
+interface VehicleWithExtras extends Vehicle {
+  sugarType?: string;
+  weightTons?: number;
+  totalSacks?: number;
+  sackRows?: number[];
+}
+
 export default function VehicleInfoPage() {
   const t = useTranslations();
   const [modalOpen, setModalOpen] = useState(false);
   const [vehicleTypeModalOpen, setVehicleTypeModalOpen] = useState(false);
-  const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
+  const [editVehicle, setEditVehicle] = useState<VehicleWithExtras | null>(null);
+  const extrasStorageKey = "vehicle_extras_map_v1";
+  const [vehicleExtrasMap, setVehicleExtrasMap] = useState<
+    Record<
+      string,
+      {
+        sugarType: string;
+        weightTons: number;
+        totalSacks: number;
+        sackRows: number[];
+      }
+    >
+  >(() => {
+    if (typeof window === "undefined") return {};
+    const raw = localStorage.getItem(extrasStorageKey);
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      console.error("Failed to parse vehicle extras map:", error);
+      return {};
+    }
+  });
 
   // Use React Query hooks
   const vehiclesManager = useVehiclesManager();
   const vehicleTypesManager = useVehicleTypesManager();
   const usersQuery = useUsers();
+  const sugarTypesQuery = useSugarTypes();
 
-  const handleEdit = (vehicle: Vehicle) => {
+  const saveExtrasToStorage = (
+    nextMap: Record<
+      string,
+      {
+        sugarType: string;
+        weightTons: number;
+        totalSacks: number;
+        sackRows: number[];
+      }
+    >
+  ) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(extrasStorageKey, JSON.stringify(nextMap));
+  };
+
+  const handleEdit = (vehicle: VehicleWithExtras) => {
     setEditVehicle(vehicle);
     setModalOpen(true);
   };
@@ -56,7 +102,7 @@ export default function VehicleInfoPage() {
     }
   };
 
-  const handleSave = async (vehicle: Vehicle) => {
+  const handleSave = async (vehicle: VehicleWithExtras) => {
     try {
       const vehicleData: VehicleFormData = {
         vehicleCode: vehicle.vehicleCode,
@@ -72,9 +118,40 @@ export default function VehicleInfoPage() {
           id: editVehicle.id,
           data: vehicleData,
         });
+        const key = String(editVehicle.id);
+        const nextMap = {
+          ...vehicleExtrasMap,
+          [key]: {
+            sugarType: vehicle.sugarType || "",
+            weightTons: Number(vehicle.weightTons || 0),
+            totalSacks: Number(vehicle.totalSacks || 0),
+            sackRows: Array.isArray(vehicle.sackRows)
+              ? vehicle.sackRows
+              : [],
+          },
+        };
+        setVehicleExtrasMap(nextMap);
+        saveExtrasToStorage(nextMap);
       } else {
         // Create new vehicle
-        await vehiclesManager.createVehicleAsync(vehicleData);
+        const createdVehicle = await vehiclesManager.createVehicleAsync(vehicleData);
+        const createdId = createdVehicle?.id;
+        if (createdId !== undefined && createdId !== null) {
+          const key = String(createdId);
+          const nextMap = {
+            ...vehicleExtrasMap,
+            [key]: {
+              sugarType: vehicle.sugarType || "",
+              weightTons: Number(vehicle.weightTons || 0),
+              totalSacks: Number(vehicle.totalSacks || 0),
+              sackRows: Array.isArray(vehicle.sackRows)
+                ? vehicle.sackRows
+                : [],
+            },
+          };
+          setVehicleExtrasMap(nextMap);
+          saveExtrasToStorage(nextMap);
+        }
       }
 
       // Close modal
@@ -125,6 +202,14 @@ export default function VehicleInfoPage() {
           .trim() ||
         vehicle.driver?.username ||
         "-",
+      sugarType:
+        vehicleExtrasMap[String(vehicle.id ?? "")]?.sugarType || "",
+      weightTons:
+        vehicleExtrasMap[String(vehicle.id ?? "")]?.weightTons || 0,
+      totalSacks:
+        vehicleExtrasMap[String(vehicle.id ?? "")]?.totalSacks || 0,
+      sackRows:
+        vehicleExtrasMap[String(vehicle.id ?? "")]?.sackRows || [],
       status: vehicle.status,
     })
   );
@@ -138,6 +223,7 @@ export default function VehicleInfoPage() {
     };
   });
   const vehicleTypeNames = vehicleTypesManager.vehicleTypes.map((type) => type.name);
+  const sugarTypeNames = (sugarTypesQuery.data || []).map((type) => type.name);
 
   if (vehiclesManager.isLoading) {
     return (
@@ -195,6 +281,7 @@ export default function VehicleInfoPage() {
         onSave={handleSave}
         vehicleTypes={vehicleTypesManager.vehicleTypes}
         driverUsers={driverUsers}
+        sugarTypes={sugarTypeNames}
       />
 
       <VehicleTypeModal

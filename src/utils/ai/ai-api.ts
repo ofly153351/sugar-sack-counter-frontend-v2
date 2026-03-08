@@ -533,17 +533,10 @@ export const processImageWithAI = async (
       storageInfo,
     };
   } catch (error: any) {
-    // Fallback to just showing original image with error message
-    const originalImage = await fileToBase64(file);
-
-    return {
-      originalImage,
-      annotatedImage: originalImage,
-      detections: [],
-      sackCount: 0,
-      boxCount: 0,
-      totalCount: 0,
-    };
+    // Surface the real error to caller so UI can show accurate failure state.
+    const errorMessage =
+      error?.message || "Failed to process image with AI service";
+    throw new Error(errorMessage);
   }
 };
 

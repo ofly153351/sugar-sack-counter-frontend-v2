@@ -18,6 +18,10 @@ interface Vehicle {
   vehicleTypeId: string | number;
   driverUserId?: string | number;
   driverName: string;
+  sugarType?: string;
+  weightTons?: number;
+  totalSacks?: number;
+  sackRows?: number[];
   status: "active" | "inactive" | "maintenance";
 }
 
@@ -32,6 +36,7 @@ interface VehicleFormProps {
   onSave: (vehicle: Vehicle) => void;
   vehicleTypes?: VehicleType[];
   driverUsers?: DriverUserOption[];
+  sugarTypes?: string[];
 }
 
 const statusOptions = ["active", "inactive", "maintenance"] as const;
@@ -42,6 +47,7 @@ export function VehicleForm({
   onSave,
   vehicleTypes = [],
   driverUsers = [],
+  sugarTypes = [],
 }: VehicleFormProps) {
   const t = useTranslations("vehicle.form");
   const [vehicleCode, setVehicleCode] = useState(
@@ -58,6 +64,18 @@ export function VehicleForm({
   );
   const [status, setStatus] = useState<"active" | "inactive" | "maintenance">(
     initialData?.status || "active"
+  );
+  const [sugarType, setSugarType] = useState(initialData?.sugarType || "");
+  const [sackRows, setSackRows] = useState<number[]>(
+    initialData?.sackRows && initialData.sackRows.length > 0
+      ? initialData.sackRows
+      : [0]
+  );
+  const totalSacks = sackRows.reduce((sum, count) => sum + (count || 0), 0);
+  const [weightTons, setWeightTons] = useState<number>(
+    initialData?.weightTons !== undefined && initialData?.weightTons !== null
+      ? Number(initialData.weightTons)
+      : Number((totalSacks * 0.05).toFixed(2))
   );
   const selectedVehicleTypeId = (() => {
     if (vehicleTypeId) return vehicleTypeId;
@@ -108,9 +126,34 @@ export function VehicleForm({
       vehicleTypeId: selectedVehicleTypeId,
       driverUserId: selectedDriverUserId,
       driverName: selectedDriverLabel,
+      sugarType: sugarType || "",
+      sackRows,
+      totalSacks,
+      weightTons,
       status,
     };
     onSave(vehicle);
+  };
+
+  const handleSackRowChange = (index: number, value: string) => {
+    const parsed = Number(value);
+    const safe = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+    setSackRows((prev) => {
+      const next = [...prev];
+      next[index] = safe;
+      return next;
+    });
+  };
+
+  const addSackRow = () => {
+    setSackRows((prev) => [...prev, 0]);
+  };
+
+  const removeSackRow = (index: number) => {
+    setSackRows((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   return (
@@ -196,6 +239,94 @@ export function VehicleForm({
             </option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">
+          {t("sugarType", { defaultValue: "ชนิดน้ำตาล" })}
+        </label>
+        <select
+          value={sugarType}
+          onChange={(e) => setSugarType(e.target.value)}
+          className="w-full border border-gray-300 rounded px-3 py-2"
+        >
+          <option value="">
+            {t("selectSugarType", { defaultValue: "เลือกชนิดน้ำตาล" })}
+          </option>
+          {sugarTypes.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-2">
+          {t("sackRowsEditor", { defaultValue: "กรอกกระสอบแต่ละแถว" })}
+        </label>
+        <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+          {sackRows.map((count, index) => (
+            <div key={`sack-row-${index}`} className="flex items-center gap-2">
+              <span className="w-14 text-sm text-slate-600">
+                {t("rowLabel", { defaultValue: "แถว" })} {index + 1}
+              </span>
+              <input
+                type="number"
+                min={0}
+                value={count}
+                onChange={(e) => handleSackRowChange(index, e.target.value)}
+                className="w-28 border border-gray-300 rounded px-3 py-2"
+              />
+              {sackRows.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeSackRow(index)}
+                  className="px-3 py-2 rounded bg-rose-100 text-rose-700 hover:bg-rose-200 text-sm"
+                >
+                  {t("removeRow", { defaultValue: "ลบแถว" })}
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addSackRow}
+            className="w-full px-3 py-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 text-sm"
+          >
+            + {t("addRow", { defaultValue: "เพิ่มแถว" })}
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block font-semibold mb-1">
+            {t("totalSacks", { defaultValue: "จำนวนรวมกระสอบ" })}
+          </label>
+          <input
+            type="number"
+            value={totalSacks}
+            readOnly
+            className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold mb-1">
+            {t("weightTons", { defaultValue: "น้ำหนัก (ตัน)" })}
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            min={0}
+            value={weightTons}
+            onChange={(e) => {
+              const parsed = Number(e.target.value);
+              setWeightTons(Number.isFinite(parsed) && parsed >= 0 ? parsed : 0);
+            }}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end gap-2 mt-4">

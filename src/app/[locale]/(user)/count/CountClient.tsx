@@ -4,11 +4,11 @@ import BagRow from "@/components/count/BagRow";
 import BoxRow from "@/components/count/BoxRow";
 import CustomDropdown from "@/components/count/CustomDropdown";
 import Tabs from "@/components/count/Tabs";
-import { Plus, Loader2, Bug } from "lucide-react";
+import { Plus, Loader2, Download } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useCountManager } from "@/hooks/useCount";
+import { useCountManager, useCountingSessionsByType } from "@/hooks/useCount";
 import Swal from "sweetalert2";
 import type {
   SackRowFormData,
@@ -17,6 +17,7 @@ import type {
 } from "@/utils/types";
 import { deleteCountingSession } from "@/utils/count/count-api";
 import { API_CONFIG } from "@/utils/config";
+import * as XLSX from "xlsx";
 
 interface CountPageProps {
   initialTab?: "bags" | "boxes";
@@ -47,6 +48,17 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   const [tempSessionId, setTempSessionId] = useState<string>("");
   const [resetTrigger, setResetTrigger] = useState<number>(0);
   const [hasSaved, setHasSaved] = useState(false);
+  const [vehicleExtrasMap, setVehicleExtrasMap] = useState<
+    Record<
+      string,
+      {
+        sugarType: string;
+        weightTons: number;
+        totalSacks: number;
+        sackRows: number[];
+      }
+    >
+  >({});
   const vehicleInitializedRef = useRef(false);
   const sugarTypeInitializedRef = useRef(false);
   const prevTabRef = useRef(currentTab);
@@ -54,11 +66,30 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
 
   // Use count manager hook
   const countManager = useCountManager();
+  const { data: sackSessionsForExport } = useCountingSessionsByType("sack");
+  const { data: boxSessionsForExport } = useCountingSessionsByType("box");
 
   // Set isClient state on client only
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Load vehicle extras from VehicleInfo page storage
+  useEffect(() => {
+    if (!isClient) return;
+    try {
+      const raw = localStorage.getItem("vehicle_extras_map_v1");
+      if (!raw) {
+        setVehicleExtrasMap({});
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      setVehicleExtrasMap(parsed || {});
+    } catch (error) {
+      console.error("Failed to parse vehicle extras map:", error);
+      setVehicleExtrasMap({});
+    }
+  }, [isClient]);
 
   // Initialize selected values only once when data is loaded
   useEffect(() => {
@@ -89,12 +120,40 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     }
   }, [isClient, countManager.sugarTypes.length]);
 
+  // Sync sugar type from selected vehicle extras (VehicleInfo)
+  useEffect(() => {
+    if (!isClient || !selectedVehicleId || countManager.sugarTypes.length === 0) {
+      return;
+    }
+    const extras = vehicleExtrasMap[selectedVehicleId];
+    if (!extras?.sugarType) return;
+
+    const matched = countManager.sugarTypes.find(
+      (type) => type.name.trim() === extras.sugarType.trim()
+    );
+    if (matched?.id !== undefined) {
+      setSelectedSugarTypeId(matched.id.toString());
+    }
+  }, [
+    isClient,
+    selectedVehicleId,
+    vehicleExtrasMap,
+    countManager.sugarTypes,
+  ]);
+
   // Reset countingSessionId when tab changes (only if session already started)
   useEffect(() => {
     if (!isClient) return;
     if (prevTabRef.current !== currentTab) {
+      // Keep tab UI consistent regardless of entry URL (?tab=bags / ?tab=boxes)
+      // by resetting row/form state whenever the counting type changes.
+      setRows([1]);
+      setSackRowsData({});
+      setBoxRowsData({});
+      setResetTrigger((prev) => prev + 1);
+
       if (isSessionStarted && countingSessionIdRef.current) {
-        console.log("🔄 [DEBUG] Tab changed, resetting counting session ID");
+        console.log("๐” [DEBUG] Tab changed, resetting counting session ID");
         setCountingSessionId("");
         setTempSessionId("");
       }
@@ -124,7 +183,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
         !countingSessionId
       ) {
         try {
-          console.log("🔍 [DEBUG] Creating counting session with:", {
+          console.log("๐” [DEBUG] Creating counting session with:", {
             vehicleId: selectedVehicleId,
             sugarTypeId: selectedSugarTypeId,
             userId: countManager.currentUser.id,
@@ -132,7 +191,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           });
 
           // Debug: Check all values
-          console.log("🔍 [DEBUG] Value types and content:", {
+          console.log("๐” [DEBUG] Value types and content:", {
             selectedVehicleId: {
               value: selectedVehicleId,
               type: typeof selectedVehicleId,
@@ -164,9 +223,9 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           };
 
           // Debug: Log full session data
-          console.log("🔍 [DEBUG] Full session data to send:", sessionData);
+          console.log("๐” [DEBUG] Full session data to send:", sessionData);
           console.log(
-            "🔍 [DEBUG] JSON stringified:",
+            "๐” [DEBUG] JSON stringified:",
             JSON.stringify(sessionData)
           );
 
@@ -176,10 +235,10 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           );
           const createdSession = await createCountingSession(sessionData);
 
-          console.log("✅ [DEBUG] Counting session created:", createdSession);
+          console.log("โ… [DEBUG] Counting session created:", createdSession);
           setCountingSessionId(createdSession.id?.toString() || "");
         } catch (error) {
-          console.error("❌ [DEBUG] Failed to create counting session:", error);
+          console.error("โ [DEBUG] Failed to create counting session:", error);
           // Don't set countingSessionId if backend creation fails
           // We'll use tempSessionId for AI calls but keep trying to get real ID
         }
@@ -209,6 +268,124 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
 
   const addRow = () =>
     setRows((prev) => [...prev, (prev[prev.length - 1] || 0) + 1]);
+
+  const handleDownloadImages = async () => {
+    const rowDataList =
+      currentTab === "bags"
+        ? Object.values(sackRowsData)
+        : Object.values(boxRowsData);
+
+    const imageUrls = rowDataList
+      .flatMap((row) => [row.annotatedImagePath, row.originalImagePath])
+      .filter((url): url is string => !!url);
+
+    if (imageUrls.length === 0) {
+      Swal.fire({
+        title: t("validation.missingData", { defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ" }),
+        text: t("counting.noImagesToDownload", {
+          defaultValue: "เธขเธฑเธเนเธกเนเธกเธตเธฃเธนเธเนเธซเนเธ”เธฒเธงเธเนเนเธซเธฅเธ”",
+        }),
+        icon: "warning",
+        confirmButtonText: t("buttons.ok", { defaultValue: "เธ•เธเธฅเธ" }),
+      });
+      return;
+    }
+
+    imageUrls.forEach((url, index) => {
+      const link = document.createElement("a");
+      link.href = url;
+      const ext = url.includes(".png") ? "png" : "jpg";
+      link.download = `count-row-${index + 1}.${ext}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  };
+
+  const handleExportXlsx = () => {
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    const getUserDisplayName = (user?: {
+      profile?: { firstName?: string; lastName?: string };
+      username?: string;
+    }) => {
+      if (!user) return "เนเธกเนเธ—เธฃเธฒเธเธเธนเนเนเธเน";
+      if (user.profile?.firstName && user.profile?.lastName) {
+        return `${user.profile.firstName} ${user.profile.lastName}`;
+      }
+      return user.username || "เนเธกเนเธ—เธฃเธฒเธเธเธนเนเนเธเน";
+    };
+
+    const sessionsForExport =
+      currentTab === "bags" ? sackSessionsForExport : boxSessionsForExport;
+    const vehicleExtrasMapForExport: Record<
+      string,
+      { weightTons?: number }
+    > = (() => {
+      try {
+        const raw = localStorage.getItem("vehicle_extras_map_v1");
+        return raw ? JSON.parse(raw) : {};
+      } catch {
+        return {};
+      }
+    })();
+
+    const exportRows =
+      sessionsForExport?.map((session, index) => {
+        const countRows =
+          currentTab === "bags"
+            ? session.sackSession?.sackRows || []
+            : session.boxSession?.boxRows || [];
+        const aiTotal =
+          countRows.length > 0
+            ? countRows.reduce((sum, row) => sum + (row?.aiCount ?? 0), 0)
+            : 0;
+
+        return {
+          "\u0e25\u0e33\u0e14\u0e31\u0e1a": index + 1,
+          "\u0e23\u0e2b\u0e31\u0e2a\u0e23\u0e16": session.vehicle?.vehicleCode || "-",
+          "\u0e27\u0e31\u0e19\u0e40\u0e27\u0e25\u0e32": formatDate(session.countingDate),
+          "\u0e1c\u0e39\u0e49\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01": getUserDisplayName(session.user),
+          "\u0e0a\u0e19\u0e34\u0e14\u0e19\u0e49\u0e33\u0e15\u0e32\u0e25": session.sugarType?.name || "-",
+          "\u0e19\u0e49\u0e33\u0e2b\u0e19\u0e31\u0e01 (\u0e15\u0e31\u0e19)": Number(
+            vehicleExtrasMapForExport[String(session.vehicle?.id ?? "")]?.weightTons || 0
+          ).toFixed(2),
+          "\u0e1b\u0e23\u0e30\u0e40\u0e20\u0e17\u0e01\u0e32\u0e23\u0e19\u0e31\u0e1a":
+            session.sessionType === "box"
+              ? "\u0e01\u0e25\u0e48\u0e2d\u0e07"
+              : "\u0e01\u0e23\u0e30\u0e2a\u0e2d\u0e1a",
+          "\u0e23\u0e27\u0e21 (AI)": `${aiTotal} ${
+            session.sessionType === "box"
+              ? "\u0e01\u0e25\u0e48\u0e2d\u0e07"
+              : "\u0e01\u0e23\u0e30\u0e2a\u0e2d\u0e1a"
+          }`,
+        };
+      }) || [];
+
+    const worksheet = XLSX.utils.json_to_sheet(exportRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      currentTab === "bags" ? "SugarBags" : "SugarBoxes"
+    );
+    XLSX.writeFile(
+      workbook,
+      `${
+        currentTab === "bags" ? "sugar-bags" : "sugar-boxes"
+      }-${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
+  };
+
   const deleteRow = (rowNumber: number) => {
     setRows((prev) => prev.filter((r) => r !== rowNumber));
     // Remove data for deleted row
@@ -242,18 +419,18 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     if (dirty) {
       const result = await Swal.fire({
         title: t("leaveWarningTitle", {
-          defaultValue: "ข้อมูลจะหาย",
+          defaultValue: "เธเนเธญเธกเธนเธฅเธเธฐเธซเธฒเธข",
         }),
         text: t("leaveWarningText", {
-          defaultValue: "ถ้าออกหรือรีเฟรช ข้อมูลที่กรอกจะหาย",
+          defaultValue: "เธ–เนเธฒเธญเธญเธเธซเธฃเธทเธญเธฃเธตเน€เธเธฃเธ เธเนเธญเธกเธนเธฅเธ—เธตเนเธเธฃเธญเธเธเธฐเธซเธฒเธข",
         }),
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: t("leaveWarningConfirm", {
-          defaultValue: "ออก",
+          defaultValue: "เธญเธญเธ",
         }),
         cancelButtonText: t("leaveWarningCancel", {
-          defaultValue: "ยกเลิก",
+          defaultValue: "เธขเธเน€เธฅเธดเธ",
         }),
       });
 
@@ -296,13 +473,13 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     ) {
       Swal.fire({
         title: t("validation.requiredFields", {
-          defaultValue: "ข้อมูลไม่ครบถ้วน",
+          defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
         }),
         text: t("validation.selectVehicleAndSugarType", {
-          defaultValue: "กรุณาเลือกรถขนส่งและประเภทน้ำตาล",
+          defaultValue: "เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธฃเธ–เธเธเธชเนเธเนเธฅเธฐเธเธฃเธฐเน€เธ เธ—เธเนเธณเธ•เธฒเธฅ",
         }),
         icon: "warning",
-        confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+        confirmButtonText: t("buttons.ok", { defaultValue: "เธ•เธเธฅเธ" }),
       });
       return;
     }
@@ -313,15 +490,13 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
       if (missingRows.length > 0) {
         Swal.fire({
           title: t("validation.missingData", {
-            defaultValue: "ข้อมูลไม่ครบถ้วน",
+            defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
           }),
-          text: t("validation.missingRowData", {
-            defaultValue: `กรุณากรอกข้อมูลสำหรับแถวที่ ${missingRows.join(
-              ", "
-            )}`,
+          text: t("validation.missingData", {
+            defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
           }),
           icon: "warning",
-          confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+          confirmButtonText: t("buttons.ok", { defaultValue: "เธ•เธเธฅเธ" }),
         });
         return;
       }
@@ -333,13 +508,13 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
       if (invalidRows.length > 0) {
         Swal.fire({
           title: t("validation.missingData", {
-            defaultValue: "ข้อมูลไม่ครบถ้วน",
+            defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
           }),
-          text: `กรุณากรอกจำนวน Manual และ AI (มากกว่า 0) สำหรับแถวที่ ${invalidRows.join(
-            ", "
-          )}`,
+          text: t("validation.missingData", {
+            defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
+          }),
           icon: "warning",
-          confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+          confirmButtonText: t("buttons.ok", { defaultValue: "เธ•เธเธฅเธ" }),
         });
         return;
       }
@@ -348,15 +523,13 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
       if (missingRows.length > 0) {
         Swal.fire({
           title: t("validation.missingData", {
-            defaultValue: "ข้อมูลไม่ครบถ้วน",
+            defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
           }),
-          text: t("validation.missingRowData", {
-            defaultValue: `กรุณากรอกข้อมูลสำหรับแถวที่ ${missingRows.join(
-              ", "
-            )}`,
+          text: t("validation.missingData", {
+            defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
           }),
           icon: "warning",
-          confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+          confirmButtonText: t("buttons.ok", { defaultValue: "เธ•เธเธฅเธ" }),
         });
         return;
       }
@@ -368,13 +541,13 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
       if (invalidRows.length > 0) {
         Swal.fire({
           title: t("validation.missingData", {
-            defaultValue: "ข้อมูลไม่ครบถ้วน",
+            defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
           }),
-          text: `กรุณากรอกจำนวน Manual และ AI (มากกว่า 0) สำหรับแถวที่ ${invalidRows.join(
-            ", "
-          )}`,
+          text: t("validation.missingData", {
+            defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
+          }),
           icon: "warning",
-          confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+          confirmButtonText: t("buttons.ok", { defaultValue: "เธ•เธเธฅเธ" }),
         });
         return;
       }
@@ -446,7 +619,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           localStorage.removeItem(`boxRow_${i}_autoDetect`);
           localStorage.removeItem(`boxRow_${i}_detectionType`);
         }
-        console.log("🧹 Cleared localStorage for all rows");
+        console.log("๐งน Cleared localStorage for all rows");
         localStorage.removeItem("count_dirty_rows");
         if (window.onbeforeunload) {
           window.onbeforeunload = null;
@@ -455,24 +628,24 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
 
       // Show success message
       Swal.fire({
-        title: t("saveMessages.success", { defaultValue: "บันทึกสำเร็จ" }),
+        title: t("saveMessages.success", { defaultValue: "เธเธฑเธเธ—เธถเธเธชเธณเน€เธฃเนเธ" }),
         text: t("saveMessages.successMessage", {
-          defaultValue: "บันทึกข้อมูลการนับสำเร็จแล้ว",
+          defaultValue: "เธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเธเธฒเธฃเธเธฑเธเธชเธณเน€เธฃเนเธเนเธฅเนเธง",
         }),
         icon: "success",
-        confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+        confirmButtonText: t("buttons.ok", { defaultValue: "เธ•เธเธฅเธ" }),
       });
     } catch (error: unknown) {
-      console.error("❌ Error saving counting session:", error);
+      console.error("โ Error saving counting session:", error);
       Swal.fire({
-        title: t("saveMessages.error", { defaultValue: "เกิดข้อผิดพลาด" }),
+        title: t("saveMessages.error", { defaultValue: "เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”" }),
         text:
           (error instanceof Error ? error.message : String(error)) ||
           t("saveMessages.errorMessage", {
-            defaultValue: "ไม่สามารถบันทึกข้อมูลได้",
+            defaultValue: "เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเนเธ”เน",
           }),
         icon: "error",
-        confirmButtonText: t("buttons.ok", { defaultValue: "ตกลง" }),
+        confirmButtonText: t("buttons.ok", { defaultValue: "เธ•เธเธฅเธ" }),
       });
     } finally {
       setIsSaving(false);
@@ -577,7 +750,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           <div className="flex flex-col items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
             <p className="text-gray-600">
-              {t("loading", { defaultValue: "กำลังโหลดข้อมูล..." })}
+              {t("loading", { defaultValue: "เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅ..." })}
             </p>
           </div>
         </div>
@@ -601,7 +774,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           <div className="flex flex-col items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
             <p className="text-gray-600">
-              {t("loading", { defaultValue: "กำลังโหลดข้อมูล..." })}
+              {t("loading", { defaultValue: "เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅ..." })}
             </p>
           </div>
         </div>
@@ -620,7 +793,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             <p className="font-bold">
               {t("errors.loadError", {
-                defaultValue: "ไม่สามารถโหลดข้อมูลได้",
+                defaultValue: "เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเนเธ”เน",
               })}
             </p>
             <p>
@@ -635,13 +808,28 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
               }}
               className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
             >
-              {t("buttons.retry", { defaultValue: "ลองใหม่" })}
+              {t("buttons.retry", { defaultValue: "เธฅเธญเธเนเธซเธกเน" })}
             </button>
           </div>
         </div>
       </div>
     );
   }
+
+  const selectedVehicle = countManager.vehicles.find(
+    (v) => v.id?.toString() === selectedVehicleId
+  );
+  const selectedVehicleExtras = selectedVehicleId
+    ? vehicleExtrasMap[selectedVehicleId]
+    : undefined;
+  const selectedVehicleSummary =
+    selectedVehicle && selectedVehicleId
+      ? `${selectedVehicle.licensePlate || "-"} ${
+          selectedVehicle.vehicleType?.name || "-"
+        } ${selectedVehicle.driverName || "-"} ${
+          selectedVehicleExtras?.sugarType || "-"
+        } ${Number(selectedVehicleExtras?.weightTons || 0).toFixed(2)}`
+      : t("summary.notSelected", { defaultValue: "เนเธกเนเนเธ”เนเน€เธฅเธทเธญเธ" });
 
   return (
     <div className="min-h-screen flex justify-center p-4 bg-gray-100">
@@ -651,10 +839,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
             {t("title")}
           </h1>
           <p className="text-center text-sm text-gray-500 mt-2">
-            {t("startHeader", { defaultValue: "ตั้งค่าการนับ" })} •{" "}
-            {t("startDescription", {
-              defaultValue: "เลือกข้อมูลให้ครบก่อนเริ่มนับ",
-            })}
+            ตั้งค่าการนับ โดยเลือกประเภทการนับ รถขนส่ง และน้ำตาลก่อนเริ่ม
           </p>
         </div>
 
@@ -664,7 +849,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                 onClick={handleBackToStart}
                 className="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
-                {t("backToStart", { defaultValue: "ย้อนกลับ" })}
+                {t("backToStart", { defaultValue: "เธขเนเธญเธเธเธฅเธฑเธ" })}
               </button>
             </div>
 
@@ -673,8 +858,8 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
               <Tabs currentTab={currentTab} setCurrentTab={setCurrentTab} />
             </div>
 
-            {/* รถขนส่ง + ประเภทน้ำตาล */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+            {/* เธฃเธ–เธเธเธชเนเธ + เธเธฃเธฐเน€เธ เธ—เธเนเธณเธ•เธฒเธฅ */}
+            <div className="grid grid-cols-1 gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t("transportation")}
@@ -682,14 +867,18 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                 <CustomDropdown
                   options={countManager.vehicles.map((vehicle) => ({
                     value: vehicle.id?.toString() || "",
-                    label: `${vehicle.vehicleCode || ""} - ${
-                      vehicle.licensePlate || ""
-                    } (${vehicle.driverName || ""})`,
+                    label: `${vehicle.licensePlate || "-"} ${
+                      vehicle.vehicleType?.name || "-"
+                    } ${vehicle.driverName || "-"} ${
+                      vehicleExtrasMap[vehicle.id?.toString() || ""]?.sugarType || "-"
+                    } ${Number(
+                      vehicleExtrasMap[vehicle.id?.toString() || ""]?.weightTons || 0
+                    ).toFixed(2)}`,
                   }))}
                   selected={selectedVehicleId}
                   setSelected={setSelectedVehicleId}
                   placeholder={t("selectVehicle", {
-                    defaultValue: "เลือกรถขนส่ง",
+                    defaultValue: "เน€เธฅเธทเธญเธเธฃเธ–เธเธเธชเนเธ",
                   })}
                   disabled={countManager.isLoadingVehicles || !isClient}
                   suppressHydrationWarning={true}
@@ -697,101 +886,48 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                 {countManager.vehicles.length === 0 && (
                   <p className="text-sm text-gray-500 mt-1">
                     {t("noVehiclesAvailable", {
-                      defaultValue: "ไม่มีรถขนส่งที่ใช้งานได้",
+                      defaultValue: "เนเธกเนเธกเธตเธฃเธ–เธเธเธชเนเธเธ—เธตเนเนเธเนเธเธฒเธเนเธ”เน",
                     })}
                   </p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("sugarType")}
-                </label>
-                <CustomDropdown
-                  options={countManager.sugarTypes.map((sugarType) => ({
-                    value: sugarType.id?.toString() || "",
-                    label: sugarType.name || "",
-                  }))}
-                  selected={selectedSugarTypeId}
-                  setSelected={setSelectedSugarTypeId}
-                  placeholder={t("selectSugarType", {
-                    defaultValue: "เลือกประเภทน้ำตาล",
-                  })}
-                  disabled={countManager.sugarTypes.length === 0 || !isClient}
-                  suppressHydrationWarning={true}
-                />
-                {countManager.sugarTypes.length === 0 && (
-                  <p className="text-sm text-red-500 mt-1">
-                    ⚠️{" "}
-                    {t("noSugarTypesAvailable", {
-                      defaultValue: "ไม่มีประเภทน้ำตาล",
-                    })}
-                  </p>
-                )}
-              </div>
             </div>
 
             {/* Summary Information */}
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                {t("summary.title", { defaultValue: "สรุปข้อมูล" })}
+                {t("summary.title", { defaultValue: "เธชเธฃเธธเธเธเนเธญเธกเธนเธฅ" })}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">
-                    {t("summary.vehicle", { defaultValue: "รถขนส่ง" })}:
+                    {t("summary.vehicle", { defaultValue: "เธฃเธ–เธเธเธชเนเธ" })}:
+                  </p>
+                  <p className="font-medium">{selectedVehicleSummary}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {t("summary.rowCount", { defaultValue: "เธเธณเธเธงเธเนเธ–เธง" })}:
                   </p>
                   <p className="font-medium">
-                    {selectedVehicleId && countManager.vehicles.length > 0
-                      ? countManager.vehicles.find(
-                          (v) => v.id?.toString() === selectedVehicleId
-                        )?.vehicleCode ||
-                        t("summary.notSelected", { defaultValue: "ไม่ได้เลือก" })
-                      : t("summary.notSelected", { defaultValue: "ไม่ได้เลือก" })}
+                    {rows.length} {t("summary.rows", { defaultValue: "เนเธ–เธง" })}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">
-                    {t("summary.sugarType", { defaultValue: "ประเภทน้ำตาล" })}:
-                  </p>
-                  <p className="font-medium">
-                    {selectedSugarTypeId && countManager.sugarTypes.length > 0
-                      ? (() => {
-                          const sugarType = countManager.sugarTypes.find(
-                            (s) => s.id?.toString() === selectedSugarTypeId
-                          );
-                          if (sugarType) {
-                            return sugarType.name || "";
-                          }
-                          return t("summary.notSelected", {
-                            defaultValue: "ไม่ได้เลือก",
-                          });
-                        })()
-                      : t("summary.notSelected", { defaultValue: "ไม่ได้เลือก" })}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">
-                    {t("summary.rowCount", { defaultValue: "จำนวนแถว" })}:
-                  </p>
-                  <p className="font-medium">
-                    {rows.length} {t("summary.rows", { defaultValue: "แถว" })}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">
-                    {t("summary.sessionType", { defaultValue: "ประเภทการนับ" })}:
+                    {t("summary.sessionType", { defaultValue: "เธเธฃเธฐเน€เธ เธ—เธเธฒเธฃเธเธฑเธ" })}:
                   </p>
                   <p className="font-medium">
                     {currentTab === "bags"
-                      ? t("summary.bags", { defaultValue: "นับกระสอบ" })
-                      : t("summary.boxes", { defaultValue: "นับกล่อง" })}
+                      ? t("summary.bags", { defaultValue: "เธเธฑเธเธเธฃเธฐเธชเธญเธ" })
+                      : t("summary.boxes", { defaultValue: "เธเธฑเธเธเธฅเนเธญเธ" })}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* รายการแถว */}
+            {/* เธฃเธฒเธขเธเธฒเธฃเนเธ–เธง */}
             <div className="space-y-4">
               {rows.map((rowNumber) =>
                 currentTab === "bags" ? (
@@ -825,21 +961,36 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                 )
               )}
 
-              <button
-                onClick={addRow}
-                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={
-                  !selectedVehicleId ||
-                  !selectedSugarTypeId ||
-                  !getSessionIdForAI()
-                }
-              >
-                <Plus className="w-4 h-4" />
-                {t("addRow", { defaultValue: "เพิ่มแถว" })}
-              </button>
+              <div className="flex flex-wrap justify-end gap-2">
+                <button
+                  onClick={addRow}
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={
+                    !selectedVehicleId ||
+                    !selectedSugarTypeId ||
+                    !getSessionIdForAI()
+                  }
+                >
+                  <Plus className="w-4 h-4" />
+                  {t("addRow", { defaultValue: "เพิ่มแถว" })}
+                </button>
+                <button
+                  onClick={handleDownloadImages}
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow"
+                >
+                  <Download className="w-4 h-4" />
+                  ดาวน์โหลดรูป
+                </button>
+                <button
+                  onClick={handleExportXlsx}
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-700 rounded-lg hover:bg-green-800 transition shadow"
+                >
+                  Export
+                </button>
+              </div>
             </div>
 
-            {/* ปุ่มบันทึก */}
+            {/* เธเธธเนเธกเธเธฑเธเธ—เธถเธ */}
             <div className="mt-8 flex justify-center">
               <button
                 onClick={handleSave}
@@ -857,41 +1008,16 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                 {isSaving ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    {t("saveMessages.saving", { defaultValue: "กำลังบันทึก..." })}
+                    {t("saveMessages.saving", { defaultValue: "เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธ..." })}
                   </>
                 ) : (
                   t("saveButton")
                 )}
               </button>
             </div>
-            {(hasMissingRowData || hasInvalidRowCounts) && (
-              <div className="mt-3 text-center">
-                <p className="text-sm font-medium text-amber-600">
-                  {t("validation.missingData", {
-                    defaultValue: "ข้อมูลไม่ครบถ้วน",
-                  })}
-                </p>
-                {hasMissingRowData && (
-                  <p className="text-xs text-amber-500 mt-1">
-                    {t("validation.missingRowData", {
-                      missingRows: missingRows.join(", "),
-                      defaultValue: `กรุณากรอกข้อมูลสำหรับแถวที่ ${missingRows.join(
-                        ", "
-                      )}`,
-                    })}
-                  </p>
-                )}
-                {hasInvalidRowCounts && (
-                  <p className="text-xs text-amber-500 mt-1">
-                    {`กรุณากรอกจำนวน Manual และ AI ให้มากกว่า 0 สำหรับแถวที่ ${invalidCountRows.join(
-                      ", "
-                    )}`}
-                  </p>
-                )}
-              </div>
-            )}
         </>
       </div>
     </div>
   );
 }
+

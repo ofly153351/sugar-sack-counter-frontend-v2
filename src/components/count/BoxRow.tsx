@@ -58,7 +58,6 @@ export default function BoxRow({
 }: BoxRowProps) {
   const t = useTranslations("count.boxRow");
   const tCount = useTranslations("count");
-  const [boxWeight, setBoxWeight] = useState("10");
   const [manualCount, setManualCount] = useState(0);
   const [aiCount, setAiCount] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -879,8 +878,47 @@ export default function BoxRow({
     }
   };
 
+  const originalImagePathForStatus =
+    aiResult?.storageInfo?.original_object_name ||
+    aiResult?.storageInfo?.original?.object_name ||
+    aiResult?.originalImagePath ||
+    aiResult?.original_image_path ||
+    "";
+  const annotatedImagePathForStatus =
+    aiResult?.storageInfo?.annotated_object_name ||
+    aiResult?.storageInfo?.annotated?.object_name ||
+    aiResult?.annotatedImagePath ||
+    aiResult?.annotated_image_path ||
+    "";
+  const hasUploadedImageForStatus = Boolean(imageFile || imagePreview || aiResult);
+  const isBackendDataValid = Boolean(
+    vehicleId &&
+      sugarTypeId &&
+      (aiCount ?? 0) > 0 &&
+      manualCount > 0 &&
+      originalImagePathForStatus &&
+      annotatedImagePathForStatus
+  );
+
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-4 p-4 border rounded-lg bg-white shadow-sm">
+    <div className="relative flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-4 p-4 border rounded-lg bg-white shadow-sm">
+      {hasUploadedImageForStatus && (
+        <div
+          className={`absolute top-3 right-3 z-20 inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-semibold ${
+            isBackendDataValid
+              ? "bg-green-50 text-green-700 border border-green-200"
+              : "bg-red-50 text-red-700 border border-red-200"
+          }`}
+        >
+          <span
+            className={`w-2 h-2 rounded-full ${
+              isBackendDataValid ? "bg-green-500" : "bg-red-500"
+            }`}
+          />
+          {isBackendDataValid ? "ถูกต้อง" : "ผิดพลาด"}
+        </div>
+      )}
+
       <div className="w-full md:w-1/4 flex-shrink-0">
         <label className="text-sm font-semibold text-gray-700 mb-2 block">
           {t("row")} {rowNumber}
@@ -956,34 +994,6 @@ export default function BoxRow({
       )}
 
       <div className="flex flex-col md:flex-1 space-y-2 w-full">
-        <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex gap-2">
-            <button
-              className={`px-3 py-1 text-sm font-medium rounded-lg ${
-                boxWeight === "10"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-              }`}
-              onClick={() => setBoxWeight("10")}
-              disabled={disabled}
-            >
-              {t("weight")} 10
-            </button>
-            <button
-              className={`px-3 py-1 text-sm font-medium rounded-lg ${
-                boxWeight === "20"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-              }`}
-              onClick={() => setBoxWeight("20")}
-              disabled={disabled}
-            >
-              {t("weight")} 20
-            </button>
-          </div>
-
-        </div>
-
         <div className="flex flex-wrap gap-2">
           <RowUploadButton
             onClick={openFilePicker}
@@ -1057,26 +1067,6 @@ export default function BoxRow({
             className="hidden"
           />
         </div>
-        <div className="flex flex-wrap items-center gap-1">
-          <label className="text-sm text-gray-600 w-30 whitespace-nowrap">
-            {t("manualCount")} {rowNumber}
-          </label>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={manualCount}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === "" || /^\d+$/.test(value)) {
-                setManualCount(value === "" ? 0 : Number(value));
-              }
-            }}
-            className="w-20 p-1 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-          />
-          <span className="text-sm text-gray-600">{t("boxes")}</span>
-        </div>
-
         <div className="flex flex-wrap items-center gap-2">
           <label className="text-sm text-gray-600 w-30 whitespace-nowrap">
             {t("aiCount")}

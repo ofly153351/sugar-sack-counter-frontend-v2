@@ -19,6 +19,10 @@ interface Vehicle {
   vehicleTypeId: string | number;
   driverUserId?: string | number;
   driverName: string;
+  sugarType?: string;
+  weightTons?: number;
+  totalSacks?: number;
+  sackRows?: number[];
   status: "active" | "inactive" | "maintenance";
 }
 
@@ -34,6 +38,7 @@ interface VehicleModalProps {
   onSave: (vehicle: Vehicle) => void;
   vehicleTypes?: VehicleType[];
   driverUsers?: DriverUserOption[];
+  sugarTypes?: string[];
 }
 
 export function VehicleModal({
@@ -43,6 +48,7 @@ export function VehicleModal({
   onSave,
   vehicleTypes = [],
   driverUsers = [],
+  sugarTypes = [],
 }: VehicleModalProps) {
   const t = useTranslations();
 
@@ -66,7 +72,7 @@ export function VehicleModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={{ duration: 0.24, ease: "easeOut" }}
-            className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative"
+            className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -88,6 +94,7 @@ export function VehicleModal({
               onSave={handleSave}
               vehicleTypes={vehicleTypes}
               driverUsers={driverUsers}
+              sugarTypes={sugarTypes}
             />
           </motion.div>
         </motion.div>
