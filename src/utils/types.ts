@@ -223,6 +223,8 @@ export interface SackRowFormData {
   finalCount: number;
   originalImagePath?: string;
   annotatedImagePath?: string;
+  originalImageDataUrl?: string;
+  annotatedImageDataUrl?: string;
 }
 
 export interface BoxRow {
@@ -243,6 +245,8 @@ export interface BoxRowFormData {
   finalCount: number;
   originalImagePath?: string;
   annotatedImagePath?: string;
+  originalImageDataUrl?: string;
+  annotatedImageDataUrl?: string;
 }
 
 // ========== Related Data Types ==========
@@ -252,6 +256,7 @@ export interface Vehicle {
   vehicleCode: string;
   licensePlate: string;
   vehicleTypeId: string | number;
+  maxLoadWeightTon: number;
   vehicleType?: VehicleType;
   driverUserId?: string | number;
   driverName: string;
@@ -403,6 +408,7 @@ export interface VehicleFormData {
   vehicleCode: string;
   licensePlate: string;
   vehicleTypeId: string | number;
+  maxLoadWeightTon: number;
   driverUserId: string | number;
   status: "active" | "inactive" | "maintenance";
 }
@@ -412,6 +418,7 @@ export interface ApiVehicle {
   vehicleCode: string;
   licensePlate: string;
   vehicleTypeId: string | number;
+  maxLoadWeightTon: number;
   vehicleType?: VehicleType;
   driverUserId?: string | number;
   driverName: string;

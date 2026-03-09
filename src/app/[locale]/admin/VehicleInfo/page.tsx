@@ -14,23 +14,68 @@ import {
   useVehicleTypesManager,
 } from "@/hooks/useVehicles";
 import { useUsers } from "@/hooks/useUsers";
+import { useSugarTypes } from "@/hooks/useCount";
 import type {
   Vehicle,
   VehicleFormData,
 } from "@/utils/admin/vehicles/vehicle-api";
 
+interface VehicleWithExtras extends Vehicle {
+  sugarType?: string;
+  totalSacks?: number;
+  sackRows?: number[];
+}
+
 export default function VehicleInfoPage() {
   const t = useTranslations();
   const [modalOpen, setModalOpen] = useState(false);
   const [vehicleTypeModalOpen, setVehicleTypeModalOpen] = useState(false);
-  const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
+  const [editVehicle, setEditVehicle] = useState<VehicleWithExtras | null>(null);
+  const extrasStorageKey = "vehicle_extras_map_v1";
+  const [vehicleExtrasMap, setVehicleExtrasMap] = useState<
+    Record<
+      string,
+      {
+        sugarType: string;
+        weightTons: number;
+        totalSacks: number;
+        sackRows: number[];
+      }
+    >
+  >(() => {
+    if (typeof window === "undefined") return {};
+    const raw = localStorage.getItem(extrasStorageKey);
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      console.error("Failed to parse vehicle extras map:", error);
+      return {};
+    }
+  });
 
   // Use React Query hooks
   const vehiclesManager = useVehiclesManager();
   const vehicleTypesManager = useVehicleTypesManager();
   const usersQuery = useUsers();
+  const sugarTypesQuery = useSugarTypes();
 
-  const handleEdit = (vehicle: Vehicle) => {
+  const saveExtrasToStorage = (
+    nextMap: Record<
+      string,
+      {
+        sugarType: string;
+        weightTons: number;
+        totalSacks: number;
+        sackRows: number[];
+      }
+    >
+  ) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(extrasStorageKey, JSON.stringify(nextMap));
+  };
+
+  const handleEdit = (vehicle: VehicleWithExtras) => {
     setEditVehicle(vehicle);
     setModalOpen(true);
   };
@@ -40,24 +85,6 @@ export default function VehicleInfoPage() {
   };
 
   const handleSaveVehicleType = async (vehicleTypeData: { name: string }) => {
-    const normalizedName = vehicleTypeData.name.trim().toLowerCase();
-    const existingType = vehicleTypesManager.vehicleTypes.find(
-      (type) => type.name.trim().toLowerCase() === normalizedName
-    );
-
-    if (existingType) {
-      Swal.fire({
-        title: t("vehicle.form.errorTitle", { defaultValue: "ข้อมูลซ้ำ" }),
-        text: t("vehicle.form.duplicateVehicleTypeMessage", {
-          name: existingType.name,
-          defaultValue: `มีประเภทรถ "${existingType.name}" อยู่แล้ว`,
-        }),
-        icon: "warning",
-        confirmButtonText: t("vehicle.buttons.ok", { defaultValue: "ตกลง" }),
-      });
-      return;
-    }
-
     try {
       await vehicleTypesManager.createVehicleType(vehicleTypeData);
       setVehicleTypeModalOpen(false);
@@ -74,67 +101,13 @@ export default function VehicleInfoPage() {
     }
   };
 
-  const handleUpdateVehicleType = async (
-    vehicleTypeId: string | number,
-    vehicleTypeData: { name: string }
-  ) => {
-    const normalizedName = vehicleTypeData.name.trim().toLowerCase();
-    const existingType = vehicleTypesManager.vehicleTypes.find(
-      (type) =>
-        String(type.id) !== String(vehicleTypeId) &&
-        type.name.trim().toLowerCase() === normalizedName
-    );
-
-    if (existingType) {
-      Swal.fire({
-        title: t("vehicle.form.errorTitle", { defaultValue: "ข้อมูลซ้ำ" }),
-        text: t("vehicle.form.duplicateVehicleTypeMessage", {
-          name: existingType.name,
-          defaultValue: `มีประเภทรถ "${existingType.name}" อยู่แล้ว`,
-        }),
-        icon: "warning",
-        confirmButtonText: t("vehicle.buttons.ok", { defaultValue: "ตกลง" }),
-      });
-      return;
-    }
-
-    await vehicleTypesManager.updateVehicleTypeAsync({
-      id: vehicleTypeId,
-      data: { name: vehicleTypeData.name.trim() },
-    });
-  };
-
-  const handleDeleteVehicleType = async (
-    vehicleTypeId: string | number,
-    vehicleTypeName: string
-  ) => {
-    const result = await Swal.fire({
-      title: t("vehicle.form.confirmDeleteVehicleTypeTitle", {
-        defaultValue: "ยืนยันการลบประเภทรถ",
-      }),
-      text: t("vehicle.form.confirmDeleteVehicleTypeMessage", {
-        name: vehicleTypeName,
-        defaultValue: `ต้องการลบประเภทรถ "${vehicleTypeName}" ใช่หรือไม่`,
-      }),
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#94a3b8",
-      confirmButtonText: t("vehicle.form.deleteButton", { defaultValue: "ลบ" }),
-      cancelButtonText: t("vehicle.buttons.cancel", { defaultValue: "ยกเลิก" }),
-    });
-
-    if (!result.isConfirmed) return;
-
-    await vehicleTypesManager.deleteVehicleTypeAsync(vehicleTypeId);
-  };
-
-  const handleSave = async (vehicle: Vehicle) => {
+  const handleSave = async (vehicle: VehicleWithExtras) => {
     try {
       const vehicleData: VehicleFormData = {
         vehicleCode: vehicle.vehicleCode,
         licensePlate: vehicle.licensePlate,
         vehicleTypeId: vehicle.vehicleTypeId,
+        maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
         driverUserId: vehicle.driverUserId || "",
         status: vehicle.status,
       };
@@ -145,9 +118,40 @@ export default function VehicleInfoPage() {
           id: editVehicle.id,
           data: vehicleData,
         });
+        const key = String(editVehicle.id);
+        const nextMap = {
+          ...vehicleExtrasMap,
+          [key]: {
+            sugarType: vehicle.sugarType || "",
+            weightTons: Number(vehicle.maxLoadWeightTon || 0),
+            totalSacks: Number(vehicle.totalSacks || 0),
+            sackRows: Array.isArray(vehicle.sackRows)
+              ? vehicle.sackRows
+              : [],
+          },
+        };
+        setVehicleExtrasMap(nextMap);
+        saveExtrasToStorage(nextMap);
       } else {
         // Create new vehicle
-        await vehiclesManager.createVehicleAsync(vehicleData);
+        const createdVehicle = await vehiclesManager.createVehicleAsync(vehicleData);
+        const createdId = createdVehicle?.id;
+        if (createdId !== undefined && createdId !== null) {
+          const key = String(createdId);
+          const nextMap = {
+            ...vehicleExtrasMap,
+            [key]: {
+              sugarType: vehicle.sugarType || "",
+              weightTons: Number(vehicle.maxLoadWeightTon || 0),
+              totalSacks: Number(vehicle.totalSacks || 0),
+              sackRows: Array.isArray(vehicle.sackRows)
+                ? vehicle.sackRows
+                : [],
+            },
+          };
+          setVehicleExtrasMap(nextMap);
+          saveExtrasToStorage(nextMap);
+        }
       }
 
       // Close modal
@@ -187,6 +191,7 @@ export default function VehicleInfoPage() {
       licensePlate: vehicle.licensePlate,
       vehicleType: vehicle.vehicleType?.name || "Unknown",
       vehicleTypeId: vehicle.vehicleTypeId,
+      maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
       driverUserId: vehicle.driverUserId,
       driverName:
         vehicle.driverName ||
@@ -198,6 +203,12 @@ export default function VehicleInfoPage() {
           .trim() ||
         vehicle.driver?.username ||
         "-",
+      sugarType:
+        vehicleExtrasMap[String(vehicle.id ?? "")]?.sugarType || "",
+      totalSacks:
+        vehicleExtrasMap[String(vehicle.id ?? "")]?.totalSacks || 0,
+      sackRows:
+        vehicleExtrasMap[String(vehicle.id ?? "")]?.sackRows || [],
       status: vehicle.status,
     })
   );
@@ -211,6 +222,7 @@ export default function VehicleInfoPage() {
     };
   });
   const vehicleTypeNames = vehicleTypesManager.vehicleTypes.map((type) => type.name);
+  const sugarTypeNames = (sugarTypesQuery.data || []).map((type) => type.name);
 
   if (vehiclesManager.isLoading) {
     return (
@@ -268,19 +280,14 @@ export default function VehicleInfoPage() {
         onSave={handleSave}
         vehicleTypes={vehicleTypesManager.vehicleTypes}
         driverUsers={driverUsers}
+        sugarTypes={sugarTypeNames}
       />
 
       <VehicleTypeModal
         isOpen={vehicleTypeModalOpen}
         onClose={() => setVehicleTypeModalOpen(false)}
         onSave={handleSaveVehicleType}
-        onUpdate={handleUpdateVehicleType}
-        onDelete={handleDeleteVehicleType}
         isLoading={vehicleTypesManager.isCreating}
-        vehicleTypes={vehicleTypesManager.vehicleTypes}
-        isVehicleTypesLoading={vehicleTypesManager.isLoading}
-        isUpdating={vehicleTypesManager.isUpdating}
-        isDeleting={vehicleTypesManager.isDeleting}
       />
     </div>
   );

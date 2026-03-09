@@ -110,7 +110,7 @@
       "weight": "น้ำหนัก",
       "takePhoto": "ถ่ายรูป",
       "upload": "อัปโหลด",
-      "manualCount": "จำนวนกระสอบแถวที่",
+      "manualCount": "จำนวนกระสอบ",
       "aiCount": "จำนวนที่ Ai นับได้",
       "bags": "กระสอบ"
     },
@@ -292,14 +292,32 @@
       "deleteButton": "ลบ",
       "ok": "ตกลง",
       "createVehicleTypeButton": "สร้างประเภทรถ",
-      "creatingVehicleType": "กำลังสร้าง..."
+      "creatingVehicleType": "กำลังสร้าง...",
+      "sugarType": "ชนิดน้ำตาล",
+      "selectSugarType": "เลือกชนิดน้ำตาล",
+      "sackRowsEditor": "กรอกกระสอบแต่ละแถว",
+      "rowLabel": "แถว",
+      "addRow": "เพิ่มแถว",
+      "removeRow": "ลบแถว",
+      "totalSacks": "จำนวนรวมกระสอบ",
+      "weightTons": "น้ำหนัก (ตัน)",
+      "maxLoadWeightTon": "น้ำหนักบรรทุกสูงสุด (ตัน)"
     },
     "table": {
-      "no": "NO.",
+      "no": "ลำดับ",
       "vehicleCode": "รหัสรถ",
       "licensePlate": "ทะเบียนรถ",
       "vehicleType": "ประเภทรถ",
       "driver": "คนขับ",
+      "sugarType": "ชนิดน้ำตาล",
+      "weightTons": "น้ำหนัก (ตัน)",
+      "maxLoadWeightTon": "น้ำหนักบรรทุกสูงสุด (ตัน)",
+      "totalSacks": "จำนวนรวมกระสอบ",
+      "sackRowsEditor": "กรอกกระสอบแต่ละแถว",
+      "selectSugarType": "เลือกชนิดน้ำตาล",
+      "addRow": "เพิ่มแถว",
+      "removeRow": "ลบแถว",
+      "rowLabel": "แถว",
       "status": "สถานะ",
       "actions": "จัดการ"
     }

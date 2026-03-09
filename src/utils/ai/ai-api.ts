@@ -37,10 +37,7 @@ export interface AIDetectionResponse {
 export interface AIHealthResponse {
   status: "healthy" | "unhealthy";
   model_loaded: boolean;
-  model_classes?: {
-    "0": string;
-    "1": string;
-  };
+  model_classes?: Record<string, string>;
   model_path?: string;
   minio_available?: boolean;
   minio_initialized?: boolean;
@@ -73,6 +70,18 @@ const isHeicFile = (file: File) => {
     name.endsWith(".heif")
   );
 };
+
+// Model class mapping:
+// - sack_count should include `bag` (new model) and `sack` (legacy model)
+// - box_count should include `bbox` (new model) and `box` (legacy model)
+const SACK_CLASSES = new Set(["bag", "sack"]);
+const BOX_CLASSES = new Set(["bbox", "box"]);
+
+const isSackClass = (className?: string): boolean =>
+  !!className && SACK_CLASSES.has(className);
+
+const isBoxClass = (className?: string): boolean =>
+  !!className && BOX_CLASSES.has(className);
 
 const toJpegFile = async (file: File): Promise<File> => {
   if (!isHeicFile(file)) return file;
@@ -307,8 +316,8 @@ const getMockDetectionResponse = (file: File): Promise<AIDetectionResponse> => {
         },
       ];
 
-      const sackCount = mockDetections.filter((d) => d.class === "sack").length;
-      const boxCount = mockDetections.filter((d) => d.class === "box").length;
+      const sackCount = mockDetections.filter((d) => isSackClass(d.class)).length;
+      const boxCount = mockDetections.filter((d) => isBoxClass(d.class)).length;
 
       resolve({
         status: "success",
@@ -403,14 +412,22 @@ export const processImageWithAI = async (
 
     // Filter detections based on detectionType
     let filteredDetections = aiResult.detections;
-    let sackCount = aiResult.sack_count || aiResult.sacks || 0;
-    let boxCount = aiResult.box_count || aiResult.boxes || 0;
+    let sackCount =
+      aiResult.sack_count ||
+      aiResult.sacks ||
+      aiResult.detections?.filter((d) => isSackClass(d.class)).length ||
+      0;
+    let boxCount =
+      aiResult.box_count ||
+      aiResult.boxes ||
+      aiResult.detections?.filter((d) => isBoxClass(d.class)).length ||
+      0;
     let totalCount = aiResult.total_count || 0;
 
     // For sack-only detection, use sack_count from response
     if (detectionType === "sack") {
       filteredDetections =
-        aiResult.detections?.filter((d) => d.class === "sack") || [];
+        aiResult.detections?.filter((d) => isSackClass(d.class)) || [];
       sackCount =
         aiResult.sack_count || aiResult.sacks || filteredDetections.length;
       boxCount = 0;
@@ -418,7 +435,7 @@ export const processImageWithAI = async (
     } else if (detectionType === "box") {
       // For box detection, we need to filter boxes from the response
       filteredDetections =
-        aiResult.detections?.filter((d) => d.class === "box") || [];
+        aiResult.detections?.filter((d) => isBoxClass(d.class)) || [];
       boxCount =
         aiResult.box_count || aiResult.boxes || filteredDetections.length;
       sackCount = 0;
@@ -533,17 +550,10 @@ export const processImageWithAI = async (
       storageInfo,
     };
   } catch (error: any) {
-    // Fallback to just showing original image with error message
-    const originalImage = await fileToBase64(file);
-
-    return {
-      originalImage,
-      annotatedImage: originalImage,
-      detections: [],
-      sackCount: 0,
-      boxCount: 0,
-      totalCount: 0,
-    };
+    // Surface the real error to caller so UI can show accurate failure state.
+    const errorMessage =
+      error?.message || "Failed to process image with AI service";
+    throw new Error(errorMessage);
   }
 };
 
@@ -590,10 +600,10 @@ export const drawBoundingBoxes = (
         const height = y2 - y1;
 
         // Draw rectangle with different colors
-        if (detection.class === "sack") {
+        if (isSackClass(detection.class)) {
           ctx.strokeStyle = "#00ff00"; // Green for sacks
           ctx.fillStyle = "#00ff00";
-        } else if (detection.class === "box") {
+        } else if (isBoxClass(detection.class)) {
           ctx.strokeStyle = "#ff9900"; // Orange for boxes
           ctx.fillStyle = "#ff9900";
         } else {

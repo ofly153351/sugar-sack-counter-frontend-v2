@@ -13,6 +13,10 @@ interface Vehicle {
   licensePlate: string;
   vehicleType: string;
   driverName: string;
+  maxLoadWeightTon: number;
+  sugarType?: string;
+  totalSacks?: number;
+  sackRows?: number[];
   status: "active" | "inactive" | "maintenance";
 }
 
@@ -43,21 +47,40 @@ export function VehiclesTable({
   };
 
   const filteredVehicles = vehicles.filter((vehicle) => {
-    // Apply type filter
     const typeMatch =
       activeFilter === allTypesLabel || vehicle.vehicleType === activeFilter;
 
-    // Apply search filter
     const searchTerm = search.toLowerCase();
     const searchMatch =
       !search ||
       vehicle.vehicleCode.toLowerCase().includes(searchTerm) ||
       vehicle.licensePlate.toLowerCase().includes(searchTerm) ||
       vehicle.driverName.toLowerCase().includes(searchTerm) ||
-      vehicle.vehicleType.toLowerCase().includes(searchTerm);
+      vehicle.vehicleType.toLowerCase().includes(searchTerm) ||
+      (vehicle.sugarType || "").toLowerCase().includes(searchTerm);
 
     return typeMatch && searchMatch;
   });
+
+  const tableRows = filteredVehicles.map((vehicle) => ({
+    ...vehicle,
+    rawVehicle: vehicle,
+    sugarType: vehicle.sugarType || "-",
+    weightTons:
+      vehicle.maxLoadWeightTon !== undefined && vehicle.maxLoadWeightTon !== null
+        ? vehicle.maxLoadWeightTon.toFixed(2)
+        : "-",
+    totalSacks:
+      vehicle.totalSacks !== undefined && vehicle.totalSacks !== null
+        ? vehicle.totalSacks
+        : "-",
+    sackRowsEditor:
+      vehicle.sackRows && vehicle.sackRows.length > 0
+        ? vehicle.sackRows
+            .map((count, index) => `${t("vehicle.table.rowLabel", { defaultValue: "แถว" })} ${index + 1}: ${count}`)
+            .join(", ")
+        : "-",
+  }));
 
   if (isLoading) {
     return (
@@ -65,7 +88,7 @@ export function VehiclesTable({
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">
-            {t("vehicle.loading", { defaultValue: "Loading..." })}
+            {t("vehicle.loading", { defaultValue: "กำลังโหลด..." })}
           </p>
         </div>
       </div>
@@ -76,11 +99,11 @@ export function VehiclesTable({
     return (
       <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
         <p className="text-gray-500 text-lg">
-          {t("vehicle.noVehicles", { defaultValue: "No vehicles found" })}
+          {t("vehicle.noVehicles", { defaultValue: "ไม่พบข้อมูลรถ" })}
         </p>
         <p className="text-gray-400 mt-2">
           {t("vehicle.noVehiclesInSystem", {
-            defaultValue: "No vehicles in the system",
+            defaultValue: "ยังไม่มีข้อมูลรถในระบบ",
           })}
         </p>
       </div>
@@ -89,7 +112,6 @@ export function VehiclesTable({
 
   return (
     <div className="space-y-4">
-      {/* Filter Section */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -97,7 +119,6 @@ export function VehiclesTable({
         className="mb-6 p-4 border border-gray-200 rounded-lg shadow-sm bg-white"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Type Filter */}
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               {t("vehicle.filter.type", { defaultValue: "ประเภทรถ" })}
@@ -123,7 +144,6 @@ export function VehiclesTable({
             </div>
           </div>
 
-          {/* Search Filter */}
           <div>
             <AdminSearchInput
               label={t("vehicle.filter.search", { defaultValue: "ค้นหา" })}
@@ -138,18 +158,17 @@ export function VehiclesTable({
         </div>
       </motion.div>
 
-      {/* Table */}
       {filteredVehicles.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
           <p className="text-gray-500 text-lg">
             {t("vehicle.noVehiclesFound", {
-              defaultValue: "No vehicles found",
+              defaultValue: "ไม่พบข้อมูลรถ",
             })}
           </p>
           {(search || activeFilter !== allTypesLabel) && (
             <p className="text-gray-400 mt-2">
               {t("vehicle.tryDifferentSearch", {
-                defaultValue: "Try a different search term or",
+                defaultValue: "ลองค้นหาด้วยคำอื่น หรือ",
               })}{" "}
               <button
                 onClick={() => {
@@ -159,7 +178,7 @@ export function VehiclesTable({
                 }}
                 className="text-blue-600 hover:underline"
               >
-                {t("vehicle.clearFilters", { defaultValue: "clear filters" })}
+                {t("vehicle.clearFilters", { defaultValue: "ล้างตัวกรอง" })}
               </button>
             </p>
           )}
@@ -172,9 +191,11 @@ export function VehiclesTable({
         >
           <Table
             type="vehicle"
-            data={filteredVehicles}
-            onEdit={onEdit}
-            onDelete={onDelete}
+            data={tableRows}
+            onEdit={(item) => onEdit((item.rawVehicle as Vehicle) || (item as Vehicle))}
+            onDelete={(item) =>
+              onDelete((item.rawVehicle as Vehicle) || (item as Vehicle))
+            }
           />
         </motion.div>
       )}

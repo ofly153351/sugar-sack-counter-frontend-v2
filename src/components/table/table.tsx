@@ -97,32 +97,56 @@ export default function Table({
     switch (type) {
       case "vehicle":
         return [
-          { key: "no", label: t("vehicle.table.no", { defaultValue: "NO." }) },
+          { key: "no", label: t("vehicle.table.no", { defaultValue: "ลำดับ" }) },
           {
             key: "vehicleCode",
             label: t("vehicle.table.vehicleCode", {
-              defaultValue: "Vehicle Code",
+              defaultValue: "รหัสรถ",
             }),
           },
           {
             key: "licensePlate",
             label: t("vehicle.table.licensePlate", {
-              defaultValue: "License Plate",
+              defaultValue: "ทะเบียนรถ",
             }),
           },
           {
             key: "vehicleType",
             label: t("vehicle.table.vehicleType", {
-              defaultValue: "Vehicle Type",
+              defaultValue: "ประเภทรถ",
             }),
           },
           {
             key: "driverName",
-            label: t("vehicle.table.driver", { defaultValue: "Driver" }),
+            label: t("vehicle.table.driver", { defaultValue: "ชื่อคนขับ" }),
+          },
+          {
+            key: "sugarType",
+            label: t("vehicle.table.sugarType", {
+              defaultValue: "ชนิดน้ำตาล",
+            }),
+          },
+          {
+            key: "weightTons",
+            label: t("vehicle.table.weightTons", {
+              defaultValue: "น้ำหนัก (ตัน)",
+            }),
+          },
+          {
+            key: "totalSacks",
+            label: t("vehicle.table.totalSacks", {
+              defaultValue: "จำนวนรวมกระสอบ",
+            }),
+          },
+          {
+            key: "sackRowsEditor",
+            label: t("vehicle.table.sackRowsEditor", {
+              defaultValue: "กรอกกระสอบแต่ละแถว",
+            }),
           },
           {
             key: "status",
-            label: t("vehicle.table.status", { defaultValue: "Status" }),
+            label: t("vehicle.table.status", { defaultValue: "สถานะ" }),
           },
         ];
       case "bags":
@@ -147,12 +171,6 @@ export default function Table({
             label: t("bags.table.sugarType", { defaultValue: "Sugar Type" }),
           },
           {
-            key: "manualTotal",
-            label: t("bags.table.manualTotal", {
-              defaultValue: "Manual Total",
-            }),
-          },
-          {
             key: "aiTotal",
             label: t("bags.table.aiTotal", { defaultValue: "AI Total" }),
           },
@@ -175,12 +193,6 @@ export default function Table({
           {
             key: "sugarType",
             label: t("box.table.sugarType", { defaultValue: "Sugar Type" }),
-          },
-          {
-            key: "manualTotal",
-            label: t("box.table.manualTotal", {
-              defaultValue: "Manual Total",
-            }),
           },
           {
             key: "aiTotal",
@@ -409,10 +421,10 @@ export default function Table({
                           }`}
                         >
                           {row.status === "active"
-                            ? "Active"
+                            ? "ใช้งาน"
                             : row.status === "maintenance"
-                              ? "Maintenance"
-                              : "Inactive"}
+                              ? "ซ่อมบำรุง"
+                              : "ไม่ใช้งาน"}
                         </span>
                       ) : type === "users" && h.key === "role" ? (
                         renderRoleSelect(row)
@@ -448,20 +460,6 @@ export default function Table({
                         >
                           <div className="text-sm text-slate-700">
                             แถวที่ {childRow.rowNumber || index + 1}
-                          </div>
-                          {isSackSession && (
-                            <div className="text-sm text-slate-700">
-                              น้ำหนัก: {childRow.weightType || "ไม่ระบุ"}
-                            </div>
-                          )}
-                          <div className="text-sm text-slate-700">
-                            {t(
-                              isSackSession
-                                ? "bags.table.manualCount"
-                                : "box.table.manualCount",
-                              { defaultValue: "Manual Count" }
-                            )}
-                            : {childRow.finalCount || 0}
                           </div>
                           <div className="text-sm text-slate-700">
                             {t(
@@ -548,7 +546,7 @@ export default function Table({
               ))}
 
               <th className="px-4 py-3 text-center text-sm font-semibold text-blue-700 tracking-wide whitespace-nowrap">
-                {t("table.actions", { defaultValue: "Actions" })}
+                {t("table.actions", { defaultValue: "การจัดการ" })}
               </th>
             </tr>
           </thead>
@@ -594,10 +592,10 @@ export default function Table({
                             }`}
                           >
                             {row.status === "active"
-                              ? "Active"
+                              ? "ใช้งาน"
                               : row.status === "maintenance"
-                                ? "Maintenance"
-                                : "Inactive"}
+                                ? "ซ่อมบำรุง"
+                                : "ไม่ใช้งาน"}
                           </span>
                         ) : type === "users" && h.key === "role" ? (
                           <div className="min-w-[140px]">{renderRoleSelect(row)}</div>
@@ -656,19 +654,6 @@ export default function Table({
                                         <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
                                           แถวที่
                                         </th>
-                                        {isSackSession && (
-                                          <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
-                                            น้ำหนัก
-                                          </th>
-                                        )}
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
-                                          {t(
-                                            isSackSession
-                                              ? "bags.table.manualCount"
-                                              : "box.table.manualCount",
-                                            { defaultValue: "Manual Count" }
-                                          )}
-                                        </th>
                                         <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
                                           {t(
                                             isSackSession
@@ -691,14 +676,6 @@ export default function Table({
                                           >
                                             <td className="px-4 py-2 text-sm text-gray-700">
                                               {childRow.rowNumber || index + 1}
-                                            </td>
-                                            {isSackSession && (
-                                              <td className="px-4 py-2 text-sm text-gray-700">
-                                                {childRow.weightType || "ไม่ระบุ"}
-                                              </td>
-                                            )}
-                                            <td className="px-4 py-2 text-sm text-gray-700">
-                                              {childRow.finalCount || 0}
                                             </td>
                                             <td className="px-4 py-2 text-sm text-gray-700">
                                               {childRow.aiCount || 0}
@@ -806,11 +783,10 @@ export default function Table({
                                 แถวที่ {row.rowNumber}
                               </p>
                               <p className="text-sm text-gray-600">
-                                {type === "bags" &&
-                                  `น้ำหนัก: ${
-                                    row.weightType || "ไม่ระบุ"
-                                  } • `}
-                                จำนวน: {row.finalCount || 0}
+                                {t(
+                                  type === "bags" ? "bags.table.aiCount" : "box.table.aiCount",
+                                  { defaultValue: "AI Count" }
+                                )}: {row.aiCount || 0}
                               </p>
                             </div>
                             <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
@@ -858,11 +834,10 @@ export default function Table({
                                 แถวที่ {row.rowNumber}
                               </p>
                               <p className="text-sm text-gray-600">
-                                {type === "bags" &&
-                                  `น้ำหนัก: ${
-                                    row.weightType || "ไม่ระบุ"
-                                  } • `}
-                                จำนวน: {row.finalCount || 0}
+                                {t(
+                                  type === "bags" ? "bags.table.aiCount" : "box.table.aiCount",
+                                  { defaultValue: "AI Count" }
+                                )}: {row.aiCount || 0}
                               </p>
                             </div>
                             <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
@@ -923,3 +898,7 @@ export default function Table({
     </>
   );
 }
+
+
+
+

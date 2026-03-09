@@ -193,7 +193,7 @@ export function ImageUploadModal({
                 annotatedImage={aiDetectionResult.annotatedImage}
                 detections={aiDetectionResult.detections}
                 personCount={aiDetectionResult.personCount}
-                showOriginal={true}
+                showOriginal={false}
                 onClose={() => setShowAIDetection(false)}
               />
             </div>
@@ -220,8 +220,12 @@ export function ImageUploadModal({
               <div className="space-y-4">
                 <div className="relative mx-auto w-48 h-48">
                   <img
-                    src={previewUrl}
-                    alt="Preview"
+                    src={aiDetectionResult?.annotatedImage || previewUrl}
+                    alt={
+                      aiDetectionResult?.annotatedImage
+                        ? "AI Annotated Preview"
+                        : "Preview"
+                    }
                     className="w-full h-full object-cover rounded-lg"
                   />
                   {enableAIDetection && !showAIDetection && (

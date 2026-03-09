@@ -6,6 +6,7 @@ import {
   Brain,
   Trash2,
   Maximize2,
+  Download,
   Save,
   Database,
 } from "lucide-react";
@@ -61,7 +62,7 @@ export default function BagRow({
 }: BagRowProps) {
   const t = useTranslations("count.bagRow");
   const tCount = useTranslations("count");
-  const [bagWeight, setBagWeight] = useState("50");
+  const bagWeight = "50";
   const [manualCount, setManualCount] = useState(0);
   const [aiCount, setAiCount] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -354,6 +355,7 @@ export default function BagRow({
       );
       setAiResult(result);
       setAiCount(result.totalCount); // Auto-set AI count
+      setManualCount(result.totalCount);
 
       // Check if user wants to see notifications
       const showNotifications =
@@ -429,6 +431,7 @@ export default function BagRow({
       // Don't show error alert for auto-detection to avoid interrupting user flow
       // Just set AI count to 0
       setAiCount(0);
+      setManualCount(0);
 
       // Show error notification if enabled
       const showNotifications =
@@ -488,6 +491,7 @@ export default function BagRow({
       );
       setAiResult(result);
       setAiCount(result.totalCount); // Set AI count
+      setManualCount(result.totalCount);
 
       Swal.close();
 
@@ -662,6 +666,8 @@ export default function BagRow({
             finalCount: manualCount,
             originalImagePath,
             annotatedImagePath,
+            originalImageDataUrl: aiResult.originalImage || imagePreview || "",
+            annotatedImageDataUrl: aiResult.annotatedImage || imagePreview || "",
           };
           onDataChange(rowData);
           prevDataRef.current = currentData;
@@ -747,6 +753,8 @@ export default function BagRow({
             finalCount: manualCount,
             originalImagePath,
             annotatedImagePath,
+            originalImageDataUrl: aiResult?.originalImage || imagePreview || "",
+            annotatedImageDataUrl: aiResult?.annotatedImage || imagePreview || "",
           };
           onDataChange(rowData);
           prevDataRef.current = currentData;
@@ -956,8 +964,75 @@ export default function BagRow({
     }
   };
 
+  const originalImagePathForStatus =
+    aiResult?.storageInfo?.original_object_name ||
+    aiResult?.storageInfo?.original?.object_name ||
+    aiResult?.originalImagePath ||
+    aiResult?.original_image_path ||
+    "";
+  const annotatedImagePathForStatus =
+    aiResult?.storageInfo?.annotated_object_name ||
+    aiResult?.storageInfo?.annotated?.object_name ||
+    aiResult?.annotatedImagePath ||
+    aiResult?.annotated_image_path ||
+    "";
+  const hasUploadedImageForStatus = Boolean(imageFile || imagePreview || aiResult);
+  const isBackendDataValid = Boolean(
+    vehicleId &&
+      sugarTypeId &&
+      (aiCount ?? 0) > 0 &&
+      manualCount > 0 &&
+      originalImagePathForStatus &&
+      annotatedImagePathForStatus
+  );
+  const resolveImageUrl = (pathOrUrl?: string): string => {
+    if (!pathOrUrl) return "";
+    if (
+      pathOrUrl.startsWith("http://") ||
+      pathOrUrl.startsWith("https://") ||
+      pathOrUrl.startsWith("data:")
+    ) {
+      return pathOrUrl;
+    }
+    const imageBaseUrl = API_CONFIG.BASE_URL.replace(/\/api\/?$/, "");
+    return `${imageBaseUrl}/images/${pathOrUrl.replace(/^\/+/, "")}`;
+  };
+
+  const handleDownloadRowImage = async () => {
+    const imageUrl = resolveImageUrl(
+      aiResult?.annotatedImage || annotatedImagePathForStatus || imagePreview || ""
+    );
+
+    if (!imageUrl) return;
+
+    const filename = `bag-row-${rowNumber}-annotated.jpg`;
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-4 p-4 border rounded-lg bg-white shadow-sm">
+    <div className="relative flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-4 p-4 border rounded-lg bg-white shadow-sm">
+      {hasUploadedImageForStatus && (
+        <div
+          className={`absolute top-3 right-3 z-20 inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-semibold ${
+            isBackendDataValid
+              ? "bg-green-50 text-green-700 border border-green-200"
+              : "bg-red-50 text-red-700 border border-red-200"
+          }`}
+        >
+          <span
+            className={`w-2 h-2 rounded-full ${
+              isBackendDataValid ? "bg-green-500" : "bg-red-500"
+            }`}
+          />
+          {isBackendDataValid ? "ถูกต้อง" : "ผิดพลาด"}
+        </div>
+      )}
+
       <div className="w-full md:w-1/4 flex-shrink-0">
         <label className="text-sm font-semibold text-gray-700 mb-2 block">
           {t("row")} {rowNumber}
@@ -985,13 +1060,15 @@ export default function BagRow({
             {imagePreview ? (
               <div className="relative w-full h-full">
                 <img
-                  src={imagePreview}
+                  src={aiResult?.annotatedImage || imagePreview}
                   alt="Preview"
                   className="w-full h-full object-cover"
                 />
                 <button
                   onClick={() => {
-                    setFullscreenImageUrl(imagePreview);
+                    setFullscreenImageUrl(
+                      aiResult?.annotatedImage || imagePreview
+                    );
                     setShowFullscreenImage(true);
                   }}
                   className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-opacity"
@@ -1033,32 +1110,6 @@ export default function BagRow({
       )}
 
       <div className="flex flex-col md:flex-1 space-y-2 w-full">
-        <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex gap-2">
-            <button
-              className={`px-3 py-1 text-sm font-medium rounded-lg ${
-                bagWeight === "25"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-              }`}
-              onClick={() => setBagWeight("25")}
-            >
-              {t("weight")} 25
-            </button>
-            <button
-              className={`px-3 py-1 text-sm font-medium rounded-lg ${
-                bagWeight === "50"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-              }`}
-              onClick={() => setBagWeight("50")}
-            >
-              {t("weight")} 50
-            </button>
-          </div>
-
-        </div>
-
         <div className="flex flex-wrap gap-2">
           <RowUploadButton
             onClick={openFilePicker}
@@ -1133,26 +1184,6 @@ export default function BagRow({
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-1">
-          <label className="text-sm text-gray-600 w-35 whitespace-nowrap">
-            {t("manualCount")} {rowNumber}
-          </label>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={manualCount}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === "" || /^\d+$/.test(value)) {
-                setManualCount(value === "" ? 0 : Number(value));
-              }
-            }}
-            className="w-20 p-1 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-          />
-          <span className="text-sm text-gray-600">{t("bags")}</span>
-        </div>
-
         <div className="flex flex-wrap items-center gap-2">
           <label className="text-sm text-gray-600 w-33 whitespace-nowrap">
             {t("aiCount")}
@@ -1180,6 +1211,13 @@ export default function BagRow({
             >
               <Maximize2 className="w-3 h-3" />
               ดูภาพเต็ม
+            </button>
+            <button
+              onClick={handleDownloadRowImage}
+              className="flex items-center gap-1 px-3 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
+            >
+              <Download className="w-3 h-3" />
+              ดาวน์โหลดรูปแถวนี้
             </button>
             {aiResult.storageInfo?.annotated?.object_name && <></>}
           </div>

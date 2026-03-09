@@ -323,7 +323,16 @@
       "deleteButton": "Delete",
       "ok": "OK",
       "createVehicleTypeButton": "Create Vehicle Type",
-      "creatingVehicleType": "Creating..."
+      "creatingVehicleType": "Creating...",
+      "sugarType": "Sugar Type",
+      "selectSugarType": "Select sugar type",
+      "sackRowsEditor": "Sacks by row",
+      "rowLabel": "Row",
+      "addRow": "Add row",
+      "removeRow": "Remove row",
+      "totalSacks": "Total sacks",
+      "weightTons": "Weight (tons)",
+      "maxLoadWeightTon": "Max load weight (tons)"
     },
     "table": {
       "no": "NO.",
@@ -331,6 +340,15 @@
       "licensePlate": "License Plate",
       "vehicleType": "Vehicle Type",
       "driver": "Driver",
+      "sugarType": "Sugar Type",
+      "weightTons": "Weight (tons)",
+      "maxLoadWeightTon": "Max load weight (tons)",
+      "totalSacks": "Total Sacks",
+      "sackRowsEditor": "Sacks by Row",
+      "selectSugarType": "Select sugar type",
+      "addRow": "Add row",
+      "removeRow": "Remove row",
+      "rowLabel": "Row",
       "status": "Status",
       "actions": "Actions"
     }
