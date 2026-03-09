@@ -316,7 +316,8 @@
       "addRow": "Add row",
       "removeRow": "Remove row",
       "totalSacks": "Total sacks",
-      "weightTons": "Weight (tons)"
+      "weightTons": "Weight (tons)",
+      "maxLoadWeightTon": "Max load weight (tons)"
     },
     "table": {
       "no": "NO.",
@@ -326,6 +327,7 @@
       "driver": "Driver",
       "sugarType": "Sugar Type",
       "weightTons": "Weight (tons)",
+      "maxLoadWeightTon": "Max load weight (tons)",
       "totalSacks": "Total Sacks",
       "sackRowsEditor": "Sacks by Row",
       "selectSugarType": "Select sugar type",

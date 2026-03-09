@@ -16,10 +16,10 @@ interface Vehicle {
   licensePlate: string;
   vehicleType: string;
   vehicleTypeId: string | number;
+  maxLoadWeightTon: number;
   driverUserId?: string | number;
   driverName: string;
   sugarType?: string;
-  weightTons?: number;
   totalSacks?: number;
   sackRows?: number[];
   status: "active" | "inactive" | "maintenance";
@@ -72,10 +72,11 @@ export function VehicleForm({
       : [0]
   );
   const totalSacks = sackRows.reduce((sum, count) => sum + (count || 0), 0);
-  const [weightTons, setWeightTons] = useState<number>(
-    initialData?.weightTons !== undefined && initialData?.weightTons !== null
-      ? Number(initialData.weightTons)
-      : Number((totalSacks * 0.05).toFixed(2))
+  const [maxLoadWeightTon, setMaxLoadWeightTon] = useState<number>(
+    initialData?.maxLoadWeightTon !== undefined &&
+      initialData?.maxLoadWeightTon !== null
+      ? Number(initialData.maxLoadWeightTon)
+      : 0
   );
   const selectedVehicleTypeId = (() => {
     if (vehicleTypeId) return vehicleTypeId;
@@ -124,12 +125,12 @@ export function VehicleForm({
           (t) => String(t.id) === String(selectedVehicleTypeId)
         )?.name || "",
       vehicleTypeId: selectedVehicleTypeId,
+      maxLoadWeightTon,
       driverUserId: selectedDriverUserId,
       driverName: selectedDriverLabel,
       sugarType: sugarType || "",
       sackRows,
       totalSacks,
-      weightTons,
       status,
     };
     onSave(vehicle);
@@ -313,16 +314,18 @@ export function VehicleForm({
         </div>
         <div>
           <label className="block font-semibold mb-1">
-            {t("weightTons", { defaultValue: "น้ำหนัก (ตัน)" })}
+            {t("maxLoadWeightTon", { defaultValue: "น้ำหนักบรรทุกสูงสุด (ตัน)" })}
           </label>
           <input
             type="number"
             step="0.01"
             min={0}
-            value={weightTons}
+            value={maxLoadWeightTon}
             onChange={(e) => {
               const parsed = Number(e.target.value);
-              setWeightTons(Number.isFinite(parsed) && parsed >= 0 ? parsed : 0);
+              setMaxLoadWeightTon(
+                Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
+              );
             }}
             className="w-full border border-gray-300 rounded px-3 py-2"
           />

@@ -256,6 +256,7 @@ export interface Vehicle {
   vehicleCode: string;
   licensePlate: string;
   vehicleTypeId: string | number;
+  maxLoadWeightTon: number;
   vehicleType?: VehicleType;
   driverUserId?: string | number;
   driverName: string;
@@ -407,6 +408,7 @@ export interface VehicleFormData {
   vehicleCode: string;
   licensePlate: string;
   vehicleTypeId: string | number;
+  maxLoadWeightTon: number;
   driverUserId: string | number;
   status: "active" | "inactive" | "maintenance";
 }
@@ -416,6 +418,7 @@ export interface ApiVehicle {
   vehicleCode: string;
   licensePlate: string;
   vehicleTypeId: string | number;
+  maxLoadWeightTon: number;
   vehicleType?: VehicleType;
   driverUserId?: string | number;
   driverName: string;

@@ -8,7 +8,7 @@ import { Plus, Loader2, Download } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useCountManager, useCountingSessionsByType } from "@/hooks/useCount";
+import { useCountManager } from "@/hooks/useCount";
 import Swal from "sweetalert2";
 import type {
   SackRowFormData,
@@ -66,8 +66,6 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
 
   // Use count manager hook
   const countManager = useCountManager();
-  const { data: sackSessionsForExport } = useCountingSessionsByType("sack");
-  const { data: boxSessionsForExport } = useCountingSessionsByType("box");
 
   // Set isClient state on client only
   useEffect(() => {
@@ -426,73 +424,17 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   };
 
   const handleExportXlsx = () => {
-    const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
+    const exportRows = buildExportRows();
+
+    if (exportRows.length === 0) {
+      Swal.fire({
+        title: "ยังไม่มีข้อมูลสำหรับ Export",
+        text: "กรุณาเพิ่มข้อมูลในแถวอย่างน้อย 1 แถวก่อน",
+        icon: "warning",
+        confirmButtonText: "ตกลง",
       });
-    };
-
-    const getUserDisplayName = (user?: {
-      profile?: { firstName?: string; lastName?: string };
-      username?: string;
-    }) => {
-      if (!user) return "เนเธกเนเธ—เธฃเธฒเธเธเธนเนเนเธเน";
-      if (user.profile?.firstName && user.profile?.lastName) {
-        return `${user.profile.firstName} ${user.profile.lastName}`;
-      }
-      return user.username || "เนเธกเนเธ—เธฃเธฒเธเธเธนเนเนเธเน";
-    };
-
-    const sessionsForExport =
-      currentTab === "bags" ? sackSessionsForExport : boxSessionsForExport;
-    const vehicleExtrasMapForExport: Record<
-      string,
-      { weightTons?: number }
-    > = (() => {
-      try {
-        const raw = localStorage.getItem("vehicle_extras_map_v1");
-        return raw ? JSON.parse(raw) : {};
-      } catch {
-        return {};
-      }
-    })();
-
-    const exportRows =
-      sessionsForExport?.map((session, index) => {
-        const countRows =
-          currentTab === "bags"
-            ? session.sackSession?.sackRows || []
-            : session.boxSession?.boxRows || [];
-        const aiTotal =
-          countRows.length > 0
-            ? countRows.reduce((sum, row) => sum + (row?.aiCount ?? 0), 0)
-            : 0;
-
-        return {
-          "\u0e25\u0e33\u0e14\u0e31\u0e1a": index + 1,
-          "\u0e23\u0e2b\u0e31\u0e2a\u0e23\u0e16": session.vehicle?.vehicleCode || "-",
-          "\u0e27\u0e31\u0e19\u0e40\u0e27\u0e25\u0e32": formatDate(session.countingDate),
-          "\u0e1c\u0e39\u0e49\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01": getUserDisplayName(session.user),
-          "\u0e0a\u0e19\u0e34\u0e14\u0e19\u0e49\u0e33\u0e15\u0e32\u0e25": session.sugarType?.name || "-",
-          "\u0e19\u0e49\u0e33\u0e2b\u0e19\u0e31\u0e01 (\u0e15\u0e31\u0e19)": Number(
-            vehicleExtrasMapForExport[String(session.vehicle?.id ?? "")]?.weightTons || 0
-          ).toFixed(2),
-          "\u0e1b\u0e23\u0e30\u0e40\u0e20\u0e17\u0e01\u0e32\u0e23\u0e19\u0e31\u0e1a":
-            session.sessionType === "box"
-              ? "\u0e01\u0e25\u0e48\u0e2d\u0e07"
-              : "\u0e01\u0e23\u0e30\u0e2a\u0e2d\u0e1a",
-          "\u0e23\u0e27\u0e21 (AI)": `${aiTotal} ${
-            session.sessionType === "box"
-              ? "\u0e01\u0e25\u0e48\u0e2d\u0e07"
-              : "\u0e01\u0e23\u0e30\u0e2a\u0e2d\u0e1a"
-          }`,
-        };
-      }) || [];
+      return;
+    }
 
     const worksheet = XLSX.utils.json_to_sheet(exportRows);
     const workbook = XLSX.utils.book_new();
@@ -504,9 +446,75 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     XLSX.writeFile(
       workbook,
       `${
-        currentTab === "bags" ? "sugar-bags" : "sugar-boxes"
+        selectedVehicle?.licensePlate || (currentTab === "bags" ? "sugar-bags" : "sugar-boxes")
       }-${new Date().toISOString().slice(0, 10)}.xlsx`
     );
+  };
+
+  const buildExportRows = (): Array<Record<string, string | number>> => {
+    const currentRowsMap = currentTab === "bags" ? sackRowsData : boxRowsData;
+    const selectedSugarType = countManager.sugarTypes.find(
+      (sugarType) => sugarType.id?.toString() === selectedSugarTypeId
+    );
+    const currentUser = countManager.currentUser as
+      | {
+          profile?: { firstName?: string; lastName?: string };
+          firstName?: string;
+          lastName?: string;
+          username?: string;
+        }
+      | undefined;
+
+    const userDisplayName =
+      (currentUser?.profile?.firstName && currentUser?.profile?.lastName
+        ? `${currentUser.profile.firstName} ${currentUser.profile.lastName}`
+        : "") ||
+      (currentUser?.firstName && currentUser?.lastName
+        ? `${currentUser.firstName} ${currentUser.lastName}`
+        : "") ||
+      currentUser?.username ||
+      "-";
+    const rowPrefix = currentTab === "bags" ? "bag" : "box";
+    const detectExt = (pathOrDataUrl?: string): string => {
+      if (!pathOrDataUrl) return "jpg";
+      if (pathOrDataUrl.startsWith("data:")) {
+        if (pathOrDataUrl.startsWith("data:image/png")) return "png";
+        if (pathOrDataUrl.startsWith("data:image/webp")) return "webp";
+        return "jpg";
+      }
+      const cleaned = pathOrDataUrl.split("?")[0];
+      const parts = cleaned.split(".");
+      const ext = parts[parts.length - 1]?.toLowerCase();
+      return ext || "jpg";
+    };
+
+    const exportRows = rows
+      .map((rowNumber) => {
+        const row = currentRowsMap[rowNumber];
+        if (!row) return null;
+
+        const annotatedSource = row.annotatedImagePath || row.annotatedImageDataUrl;
+        const originalSource = row.originalImagePath || row.originalImageDataUrl;
+        const annotatedFilename = annotatedSource
+          ? `${rowPrefix}-row-${rowNumber}-annotated.${detectExt(annotatedSource)}`
+          : "-";
+        const originalFilename = originalSource
+          ? `${rowPrefix}-row-${rowNumber}-original.${detectExt(originalSource)}`
+          : "-";
+
+        return {
+          "แถวที่": rowNumber,
+          "ทะเบียนรถ": selectedVehicle?.licensePlate || "-",
+          "วันเวลา": new Date().toLocaleString("th-TH"),
+          "ผู้บันทึก": userDisplayName,
+          "ชนิดน้ำตาล": selectedSugarType?.name || selectedVehicleExtras?.sugarType || "-",
+          "จำนวนที่นับได้": Number(row.finalCount ?? row.aiCount ?? 0),
+          "ชื่อไฟล์รูป annotate": annotatedFilename,
+          "ชื่อไฟล์รูป original": originalFilename,
+        };
+      })
+      .filter((row): row is Record<string, string | number> => row !== null);
+    return exportRows;
   };
 
   const deleteRow = (rowNumber: number) => {
@@ -955,8 +963,11 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           selectedVehicle.vehicleType?.name || "-"
         } ${selectedVehicle.driverName || "-"} ${
           selectedVehicleExtras?.sugarType || "-"
-        } ${Number(selectedVehicleExtras?.weightTons || 0).toFixed(2)}`
+        } ${Number(selectedVehicleExtras?.weightTons || 0).toFixed(2)} ตัน`
       : t("summary.notSelected", { defaultValue: "เนเธกเนเนเธ”เนเน€เธฅเธทเธญเธ" });
+  const exportPreviewRows = buildExportRows();
+  const exportPreviewColumns =
+    exportPreviewRows.length > 0 ? Object.keys(exportPreviewRows[0]) : [];
 
   return (
     <div className="min-h-screen flex justify-center p-4 bg-gray-100">
@@ -1000,7 +1011,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                       vehicleExtrasMap[vehicle.id?.toString() || ""]?.sugarType || "-"
                     } ${Number(
                       vehicleExtrasMap[vehicle.id?.toString() || ""]?.weightTons || 0
-                    ).toFixed(2)}`,
+                    ).toFixed(2)} ตัน`,
                   }))}
                   selected={selectedVehicleId}
                   setSelected={setSelectedVehicleId}
@@ -1141,6 +1152,48 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                   t("saveButton")
                 )}
               </button>
+            </div>
+
+            <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <h4 className="text-sm font-semibold text-slate-800 mb-3">
+                Preview Excel
+              </h4>
+              {exportPreviewRows.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  ยังไม่มีข้อมูลแถวสำหรับแสดงตัวอย่าง
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border border-slate-200 bg-white">
+                    <thead>
+                      <tr className="bg-slate-100">
+                        {exportPreviewColumns.map((column) => (
+                          <th
+                            key={column}
+                            className="border border-slate-200 px-3 py-2 text-left font-semibold whitespace-nowrap"
+                          >
+                            {column}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {exportPreviewRows.map((row, index) => (
+                        <tr key={`export-preview-${index}`} className="odd:bg-white even:bg-slate-50">
+                          {exportPreviewColumns.map((column) => (
+                            <td
+                              key={`${index}-${column}`}
+                              className="border border-slate-200 px-3 py-2 whitespace-nowrap"
+                            >
+                              {String(row[column] ?? "-")}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
         </>
       </div>

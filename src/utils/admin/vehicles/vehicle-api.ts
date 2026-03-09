@@ -9,6 +9,7 @@ import {
   VehicleFormData,
   ApiVehicle,
 } from "../../types";
+export type { Vehicle, VehicleFormData } from "../../types";
 
 // ========== Vehicle Types ==========
 // Types are now imported from src/utils/types.ts
@@ -113,6 +114,7 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
       vehicleCode: vehicle.vehicleCode,
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
+      maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
       vehicleType: vehicle.vehicleType,
       driverUserId: vehicle.driverUserId,
       driverName: resolveDriverName(vehicle),
@@ -143,6 +145,7 @@ export const fetchActiveVehicles = async (): Promise<Vehicle[]> => {
       vehicleCode: vehicle.vehicleCode,
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
+      maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
       vehicleType: vehicle.vehicleType,
       driverUserId: vehicle.driverUserId,
       driverName: resolveDriverName(vehicle),
@@ -297,6 +300,7 @@ export const getVehicleById = async (
       vehicleCode: vehicle.vehicleCode,
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
+      maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
       vehicleType: vehicle.vehicleType,
       driverUserId: vehicle.driverUserId,
       driverName: resolveDriverName(vehicle),
@@ -339,6 +343,7 @@ export const getVehicleByCode = async (
       vehicleCode: vehicle.vehicleCode,
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
+      maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
       vehicleType: vehicle.vehicleType,
       driverUserId: vehicle.driverUserId,
       driverName: resolveDriverName(vehicle),
@@ -381,6 +386,7 @@ export const getVehicleByLicensePlate = async (
       vehicleCode: vehicle.vehicleCode,
       licensePlate: vehicle.licensePlate,
       vehicleTypeId: vehicle.vehicleTypeId,
+      maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
       vehicleType: vehicle.vehicleType,
       driverUserId: vehicle.driverUserId,
       driverName: resolveDriverName(vehicle),
@@ -411,6 +417,7 @@ export const convertToVehicleFormData = (vehicle: Vehicle): VehicleFormData => {
     vehicleCode: vehicle.vehicleCode,
     licensePlate: vehicle.licensePlate,
     vehicleTypeId: vehicle.vehicleTypeId,
+    maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
     driverUserId: vehicle.driverUserId || "",
     status: vehicle.status,
   };
@@ -444,8 +451,12 @@ export const validateVehicleData = (
 
   if (!vehicleData.status?.trim()) {
     errors.push("Status is required");
-  } else if (!["active", "inactive"].includes(vehicleData.status)) {
-    errors.push("Status must be either 'active' or 'inactive'");
+  } else if (!["active", "inactive", "maintenance"].includes(vehicleData.status)) {
+    errors.push("Status must be 'active', 'inactive', or 'maintenance'");
+  }
+
+  if (!Number.isFinite(vehicleData.maxLoadWeightTon) || vehicleData.maxLoadWeightTon < 0) {
+    errors.push("Max load weight ton must be a number >= 0");
   }
 
   return {

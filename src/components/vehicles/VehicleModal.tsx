@@ -17,10 +17,10 @@ interface Vehicle {
   licensePlate: string;
   vehicleType: string;
   vehicleTypeId: string | number;
+  maxLoadWeightTon: number;
   driverUserId?: string | number;
   driverName: string;
   sugarType?: string;
-  weightTons?: number;
   totalSacks?: number;
   sackRows?: number[];
   status: "active" | "inactive" | "maintenance";
@@ -72,7 +72,7 @@ export function VehicleModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={{ duration: 0.24, ease: "easeOut" }}
-            className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative"
+            className="bg-white rounded-lg shadow-lg w-full max-w-xl max-h-[85vh] overflow-y-auto p-4 sm:p-5 relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button

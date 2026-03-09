@@ -22,7 +22,6 @@ import type {
 
 interface VehicleWithExtras extends Vehicle {
   sugarType?: string;
-  weightTons?: number;
   totalSacks?: number;
   sackRows?: number[];
 }
@@ -108,6 +107,7 @@ export default function VehicleInfoPage() {
         vehicleCode: vehicle.vehicleCode,
         licensePlate: vehicle.licensePlate,
         vehicleTypeId: vehicle.vehicleTypeId,
+        maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
         driverUserId: vehicle.driverUserId || "",
         status: vehicle.status,
       };
@@ -123,7 +123,7 @@ export default function VehicleInfoPage() {
           ...vehicleExtrasMap,
           [key]: {
             sugarType: vehicle.sugarType || "",
-            weightTons: Number(vehicle.weightTons || 0),
+            weightTons: Number(vehicle.maxLoadWeightTon || 0),
             totalSacks: Number(vehicle.totalSacks || 0),
             sackRows: Array.isArray(vehicle.sackRows)
               ? vehicle.sackRows
@@ -142,7 +142,7 @@ export default function VehicleInfoPage() {
             ...vehicleExtrasMap,
             [key]: {
               sugarType: vehicle.sugarType || "",
-              weightTons: Number(vehicle.weightTons || 0),
+              weightTons: Number(vehicle.maxLoadWeightTon || 0),
               totalSacks: Number(vehicle.totalSacks || 0),
               sackRows: Array.isArray(vehicle.sackRows)
                 ? vehicle.sackRows
@@ -191,6 +191,7 @@ export default function VehicleInfoPage() {
       licensePlate: vehicle.licensePlate,
       vehicleType: vehicle.vehicleType?.name || "Unknown",
       vehicleTypeId: vehicle.vehicleTypeId,
+      maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
       driverUserId: vehicle.driverUserId,
       driverName:
         vehicle.driverName ||
@@ -204,8 +205,6 @@ export default function VehicleInfoPage() {
         "-",
       sugarType:
         vehicleExtrasMap[String(vehicle.id ?? "")]?.sugarType || "",
-      weightTons:
-        vehicleExtrasMap[String(vehicle.id ?? "")]?.weightTons || 0,
       totalSacks:
         vehicleExtrasMap[String(vehicle.id ?? "")]?.totalSacks || 0,
       sackRows:

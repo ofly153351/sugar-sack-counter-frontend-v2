@@ -13,8 +13,8 @@ interface Vehicle {
   licensePlate: string;
   vehicleType: string;
   driverName: string;
+  maxLoadWeightTon: number;
   sugarType?: string;
-  weightTons?: number;
   totalSacks?: number;
   sackRows?: number[];
   status: "active" | "inactive" | "maintenance";
@@ -67,8 +67,8 @@ export function VehiclesTable({
     rawVehicle: vehicle,
     sugarType: vehicle.sugarType || "-",
     weightTons:
-      vehicle.weightTons !== undefined && vehicle.weightTons !== null
-        ? vehicle.weightTons.toFixed(2)
+      vehicle.maxLoadWeightTon !== undefined && vehicle.maxLoadWeightTon !== null
+        ? vehicle.maxLoadWeightTon.toFixed(2)
         : "-",
     totalSacks:
       vehicle.totalSacks !== undefined && vehicle.totalSacks !== null

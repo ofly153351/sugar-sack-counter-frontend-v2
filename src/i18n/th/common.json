@@ -285,7 +285,8 @@
       "addRow": "เพิ่มแถว",
       "removeRow": "ลบแถว",
       "totalSacks": "จำนวนรวมกระสอบ",
-      "weightTons": "น้ำหนัก (ตัน)"
+      "weightTons": "น้ำหนัก (ตัน)",
+      "maxLoadWeightTon": "น้ำหนักบรรทุกสูงสุด (ตัน)"
     },
     "table": {
       "no": "ลำดับ",
@@ -295,6 +296,7 @@
       "driver": "คนขับ",
       "sugarType": "ชนิดน้ำตาล",
       "weightTons": "น้ำหนัก (ตัน)",
+      "maxLoadWeightTon": "น้ำหนักบรรทุกสูงสุด (ตัน)",
       "totalSacks": "จำนวนรวมกระสอบ",
       "sackRowsEditor": "กรอกกระสอบแต่ละแถว",
       "selectSugarType": "เลือกชนิดน้ำตาล",
