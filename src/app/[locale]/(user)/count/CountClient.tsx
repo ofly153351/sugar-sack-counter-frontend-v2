@@ -269,37 +269,160 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   const addRow = () =>
     setRows((prev) => [...prev, (prev[prev.length - 1] || 0) + 1]);
 
+  const resolveImageUrl = (pathOrUrl?: string): string => {
+    if (!pathOrUrl) return "";
+    if (
+      pathOrUrl.startsWith("http://") ||
+      pathOrUrl.startsWith("https://") ||
+      pathOrUrl.startsWith("data:")
+    ) {
+      return pathOrUrl;
+    }
+    const imageBaseUrl = API_CONFIG.BASE_URL.replace(/\/api\/?$/, "");
+    return `${imageBaseUrl}/images/${pathOrUrl.replace(/^\/+/, "")}`;
+  };
+
+  const fetchImageBlob = async (
+    url: string
+  ): Promise<{ blob: Blob; sourceUrl: string } | null> => {
+    if (!url) return null;
+
+    if (url.startsWith("data:")) {
+      const response = await fetch(url);
+      if (!response.ok) return null;
+      return { blob: await response.blob(), sourceUrl: url };
+    }
+
+    let res = await fetch(url, { credentials: "include" });
+    let usedUrl = url;
+
+    if (!res.ok) {
+      const fallbackUrl = url.includes("/api/images/")
+        ? url.replace("/api/images/", "/images/")
+        : url.includes("/images/")
+        ? url.replace("/images/", "/api/images/")
+        : "";
+
+      if (fallbackUrl) {
+        res = await fetch(fallbackUrl, { credentials: "include" });
+        usedUrl = fallbackUrl;
+      }
+    }
+
+    if (!res.ok) return null;
+    return { blob: await res.blob(), sourceUrl: usedUrl };
+  };
+
+  const getImageExt = (sourceUrl: string, blob: Blob): string => {
+    const mime = blob.type.toLowerCase();
+    if (mime.includes("png")) return "png";
+    if (mime.includes("webp")) return "webp";
+    if (mime.includes("jpeg") || mime.includes("jpg")) return "jpg";
+
+    const match = sourceUrl.match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+    if (match?.[1]) return match[1].toLowerCase();
+    return "jpg";
+  };
+
   const handleDownloadImages = async () => {
-    const rowDataList =
-      currentTab === "bags"
-        ? Object.values(sackRowsData)
-        : Object.values(boxRowsData);
+    const rowDataMap = currentTab === "bags" ? sackRowsData : boxRowsData;
+    const rowItems = rows
+      .map((rowNumber) => ({ rowNumber, row: rowDataMap[rowNumber] }))
+      .filter((item) => !!item.row);
 
-    const imageUrls = rowDataList
-      .flatMap((row) => [row.annotatedImagePath, row.originalImagePath])
-      .filter((url): url is string => !!url);
+    const targets = rowItems.flatMap(({ rowNumber, row }) => {
+      if (!row) return [];
+      const annotatedUrl = resolveImageUrl(
+        row.annotatedImageDataUrl || row.annotatedImagePath
+      );
+      const originalUrl = resolveImageUrl(
+        row.originalImageDataUrl || row.originalImagePath
+      );
+      const prefix = currentTab === "bags" ? "bag" : "box";
+      const candidates = [
+        annotatedUrl && {
+          url: annotatedUrl,
+          rowNumber,
+          imageType: "annotated" as const,
+          prefix,
+        },
+        originalUrl && {
+          url: originalUrl,
+          rowNumber,
+          imageType: "original" as const,
+          prefix,
+        },
+      ].filter(
+        (
+          item
+        ): item is {
+          url: string;
+          rowNumber: number;
+          imageType: "annotated" | "original";
+          prefix: string;
+        } => !!item
+      );
 
-    if (imageUrls.length === 0) {
+      return candidates;
+    });
+
+    if (targets.length === 0) {
       Swal.fire({
-        title: t("validation.missingData", { defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ" }),
-        text: t("counting.noImagesToDownload", {
-          defaultValue: "เธขเธฑเธเนเธกเนเธกเธตเธฃเธนเธเนเธซเนเธ”เธฒเธงเธเนเนเธซเธฅเธ”",
-        }),
+        title: "ยังไม่มีรูปสำหรับดาวน์โหลด",
+        text: "กรุณาอัปโหลดรูปอย่างน้อย 1 แถวก่อนดาวน์โหลด",
         icon: "warning",
-        confirmButtonText: t("buttons.ok", { defaultValue: "เธ•เธเธฅเธ" }),
+        confirmButtonText: "ตกลง",
       });
       return;
     }
 
-    imageUrls.forEach((url, index) => {
-      const link = document.createElement("a");
-      link.href = url;
-      const ext = url.includes(".png") ? "png" : "jpg";
-      link.download = `count-row-${index + 1}.${ext}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
+    const { default: JSZip } = await import("jszip");
+    const zip = new JSZip();
+    let addedToZip = 0;
+
+    for (const item of targets) {
+      try {
+        const imageData = await fetchImageBlob(item.url);
+        if (!imageData) {
+          console.error("Failed to download image:", item.url);
+          continue;
+        }
+        const ext = getImageExt(imageData.sourceUrl, imageData.blob);
+        zip.file(
+          `${item.prefix}-row-${item.rowNumber}-${item.imageType}.${ext}`,
+          imageData.blob
+        );
+        addedToZip += 1;
+      } catch (error) {
+        console.error("Failed to download image:", item.url, error);
+      }
+    }
+
+    if (addedToZip === 0) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถดาวน์โหลดรูปได้",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
+
+    const plateRaw = selectedVehicle?.licensePlate || "unknown";
+    const plate = plateRaw.trim().replace(/[\\/:*?"<>|]/g, "-");
+    const dateLabel = new Date().toISOString().slice(0, 10);
+    const typeLabel = currentTab === "bags" ? "sack" : "box";
+    const zipName = `${plate},${dateLabel},${typeLabel}.zip`;
+
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    const zipUrl = window.URL.createObjectURL(zipBlob);
+    const link = document.createElement("a");
+    link.href = zipUrl;
+    link.download = zipName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(zipUrl);
   };
 
   const handleExportXlsx = () => {
@@ -685,7 +808,9 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           existingData.finalCount === data.finalCount &&
           existingData.weightType === data.weightType &&
           existingData.originalImagePath === data.originalImagePath &&
-          existingData.annotatedImagePath === data.annotatedImagePath
+          existingData.annotatedImagePath === data.annotatedImagePath &&
+          existingData.originalImageDataUrl === data.originalImageDataUrl &&
+          existingData.annotatedImageDataUrl === data.annotatedImageDataUrl
         ) {
           return prev; // No change, return same object
         }
@@ -709,7 +834,9 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           existingData.aiCount === data.aiCount &&
           existingData.finalCount === data.finalCount &&
           existingData.originalImagePath === data.originalImagePath &&
-          existingData.annotatedImagePath === data.annotatedImagePath
+          existingData.annotatedImagePath === data.annotatedImagePath &&
+          existingData.originalImageDataUrl === data.originalImageDataUrl &&
+          existingData.annotatedImageDataUrl === data.annotatedImageDataUrl
         ) {
           return prev; // No change, return same object
         }
@@ -979,7 +1106,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                   className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow"
                 >
                   <Download className="w-4 h-4" />
-                  ดาวน์โหลดรูป
+                  ดาวน์โหลดรูปทั้งหมด
                 </button>
                 <button
                   onClick={handleExportXlsx}
@@ -1020,4 +1147,3 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     </div>
   );
 }
-

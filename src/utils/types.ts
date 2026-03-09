@@ -223,6 +223,8 @@ export interface SackRowFormData {
   finalCount: number;
   originalImagePath?: string;
   annotatedImagePath?: string;
+  originalImageDataUrl?: string;
+  annotatedImageDataUrl?: string;
 }
 
 export interface BoxRow {
@@ -243,6 +245,8 @@ export interface BoxRowFormData {
   finalCount: number;
   originalImagePath?: string;
   annotatedImagePath?: string;
+  originalImageDataUrl?: string;
+  annotatedImageDataUrl?: string;
 }
 
 // ========== Related Data Types ==========

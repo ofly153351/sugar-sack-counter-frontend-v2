@@ -6,6 +6,7 @@ import {
   Brain,
   Trash2,
   Maximize2,
+  Download,
   Save,
   Database,
   AlertCircle,
@@ -163,6 +164,8 @@ export default function BoxRow({
             finalCount: manualCount,
             originalImagePath,
             annotatedImagePath,
+            originalImageDataUrl: aiResult.originalImage || imagePreview || "",
+            annotatedImageDataUrl: aiResult.annotatedImage || imagePreview || "",
           };
           onDataChange(rowData);
           prevDataRef.current = currentData;
@@ -230,6 +233,8 @@ export default function BoxRow({
             finalCount: manualCount,
             originalImagePath,
             annotatedImagePath,
+            originalImageDataUrl: aiResult?.originalImage || imagePreview || "",
+            annotatedImageDataUrl: aiResult?.annotatedImage || imagePreview || "",
           };
           onDataChange(rowData);
           prevDataRef.current = currentData;
@@ -899,6 +904,34 @@ export default function BoxRow({
       originalImagePathForStatus &&
       annotatedImagePathForStatus
   );
+  const resolveImageUrl = (pathOrUrl?: string): string => {
+    if (!pathOrUrl) return "";
+    if (
+      pathOrUrl.startsWith("http://") ||
+      pathOrUrl.startsWith("https://") ||
+      pathOrUrl.startsWith("data:")
+    ) {
+      return pathOrUrl;
+    }
+    const imageBaseUrl = API_CONFIG.BASE_URL.replace(/\/api\/?$/, "");
+    return `${imageBaseUrl}/images/${pathOrUrl.replace(/^\/+/, "")}`;
+  };
+
+  const handleDownloadRowImage = async () => {
+    const imageUrl = resolveImageUrl(
+      aiResult?.annotatedImage || annotatedImagePathForStatus || imagePreview || ""
+    );
+
+    if (!imageUrl) return;
+
+    const filename = `box-row-${rowNumber}-annotated.jpg`;
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="relative flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-4 p-4 border rounded-lg bg-white shadow-sm">
@@ -946,13 +979,15 @@ export default function BoxRow({
             {imagePreview ? (
               <div className="relative w-full h-full">
                 <img
-                  src={imagePreview}
+                  src={aiResult?.annotatedImage || imagePreview}
                   alt="Preview"
                   className="w-full h-full object-cover"
                 />
                 <button
                   onClick={() => {
-                    setFullscreenImageUrl(imagePreview);
+                    setFullscreenImageUrl(
+                      aiResult?.annotatedImage || imagePreview
+                    );
                     setShowFullscreenImage(true);
                   }}
                   className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-opacity"
@@ -1094,6 +1129,13 @@ export default function BoxRow({
             >
               <Maximize2 className="w-3 h-3" />
               ดูภาพเต็ม
+            </button>
+            <button
+              onClick={handleDownloadRowImage}
+              className="flex items-center gap-1 px-3 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
+            >
+              <Download className="w-3 h-3" />
+              ดาวน์โหลดรูปแถวนี้
             </button>
             {aiResult.storageInfo?.annotated?.object_name && <></>}
           </div>
