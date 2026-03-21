@@ -45,6 +45,7 @@ interface BagRowProps {
   onDataChange?: (data: SackRowFormData) => void;
   vehicleId?: string | number;
   sugarTypeId?: string | number;
+  expectedSackCount?: number;
   countingSessionId?: string;
   resetTrigger?: number;
   disabled?: boolean;
@@ -56,6 +57,7 @@ export default function BagRow({
   onDataChange,
   vehicleId,
   sugarTypeId,
+  expectedSackCount,
   countingSessionId,
   resetTrigger,
   disabled,
@@ -977,13 +979,17 @@ export default function BagRow({
     aiResult?.annotated_image_path ||
     "";
   const hasUploadedImageForStatus = Boolean(imageFile || imagePreview || aiResult);
+  const hasExpectedSackCount = Number.isFinite(expectedSackCount);
+  const isAiMatchedExpected = hasExpectedSackCount
+    ? Number(aiCount || 0) === Number(expectedSackCount)
+    : true;
   const isBackendDataValid = Boolean(
     vehicleId &&
       sugarTypeId &&
       (aiCount ?? 0) > 0 &&
-      manualCount > 0 &&
       originalImagePathForStatus &&
-      annotatedImagePathForStatus
+      annotatedImagePathForStatus &&
+      isAiMatchedExpected
   );
   const resolveImageUrl = (pathOrUrl?: string): string => {
     if (!pathOrUrl) return "";
@@ -1197,6 +1203,15 @@ export default function BagRow({
             className="w-20 p-1 text-center border rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed"
           />
           <span className="text-sm text-gray-600">{t("bags")}</span>
+          {hasExpectedSackCount && (
+            <span
+              className={`text-xs font-medium ${
+                isAiMatchedExpected ? "text-green-700" : "text-red-600"
+              }`}
+            >
+              ต้องถูกต้อง /{Number(expectedSackCount)}
+            </span>
+          )}
         </div>
 
         {/* AI Detection Result Buttons */}

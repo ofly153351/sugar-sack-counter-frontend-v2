@@ -155,6 +155,37 @@ const resolveDriverName = (vehicle: ApiVehicle): string => {
   return vehicle.driver?.username || "-";
 };
 
+const normalizeSackRows = (vehicle: ApiVehicle): number[] => {
+  const sacksFromSackRows = (vehicle.sackRows || [])
+    .map((row) => ({
+      rowNumber: Number(row?.rowNumber || 0),
+      sackCount: Number(row?.sackCount || 0),
+    }))
+    .filter((row) => Number.isInteger(row.rowNumber) && row.rowNumber > 0)
+    .sort((a, b) => a.rowNumber - b.rowNumber)
+    .map((row) => Math.max(0, row.sackCount));
+
+  if (sacksFromSackRows.length > 0) {
+    return sacksFromSackRows;
+  }
+
+  const sacksFromBagRows = (vehicle.bagRows || [])
+    .map((row) => ({
+      rowNumber: Number(row?.rowNumber || 0),
+      sackCount: Number(row?.bagCount || 0),
+    }))
+    .filter((row) => Number.isInteger(row.rowNumber) && row.rowNumber > 0)
+    .sort((a, b) => a.rowNumber - b.rowNumber)
+    .map((row) => Math.max(0, row.sackCount));
+
+  return sacksFromBagRows;
+};
+
+const resolveTotalSacks = (vehicle: ApiVehicle, sackRows: number[]): number =>
+  Number.isFinite(vehicle.totalSacks)
+    ? Number(vehicle.totalSacks)
+    : sackRows.reduce((sum, count) => sum + (Number(count) || 0), 0);
+
 /**
  * Fetch all vehicles from API
  */
@@ -166,20 +197,25 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
 
     const apiVehicles = response.data as ApiVehicle[];
 
-    return apiVehicles.map((vehicle) => ({
-      id: vehicle.id,
-      vehicleCode: vehicle.vehicleCode,
-      licensePlate: vehicle.licensePlate,
-      vehicleTypeId: vehicle.vehicleTypeId,
-      maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
-      vehicleType: vehicle.vehicleType,
-      driverUserId: vehicle.driverUserId,
-      driverName: resolveDriverName(vehicle),
-      driver: vehicle.driver,
-      status: vehicle.status,
-      createdAt: vehicle.createdAt,
-      updatedAt: vehicle.updatedAt,
-    }));
+    return apiVehicles.map((vehicle) => {
+      const sackRows = normalizeSackRows(vehicle);
+      return {
+        id: vehicle.id,
+        vehicleCode: vehicle.vehicleCode,
+        licensePlate: vehicle.licensePlate,
+        vehicleTypeId: vehicle.vehicleTypeId,
+        maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
+        vehicleType: vehicle.vehicleType,
+        driverUserId: vehicle.driverUserId,
+        driverName: resolveDriverName(vehicle),
+        driver: vehicle.driver,
+        sackRows,
+        totalSacks: resolveTotalSacks(vehicle, sackRows),
+        status: vehicle.status,
+        createdAt: vehicle.createdAt,
+        updatedAt: vehicle.updatedAt,
+      };
+    });
   } catch (error: any) {
     console.error("❌ Error fetching vehicles:", error);
     throw new Error(error.message || "Failed to load vehicles");
@@ -197,20 +233,25 @@ export const fetchActiveVehicles = async (): Promise<Vehicle[]> => {
 
     const apiVehicles = response.data as ApiVehicle[];
 
-    return apiVehicles.map((vehicle) => ({
-      id: vehicle.id,
-      vehicleCode: vehicle.vehicleCode,
-      licensePlate: vehicle.licensePlate,
-      vehicleTypeId: vehicle.vehicleTypeId,
-      maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
-      vehicleType: vehicle.vehicleType,
-      driverUserId: vehicle.driverUserId,
-      driverName: resolveDriverName(vehicle),
-      driver: vehicle.driver,
-      status: vehicle.status,
-      createdAt: vehicle.createdAt,
-      updatedAt: vehicle.updatedAt,
-    }));
+    return apiVehicles.map((vehicle) => {
+      const sackRows = normalizeSackRows(vehicle);
+      return {
+        id: vehicle.id,
+        vehicleCode: vehicle.vehicleCode,
+        licensePlate: vehicle.licensePlate,
+        vehicleTypeId: vehicle.vehicleTypeId,
+        maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
+        vehicleType: vehicle.vehicleType,
+        driverUserId: vehicle.driverUserId,
+        driverName: resolveDriverName(vehicle),
+        driver: vehicle.driver,
+        sackRows,
+        totalSacks: resolveTotalSacks(vehicle, sackRows),
+        status: vehicle.status,
+        createdAt: vehicle.createdAt,
+        updatedAt: vehicle.updatedAt,
+      };
+    });
   } catch (error: any) {
     console.error("❌ Error fetching active vehicles:", error);
     throw new Error(error.message || "Failed to load active vehicles");
@@ -352,6 +393,7 @@ export const getVehicleById = async (
 
     const vehicle = response.data as ApiVehicle;
 
+    const sackRows = normalizeSackRows(vehicle);
     return {
       id: vehicle.id,
       vehicleCode: vehicle.vehicleCode,
@@ -362,6 +404,8 @@ export const getVehicleById = async (
       driverUserId: vehicle.driverUserId,
       driverName: resolveDriverName(vehicle),
       driver: vehicle.driver,
+      sackRows,
+      totalSacks: resolveTotalSacks(vehicle, sackRows),
       status: vehicle.status,
       createdAt: vehicle.createdAt,
       updatedAt: vehicle.updatedAt,
@@ -395,6 +439,7 @@ export const getVehicleByCode = async (
 
     const vehicle = response.data as ApiVehicle;
 
+    const sackRows = normalizeSackRows(vehicle);
     return {
       id: vehicle.id,
       vehicleCode: vehicle.vehicleCode,
@@ -405,6 +450,8 @@ export const getVehicleByCode = async (
       driverUserId: vehicle.driverUserId,
       driverName: resolveDriverName(vehicle),
       driver: vehicle.driver,
+      sackRows,
+      totalSacks: resolveTotalSacks(vehicle, sackRows),
       status: vehicle.status,
       createdAt: vehicle.createdAt,
       updatedAt: vehicle.updatedAt,
@@ -438,6 +485,7 @@ export const getVehicleByLicensePlate = async (
 
     const vehicle = response.data as ApiVehicle;
 
+    const sackRows = normalizeSackRows(vehicle);
     return {
       id: vehicle.id,
       vehicleCode: vehicle.vehicleCode,
@@ -448,6 +496,8 @@ export const getVehicleByLicensePlate = async (
       driverUserId: vehicle.driverUserId,
       driverName: resolveDriverName(vehicle),
       driver: vehicle.driver,
+      sackRows,
+      totalSacks: resolveTotalSacks(vehicle, sackRows),
       status: vehicle.status,
       createdAt: vehicle.createdAt,
       updatedAt: vehicle.updatedAt,
@@ -476,6 +526,14 @@ export const convertToVehicleFormData = (vehicle: Vehicle): VehicleFormData => {
     vehicleTypeId: vehicle.vehicleTypeId,
     maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
     driverUserId: vehicle.driverUserId || "",
+    sackRows: (vehicle.sackRows || []).map((sackCount, index) => ({
+      rowNumber: index + 1,
+      sackCount: Number(sackCount || 0),
+    })),
+    bagRows: (vehicle.sackRows || []).map((sackCount, index) => ({
+      rowNumber: index + 1,
+      bagCount: Number(sackCount || 0),
+    })),
     status: vehicle.status,
   };
 
@@ -514,6 +572,25 @@ export const validateVehicleData = (
 
   if (!Number.isFinite(vehicleData.maxLoadWeightTon) || vehicleData.maxLoadWeightTon < 0) {
     errors.push("Max load weight ton must be a number >= 0");
+  }
+
+  if (vehicleData.sackRows) {
+    const seen = new Set<number>();
+    for (const row of vehicleData.sackRows) {
+      if (!Number.isInteger(row.rowNumber) || row.rowNumber <= 0) {
+        errors.push("Each sack row number must be an integer > 0");
+        break;
+      }
+      if (!Number.isInteger(row.sackCount) || row.sackCount < 0) {
+        errors.push("Each sack count must be an integer >= 0");
+        break;
+      }
+      if (seen.has(row.rowNumber)) {
+        errors.push("Sack row numbers must not be duplicated");
+        break;
+      }
+      seen.add(row.rowNumber);
+    }
   }
 
   return {

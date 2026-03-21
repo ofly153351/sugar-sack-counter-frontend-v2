@@ -71,6 +71,7 @@ export function VehicleForm({
       ? initialData.sackRows
       : [0]
   );
+  const [sackRowsError, setSackRowsError] = useState<string>("");
   const totalSacks = sackRows.reduce((sum, count) => sum + (count || 0), 0);
   const [maxLoadWeightTon, setMaxLoadWeightTon] = useState<number>(
     initialData?.maxLoadWeightTon !== undefined &&
@@ -115,6 +116,16 @@ export function VehicleForm({
       Swal.fire(t("requiredFields") || "กรุณากรอกข้อมูลให้ครบ", "", "warning");
       return;
     }
+
+    const hasAtLeastOneValidRow = sackRows.some(
+      (count) => Number.isFinite(count) && Number(count) > 0
+    );
+    if (!hasAtLeastOneValidRow) {
+      setSackRowsError("กรุณากรอกกระสอบอย่างน้อย 1 แถว และจำนวนต้องมากกว่า 0");
+      return;
+    }
+    setSackRowsError("");
+
     const vehicle: Vehicle = {
       no: initialData?.no || 0, // Will be assigned by parent component
       id: initialData?.id,
@@ -144,10 +155,12 @@ export function VehicleForm({
       next[index] = safe;
       return next;
     });
+    setSackRowsError("");
   };
 
   const addSackRow = () => {
     setSackRows((prev) => [...prev, 0]);
+    setSackRowsError("");
   };
 
   const removeSackRow = (index: number) => {
@@ -155,6 +168,7 @@ export function VehicleForm({
       if (prev.length <= 1) return prev;
       return prev.filter((_, i) => i !== index);
     });
+    setSackRowsError("");
   };
 
   return (
@@ -298,6 +312,9 @@ export function VehicleForm({
             + {t("addRow", { defaultValue: "เพิ่มแถว" })}
           </button>
         </div>
+        {sackRowsError && (
+          <p className="mt-2 text-sm text-red-600">{sackRowsError}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
