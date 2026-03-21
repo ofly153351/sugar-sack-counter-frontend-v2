@@ -957,6 +957,55 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   const selectedVehicleExtras = selectedVehicleId
     ? vehicleExtrasMap[selectedVehicleId]
     : undefined;
+  type RawRowItem = Record<string, unknown>;
+  const getObjectArray = (value: unknown): RawRowItem[] =>
+    Array.isArray(value)
+      ? value.filter((item): item is RawRowItem => typeof item === "object" && item !== null)
+      : [];
+  const selectedVehicleSackRowsMap: Record<number, number> = (() => {
+    const map: Record<number, number> = {};
+    const selectedVehicleRecord = selectedVehicle as unknown as RawRowItem | undefined;
+    const rawSackRows = selectedVehicleRecord?.sackRows;
+    const rawBagRows = selectedVehicleRecord?.bagRows;
+
+    if (Array.isArray(rawSackRows) && rawSackRows.length > 0) {
+      if (typeof rawSackRows[0] === "number") {
+        rawSackRows.forEach((count: number, index: number) => {
+          map[index + 1] = Number(count || 0);
+        });
+        return map;
+      }
+
+      getObjectArray(rawSackRows).forEach((row) => {
+        const rowNumber = Number(row.rowNumber || 0);
+        const sackCount = Number(row.sackCount || 0);
+        if (rowNumber > 0) {
+          map[rowNumber] = sackCount;
+        }
+      });
+      return map;
+    }
+
+    if (Array.isArray(rawBagRows) && rawBagRows.length > 0) {
+      getObjectArray(rawBagRows).forEach((row) => {
+        const rowNumber = Number(row.rowNumber || 0);
+        const bagCount = Number(row.bagCount || 0);
+        if (rowNumber > 0) {
+          map[rowNumber] = bagCount;
+        }
+      });
+      return map;
+    }
+
+    const fallbackRows = selectedVehicleExtras?.sackRows;
+    if (Array.isArray(fallbackRows)) {
+      fallbackRows.forEach((count: number, index: number) => {
+        map[index + 1] = Number(count || 0);
+      });
+    }
+
+    return map;
+  })();
   const selectedVehicleSummary =
     selectedVehicle && selectedVehicleId
       ? `${selectedVehicle.licensePlate || "-"} ${
@@ -1078,6 +1127,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                     }
                     vehicleId={selectedVehicleId}
                     sugarTypeId={selectedSugarTypeId}
+                    expectedSackCount={selectedVehicleSackRowsMap[rowNumber]}
                     countingSessionId={getSessionIdForAI()}
                     resetTrigger={resetTrigger}
                     disabled={!selectedVehicleId || !selectedSugarTypeId}

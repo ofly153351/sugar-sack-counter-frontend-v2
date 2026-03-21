@@ -261,6 +261,8 @@ export interface Vehicle {
   driverUserId?: string | number;
   driverName: string;
   driver?: User;
+  sackRows?: number[];
+  totalSacks?: number;
   status: "active" | "inactive" | "maintenance";
   createdAt?: string;
   updatedAt?: string;
@@ -410,6 +412,8 @@ export interface VehicleFormData {
   vehicleTypeId: string | number;
   maxLoadWeightTon: number;
   driverUserId: string | number;
+  sackRows?: Array<{ rowNumber: number; sackCount: number }>;
+  bagRows?: Array<{ rowNumber: number; bagCount: number }>;
   status: "active" | "inactive" | "maintenance";
 }
 
@@ -423,6 +427,9 @@ export interface ApiVehicle {
   driverUserId?: string | number;
   driverName: string;
   driver?: ApiUser;
+  sackRows?: Array<{ rowNumber: number; sackCount: number }>;
+  bagRows?: Array<{ rowNumber: number; bagCount: number }>;
+  totalSacks?: number;
   status: "active" | "inactive" | "maintenance";
   createdAt?: string;
   updatedAt?: string;

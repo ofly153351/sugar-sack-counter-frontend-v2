@@ -109,6 +109,14 @@ export default function VehicleInfoPage() {
         vehicleTypeId: vehicle.vehicleTypeId,
         maxLoadWeightTon: Number(vehicle.maxLoadWeightTon || 0),
         driverUserId: vehicle.driverUserId || "",
+        sackRows: (vehicle.sackRows || []).map((sackCount, index) => ({
+          rowNumber: index + 1,
+          sackCount: Number(sackCount || 0),
+        })),
+        bagRows: (vehicle.sackRows || []).map((sackCount, index) => ({
+          rowNumber: index + 1,
+          bagCount: Number(sackCount || 0),
+        })),
         status: vehicle.status,
       };
 
@@ -206,9 +214,13 @@ export default function VehicleInfoPage() {
       sugarType:
         vehicleExtrasMap[String(vehicle.id ?? "")]?.sugarType || "",
       totalSacks:
-        vehicleExtrasMap[String(vehicle.id ?? "")]?.totalSacks || 0,
+        Number(vehicle.totalSacks || 0) ||
+        vehicleExtrasMap[String(vehicle.id ?? "")]?.totalSacks ||
+        0,
       sackRows:
-        vehicleExtrasMap[String(vehicle.id ?? "")]?.sackRows || [],
+        (vehicle.sackRows && vehicle.sackRows.length > 0
+          ? vehicle.sackRows
+          : vehicleExtrasMap[String(vehicle.id ?? "")]?.sackRows) || [],
       status: vehicle.status,
     })
   );
