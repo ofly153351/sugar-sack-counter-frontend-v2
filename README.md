@@ -1,101 +1,101 @@
 # Sugar Sack Counter Frontend v2
 
-โปรเจกต์ Frontend สำหรับระบบนับกระสอบน้ำตาล พัฒนาด้วย Next.js (App Router), TypeScript และรองรับหลายภาษา (ไทย/อังกฤษ)
+Frontend project for the Sugar Sack Counter system, built with Next.js (App Router), TypeScript, and multi-language support (Thai/English).
 
 ## Tech Stack
 
 - `Next.js 16` (App Router)
 - `React 19` + `TypeScript`
 - `Tailwind CSS 4`
-- `next-intl` / `i18next` สำหรับ i18n
-- `@tanstack/react-query` สำหรับ data fetching/state ฝั่ง server
-- `axios` สำหรับเรียก API
-- `zustand` สำหรับ state ฝั่ง client
+- `next-intl` / `i18next` for i18n
+- `@tanstack/react-query` for server-state/data fetching
+- `axios` for API requests
+- `zustand` for client-side state
 
-## โครงสร้างไฟล์หลักของโปรเจกต์
+## Project File Structure
 
 ```text
 .
 ├── src/
-│   ├── app/                         # Route และ layout ของ Next.js App Router
-│   │   ├── [locale]/                # เส้นทางแบบหลายภาษา (th, en)
-│   │   │   ├── (auth)/              # กลุ่มหน้า login/register
-│   │   │   ├── (user)/              # กลุ่มหน้าผู้ใช้งานทั่วไป (home, count)
-│   │   │   └── admin/               # กลุ่มหน้า admin และ dashboard
-│   │   ├── layout.tsx               # Root layout ของแอป
-│   │   ├── client-layout.tsx        # Client wrapper สำหรับส่วนที่ต้องรันฝั่ง browser
+│   ├── app/                         # Next.js App Router routes and layouts
+│   │   ├── [locale]/                # Locale-based routes (th, en)
+│   │   │   ├── (auth)/              # Login/register pages
+│   │   │   ├── (user)/              # User pages (home, count)
+│   │   │   └── admin/               # Admin pages and dashboard
+│   │   ├── layout.tsx               # Root app layout
+│   │   ├── client-layout.tsx        # Client wrapper for browser-only logic
 │   │   ├── globals.css              # Global styles
-│   │   └── page.tsx                 # หน้า root
+│   │   └── page.tsx                 # Root page
 │   │
-│   ├── components/                  # UI components แยกตามโดเมนงาน
-│   │   ├── users/                   # ตาราง/ฟอร์ม/โมดัลจัดการผู้ใช้
-│   │   ├── vehicles/                # ตาราง/ฟอร์ม/โมดัลจัดการรถ
-│   │   ├── products/                # ตาราง/ฟอร์ม/โมดัลจัดการสินค้า
-│   │   ├── count/                   # UI สำหรับ flow การนับ (bag/box/upload/tabs)
-│   │   ├── image-upload/            # โมดัลอัปโหลดรูป + แสดงผล AI detection
-│   │   ├── sidebar/                 # Sidebar ฝั่ง admin
+│   ├── components/                  # UI components grouped by domain
+│   │   ├── users/                   # User management tables/forms/modals
+│   │   ├── vehicles/                # Vehicle management tables/forms/modals
+│   │   ├── products/                # Product management tables/forms/modals
+│   │   ├── count/                   # Counting flow UI (bag/box/upload/tabs)
+│   │   ├── image-upload/            # Image upload modal + AI detection result
+│   │   ├── sidebar/                 # Admin sidebar
 │   │   ├── Nav/                     # Navigation component
-│   │   ├── ui/                      # UI base component เช่น chart/card
-│   │   └── ...                      # ส่วน reusable อื่นๆ
+│   │   ├── ui/                      # Base UI components (chart/card)
+│   │   └── ...                      # Other reusable components
 │   │
-│   ├── hooks/                       # Custom hooks สำหรับเรียกข้อมูลแต่ละโมดูล
+│   ├── hooks/                       # Custom hooks per module
 │   │   ├── useUsers.ts
 │   │   ├── useVehicles.ts
 │   │   ├── useProducts.ts
 │   │   ├── useDashboardSummary.ts
 │   │   └── useCount.ts
 │   │
-│   ├── utils/                       # ฟังก์ชันช่วยเหลือ, API layer และ types
-│   │   ├── api-client.ts            # Axios client กลางของระบบ
-│   │   ├── config.ts                # อ่านค่า env/config กลาง
+│   ├── utils/                       # Utilities, API layer, and shared types
+│   │   ├── api-client.ts            # Shared Axios client
+│   │   ├── config.ts                # Centralized env/config reader
 │   │   ├── types.ts                 # Shared types
-│   │   ├── login/                   # logic/auth/api/form ของ login
-│   │   ├── register/                # logic/api/validation ของ register
-│   │   ├── admin/                   # API helper สำหรับ admin (users/products/vehicles/dashboard)
-│   │   ├── count/                   # API helper สำหรับงาน count
-│   │   ├── ai/                      # API helper สำหรับ AI integration
-│   │   └── diagnostics/             # utility สำหรับตรวจสอบระบบ (เช่น MinIO)
+│   │   ├── login/                   # Login auth/api/form logic
+│   │   ├── register/                # Register api/validation logic
+│   │   ├── admin/                   # Admin API helpers (users/products/vehicles/dashboard)
+│   │   ├── count/                   # Count module API helpers
+│   │   ├── ai/                      # AI integration API helpers
+│   │   └── diagnostics/             # System diagnostics (for example MinIO)
 │   │
-│   ├── i18n/                        # ระบบภาษาและ dictionary
-│   │   ├── en/common.json           # ข้อความภาษาอังกฤษ
-│   │   ├── th/common.json           # ข้อความภาษาไทย
-│   │   ├── settings.ts              # ค่าพื้นฐาน locale
-│   │   ├── request.ts               # request config สำหรับ i18n
-│   │   └── dictionaries.ts          # ตัวช่วยโหลด dictionary
+│   ├── i18n/                        # Localization setup and dictionaries
+│   │   ├── en/common.json           # English translations
+│   │   ├── th/common.json           # Thai translations
+│   │   ├── settings.ts              # Locale defaults
+│   │   ├── request.ts               # i18n request config
+│   │   └── dictionaries.ts          # Dictionary loading helpers
 │   │
 │   ├── providers/                   # Global providers
 │   │   └── ReactQueryProvider.tsx   # React Query provider
 │   │
 │   ├── store/
-│   │   └── user-store.ts            # Zustand store ฝั่งผู้ใช้
+│   │   └── user-store.ts            # Zustand user store
 │   │
-│   └── middleware.ts                # Middleware ของ Next.js (เช่น locale/auth guard)
+│   └── middleware.ts                # Next.js middleware (locale/auth guard)
 │
 ├── public/                          # Static assets
-│   ├── images/                      # รูปภาพที่ใช้ในระบบ
-│   └── *.svg, *.png                 # ไฟล์ static อื่นๆ
+│   ├── images/                      # App images
+│   └── *.svg, *.png                 # Other static files
 │
-├── docs/                            # เอกสารประกอบโครงการ
-│   ├── README.md                    # สารบัญเอกสาร
-│   ├── BACKEND_API_REQUIREMENTS.md  # สัญญา API ที่ frontend คาดหวัง
-│   ├── AI_INTEGRATION_README.md     # คู่มือเชื่อม AI
-│   ├── IMAGE_UPLOAD_README.md       # รายละเอียด flow อัปโหลดรูป
-│   ├── MINIO_TROUBLESHOOTING.md     # แนวทางแก้ปัญหา MinIO
-│   └── TASK.md                      # บันทึกงาน/หมายเหตุ
+├── docs/                            # Project documentation
+│   ├── README.md                    # Documentation index
+│   ├── BACKEND_API_REQUIREMENTS.md  # Backend API contract expected by frontend
+│   ├── AI_INTEGRATION_README.md     # AI integration guide
+│   ├── IMAGE_UPLOAD_README.md       # Image upload flow details
+│   ├── MINIO_TROUBLESHOOTING.md     # MinIO troubleshooting notes
+│   └── TASK.md                      # Task notes
 │
-├── check-minio.js                   # สคริปต์ตรวจสอบการเชื่อมต่อ MinIO
-├── next.config.ts                   # การตั้งค่า Next.js
-├── eslint.config.mjs                # การตั้งค่า ESLint
-├── postcss.config.mjs               # การตั้งค่า PostCSS/Tailwind
-├── tsconfig.json                    # การตั้งค่า TypeScript
-├── package.json                     # dependencies และ scripts
-├── .env.example                     # ตัวอย่าง environment variables
-└── README.md                        # เอกสารนี้
+├── check-minio.js                   # MinIO connectivity check script
+├── next.config.ts                   # Next.js configuration
+├── eslint.config.mjs                # ESLint configuration
+├── postcss.config.mjs               # PostCSS/Tailwind configuration
+├── tsconfig.json                    # TypeScript configuration
+├── package.json                     # Dependencies and scripts
+├── .env.example                     # Example environment variables
+└── README.md                        # This file
 ```
 
 ## Routing Overview
 
-โครงสร้าง route หลักภายใต้ `src/app/[locale]`:
+Main route groups under `src/app/[locale]`:
 
 - `(auth)`
   - `/[locale]/login`
@@ -115,36 +115,36 @@
 
 ## Environment Variables
 
-คัดลอกไฟล์ตัวอย่างก่อน:
+Copy the example file first:
 
 ```bash
 cp .env.example .env
 ```
 
-ค่าที่ใช้งานบ่อย:
+Commonly used variables:
 
-- `NEXT_PUBLIC_API_URL` URL ของ backend API
-- `NEXT_PUBLIC_DEFAULT_LOCALE` ภาษาเริ่มต้นของระบบ
-- `NEXT_PUBLIC_AUTH_TOKEN_KEY` key สำหรับ token ใน client
-- `NEXT_PUBLIC_ENABLE_ADMIN_PANEL` เปิด/ปิดเมนู admin
+- `NEXT_PUBLIC_API_URL` Backend API base URL
+- `NEXT_PUBLIC_DEFAULT_LOCALE` Default application locale
+- `NEXT_PUBLIC_AUTH_TOKEN_KEY` Client token key
+- `NEXT_PUBLIC_ENABLE_ADMIN_PANEL` Enable/disable admin menu
 
-## การรันโปรเจกต์
+## Run the Project
 
 ```bash
 npm install
 npm run dev
 ```
 
-เปิดที่ `http://localhost:3000`
+Open `http://localhost:3000`
 
 ## Scripts
 
-- `npm run dev` รันโหมดพัฒนา
-- `npm run build` build production
-- `npm run start` รัน production server
-- `npm run lint` ตรวจ lint
+- `npm run dev` Start development server
+- `npm run build` Build for production
+- `npm run start` Start production server
+- `npm run lint` Run lint checks
 
-## เอกสารเพิ่มเติม
+## Additional Documentation
 
 - [Documentation Index](./docs/README.md)
 - [Backend API Requirements](./docs/BACKEND_API_REQUIREMENTS.md)
