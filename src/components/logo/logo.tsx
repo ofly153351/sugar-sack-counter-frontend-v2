@@ -75,7 +75,7 @@ const Logo: React.FC<LogoProps> = ({
     <Link href={homeHref} aria-label="Home">
       <div className={`inline-block ${className}`}>
         <Image
-          src="/images/mitrphol-logo.png"
+          src="/images/new-logo.png"
           alt="Mitr Phol Logo"
           width={typeof width === "number" ? width : 96}
           height={typeof height === "number" ? height : 96}
