@@ -24,9 +24,9 @@ export const metadata: Metadata = {
   title: "Sugar Sack Counter",
   description: "Sugar sack counting application",
   icons: {
-    icon: "/title-logo.png",
-    shortcut: "/title-logo.png",
-    apple: "/apple-touch-icon.png",
+    icon: "/images/new-logo.png",
+    shortcut: "/images/new-logo.png",
+    apple: "/images/new-logo.png",
   },
 };
 
