@@ -281,7 +281,7 @@ export default function Nav() {
         <NavbarBrand className="flex items-center gap-2">
           <Logo width={40} height={40} />
           <p className="font-bold text-2xl text-mp-green-800 hidden sm:block">
-            Mitr Phol
+            
           </p>
         </NavbarBrand>
 
