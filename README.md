@@ -1,6 +1,6 @@
-# Sugar Sack Counter Frontend
+#  Sack Counter Frontend
 
-This is a [Next.js](https://nextjs.org) project for the Sugar Sack Counter application, built with internationalization support and modern authentication.
+This is a [Next.js](https://nextjs.org) project for the  Sack Counter application, built with internationalization support and modern authentication.
 
 ## Environment Configuration
 
@@ -23,7 +23,7 @@ NEXT_PUBLIC_USER_ROLE_KEY=userRole
 NEXT_PUBLIC_COOKIE_AUTH_TOKEN=authToken
 
 # Application Configuration
-NEXT_PUBLIC_APP_NAME=Sugar Sack Counter
+NEXT_PUBLIC_APP_NAME= Sack Counter
 NEXT_PUBLIC_APP_VERSION=1.0.0
 NEXT_PUBLIC_DEFAULT_LOCALE=th
 

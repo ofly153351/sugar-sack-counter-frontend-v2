@@ -14,7 +14,7 @@ interface Vehicle {
   vehicleType: string;
   driverName: string;
   maxLoadWeightTon: number;
-  sugarType?: string;
+  Type?: string;
   totalSacks?: number;
   sackRows?: number[];
   status: "active" | "inactive" | "maintenance";
@@ -57,7 +57,7 @@ export function VehiclesTable({
       vehicle.licensePlate.toLowerCase().includes(searchTerm) ||
       vehicle.driverName.toLowerCase().includes(searchTerm) ||
       vehicle.vehicleType.toLowerCase().includes(searchTerm) ||
-      (vehicle.sugarType || "").toLowerCase().includes(searchTerm);
+      (vehicle.Type || "").toLowerCase().includes(searchTerm);
 
     return typeMatch && searchMatch;
   });
@@ -65,7 +65,7 @@ export function VehiclesTable({
   const tableRows = filteredVehicles.map((vehicle) => ({
     ...vehicle,
     rawVehicle: vehicle,
-    sugarType: vehicle.sugarType || "-",
+    Type: vehicle.Type || "-",
     weightTons:
       vehicle.maxLoadWeightTon !== undefined && vehicle.maxLoadWeightTon !== null
         ? vehicle.maxLoadWeightTon.toFixed(2)

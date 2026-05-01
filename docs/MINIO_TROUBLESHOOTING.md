@@ -1,7 +1,7 @@
 # MinIO Troubleshooting Guide
 
 ## Overview
-This guide helps diagnose and fix MinIO storage issues in the Sugar Sack Counter application. MinIO is used to store original and annotated images from AI detection.
+This guide helps diagnose and fix MinIO storage issues in the  Sack Counter application. MinIO is used to store original and annotated images from AI detection.
 
 ## Quick Diagnosis
 
@@ -29,7 +29,7 @@ curl http://localhost:8082/minio-status
 docker exec minio mc ls minio
 
 # Check specific bucket
-docker exec minio mc ls minio/sugar-sack-images
+docker exec minio mc ls minio/-sack-images
 ```
 
 ## Common Issues and Solutions
@@ -59,19 +59,19 @@ docker logs minio
 ### Issue 2: Bucket Not Created
 **Symptoms:**
 - AI Service can connect to MinIO but bucket doesn't exist
-- Error: "Bucket sugar-sack-images not found"
+- Error: "Bucket -sack-images not found"
 - Files uploaded but not stored
 
 **Solutions:**
 ```bash
 # Create bucket
-docker exec minio mc mb minio/sugar-sack-images
+docker exec minio mc mb minio/-sack-images
 
 # Set public read policy (for development)
-docker exec minio mc policy set public minio/sugar-sack-images
+docker exec minio mc policy set public minio/-sack-images
 
 # Verify bucket
-docker exec minio mc ls minio/sugar-sack-images
+docker exec minio mc ls minio/-sack-images
 ```
 
 ### Issue 3: Files Not Appearing in MinIO UI
@@ -84,22 +84,22 @@ docker exec minio mc ls minio/sugar-sack-images
 1. **Check file path:**
    ```bash
    # List all files recursively
-   docker exec minio mc ls minio/sugar-sack-images --recursive
+   docker exec minio mc ls minio/-sack-images --recursive
    ```
 
 2. **Check file permissions:**
    ```bash
    # Check bucket policy
-   docker exec minio mc policy list minio/sugar-sack-images
+   docker exec minio mc policy list minio/-sack-images
    
    # Set correct policy
-   docker exec minio mc policy set public minio/sugar-sack-images
+   docker exec minio mc policy set public minio/-sack-images
    ```
 
 3. **Check file structure:**
    Files should be organized as:
    ```
-   sugar-sack-images/
+   -sack-images/
    ├── original/
    │   ├── sack/
    │   │   └── session_xxx/
@@ -148,7 +148,7 @@ docker exec minio mc admin config set minio/ api.cors_allow_origin="http://local
    MINIO_ACCESS_KEY=minioadmin
    MINIO_SECRET_KEY=minioadmin
    MINIO_SECURE=false
-   MINIO_BUCKET_NAME=sugar-sack-images
+   MINIO_BUCKET_NAME=-sack-images
    ```
 
 2. **Test connection manually:**
@@ -223,11 +223,11 @@ docker run -d \
 
 # 4. Create bucket
 sleep 10  # Wait for MinIO to start
-docker exec minio mc mb minio/sugar-sack-images
-docker exec minio mc policy set public minio/sugar-sack-images
+docker exec minio mc mb minio/-sack-images
+docker exec minio mc policy set public minio/-sack-images
 
 # 5. Start AI Service
-cd sugar-sack-counter-ai-service
+cd -sack-counter-ai-service
 python3 main.py
 
 # 6. Test
@@ -245,10 +245,10 @@ curl http://localhost:8082/minio-status
 2. **Backup Strategy:**
    ```bash
    # Backup MinIO data
-   docker exec minio mc mirror minio/sugar-sack-images ./backup/
+   docker exec minio mc mirror minio/-sack-images ./backup/
    
    # Restore from backup
-   docker exec minio mc mirror ./backup/ minio/sugar-sack-images
+   docker exec minio mc mirror ./backup/ minio/-sack-images
    ```
 
 3. **Automated Checks:**

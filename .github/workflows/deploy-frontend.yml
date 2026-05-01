@@ -25,7 +25,7 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             set -euo pipefail
-            cd /root/sugar-sack/sugar-sack-counter-frontend-v2
+            cd /root/-sack/-sack-counter-frontend-v2
             git fetch --all
 
             OLD_PKG_HASH="$(git rev-parse HEAD:package.json 2>/dev/null || true)"

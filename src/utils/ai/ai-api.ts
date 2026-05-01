@@ -862,7 +862,7 @@ export const saveToMinIO = async (
                 object_name: `original/sack/${sessionId}/${Date.now()}_${Math.random()
                   .toString(36)
                   .substr(2, 9)}.jpg`,
-                url: `http://localhost:9000/sugar-sack-images/original/sack/${sessionId}/${Date.now()}_${Math.random()
+                url: `http://localhost:9000/-sack-images/original/sack/${sessionId}/${Date.now()}_${Math.random()
                   .toString(36)
                   .substr(2, 9)}.jpg`,
                 stored: true,
@@ -871,7 +871,7 @@ export const saveToMinIO = async (
           annotated: annotatedImageBase64
             ? {
                 object_name: mockObjectName,
-                url: `http://localhost:9000/sugar-sack-images/${mockObjectName}`,
+                url: `http://localhost:9000/-sack-images/${mockObjectName}`,
                 stored: true,
               }
             : undefined,
@@ -1027,7 +1027,7 @@ export const checkMinIOStatusDetailed = async (): Promise<{
         message = `MinIO system is fully operational. Bucket exists with ${results.fileCount} files.`;
       } else {
         message =
-          "MinIO services are running but bucket 'sugar-sack-images' may not exist.";
+          "MinIO services are running but bucket '-sack-images' may not exist.";
       }
     } else {
       const missingServices = [];
@@ -1290,7 +1290,7 @@ export const checkMinIOStatus = async (): Promise<{
 
       return {
         status: "connected",
-        bucket: "sugar-sack-images",
+        bucket: "-sack-images",
         bucket_exists: true, // Assuming bucket exists
         file_count: 0, // Unknown
         endpoint: "localhost:9000",
@@ -1308,7 +1308,7 @@ export const checkMinIOStatus = async (): Promise<{
     console.log("❌ All MinIO status checks failed");
     return {
       status: "unavailable",
-      bucket: "sugar-sack-images",
+      bucket: "-sack-images",
       bucket_exists: false,
       file_count: 0,
       endpoint: "localhost:9000",
@@ -1318,7 +1318,7 @@ export const checkMinIOStatus = async (): Promise<{
         suggestedActions: [
           "1. Check if MinIO is running: docker ps | grep minio",
           "2. Check MinIO logs: docker logs minio",
-          "3. Verify bucket exists: sugar-sack-images",
+          "3. Verify bucket exists: -sack-images",
           "4. Check permissions and credentials",
         ],
       },
@@ -1331,7 +1331,7 @@ export const checkMinIOStatus = async (): Promise<{
     });
     return {
       status: "error",
-      bucket: "sugar-sack-images",
+      bucket: "-sack-images",
       bucket_exists: false,
       file_count: 0,
       endpoint: "localhost:9000",
@@ -1355,7 +1355,7 @@ export const getMinIOUIUrl = (objectName: string): string => {
   const encodedObjectName = encodeURIComponent(objectName)
     .replace(/%2F/g, "/")
     .replace(/%20/g, "+");
-  const url = `http://localhost:9001/minio/sugar-sack-images/${encodedObjectName}`;
+  const url = `http://localhost:9001/minio/-sack-images/${encodedObjectName}`;
 
   console.log("🔗 MinIO UI URL generated:", {
     objectName,
@@ -1375,7 +1375,7 @@ export const getMinIOUIUrl = (objectName: string): string => {
 export const getMinIODirectUrl = (objectName: string): string => {
   if (!objectName) return "";
 
-  const url = `http://localhost:9000/sugar-sack-images/${objectName}`;
+  const url = `http://localhost:9000/-sack-images/${objectName}`;
 
   console.log("🔗 MinIO Direct URL generated:", {
     objectName,

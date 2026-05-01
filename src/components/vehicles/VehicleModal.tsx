@@ -20,7 +20,7 @@ interface Vehicle {
   maxLoadWeightTon: number;
   driverUserId?: string | number;
   driverName: string;
-  sugarType?: string;
+  Type?: string;
   totalSacks?: number;
   sackRows?: number[];
   status: "active" | "inactive" | "maintenance";
@@ -38,7 +38,7 @@ interface VehicleModalProps {
   onSave: (vehicle: Vehicle) => void;
   vehicleTypes?: VehicleType[];
   driverUsers?: DriverUserOption[];
-  sugarTypes?: string[];
+  Types?: string[];
 }
 
 export function VehicleModal({
@@ -48,7 +48,7 @@ export function VehicleModal({
   onSave,
   vehicleTypes = [],
   driverUsers = [],
-  sugarTypes = [],
+  Types = [],
 }: VehicleModalProps) {
   const t = useTranslations();
 
@@ -94,7 +94,7 @@ export function VehicleModal({
               onSave={handleSave}
               vehicleTypes={vehicleTypes}
               driverUsers={driverUsers}
-              sugarTypes={sugarTypes}
+              Types={Types}
             />
           </motion.div>
         </motion.div>

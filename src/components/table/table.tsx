@@ -121,9 +121,9 @@ export default function Table({
             label: t("vehicle.table.driver", { defaultValue: "ชื่อคนขับ" }),
           },
           {
-            key: "sugarType",
-            label: t("vehicle.table.sugarType", {
-              defaultValue: "ชนิดน้ำตาล",
+            key: "Type",
+            label: t("vehicle.table.Type", {
+              defaultValue: "ชนิด",
             }),
           },
           {
@@ -167,8 +167,8 @@ export default function Table({
             label: t("bags.table.createdBy", { defaultValue: "Created By" }),
           },
           {
-            key: "sugarType",
-            label: t("bags.table.sugarType", { defaultValue: "Sugar Type" }),
+            key: "Type",
+            label: t("bags.table.Type", { defaultValue: " Type" }),
           },
           {
             key: "aiTotal",
@@ -191,8 +191,8 @@ export default function Table({
             label: t("box.table.createdBy", { defaultValue: "Created By" }),
           },
           {
-            key: "sugarType",
-            label: t("box.table.sugarType", { defaultValue: "Sugar Type" }),
+            key: "Type",
+            label: t("box.table.Type", { defaultValue: " Type" }),
           },
           {
             key: "aiTotal",

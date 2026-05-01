@@ -52,7 +52,7 @@ export default function Page({ params }: PageProps) {
   } = useCountingSessionsByType("sack");
 
   useEffect(() => {
-    console.log("[DEBUG] SugarBagsInfo - API Status:", {
+    console.log("[DEBUG] BagsInfo - API Status:", {
       isLoading,
       error: error ? error.message : null,
       dataCount: countingSessions?.length || 0,
@@ -97,7 +97,7 @@ export default function Page({ params }: PageProps) {
         vehicle: session.vehicle,
         countingDate: session.countingDate,
         user: session.user,
-        sugarType: session.sugarType,
+        Type: session.Type,
         totalCount: session.totalCount,
         sackSession: session.sackSession,
         sackRows: session.sackSession?.sackRows,
@@ -134,7 +134,7 @@ export default function Page({ params }: PageProps) {
         vehicleCode: session.vehicle?.vehicleCode || "ไม่ทราบรหัส",
         datetime: formatDate(session.countingDate),
         createdBy: getUserDisplayName(session.user),
-        sugarType: session.sugarType?.name || "ไม่ทราบชนิดน้ำตาล",
+        Type: session.Type?.name || "ไม่ทราบชนิด",
         manualTotal: `${manualTotal} กระสอบ`,
         aiTotal: `${aiTotal} กระสอบ`,
         hasSackRows: !!session.sackSession?.sackRows?.length,
@@ -166,7 +166,7 @@ export default function Page({ params }: PageProps) {
       รหัสรถ: item.vehicleCode,
       วันเวลา: item.datetime,
       ผู้บันทึก: item.createdBy,
-      ชนิดน้ำตาล: item.sugarType,
+      ชนิด: item.Type,
       "น้ำหนัก (ตัน)": Number(
         vehicleExtrasMapForExport[String(item.rawSession?.vehicle?.id ?? "")]?.weightTons || 0
       ).toFixed(2),
@@ -176,8 +176,8 @@ export default function Page({ params }: PageProps) {
 
     const worksheet = XLSX.utils.json_to_sheet(exportRows);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "SugarBags");
-    XLSX.writeFile(workbook, `sugar-bags-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Bags");
+    XLSX.writeFile(workbook, `-bags-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const handleDeleteSession = async (item: { id?: string | number }) => {
@@ -205,7 +205,7 @@ export default function Page({ params }: PageProps) {
     }
   };
 
-  console.log("[DEBUG] SugarBagsInfo - Final Data:", {
+  console.log("[DEBUG] BagsInfo - Final Data:", {
     tableDataCount: tableData.length,
     filteredDataCount: filteredData.length,
     searchCode,
@@ -216,7 +216,7 @@ export default function Page({ params }: PageProps) {
   return (
     <div className="p-3 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold">{dict.dashboard.sidebar.SugarBagsInfo}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">{dict.dashboard.sidebar.BagsInfo}</h1>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={handleExport}

@@ -19,7 +19,7 @@ interface Vehicle {
   maxLoadWeightTon: number;
   driverUserId?: string | number;
   driverName: string;
-  sugarType?: string;
+  Type?: string;
   totalSacks?: number;
   sackRows?: number[];
   status: "active" | "inactive" | "maintenance";
@@ -36,7 +36,7 @@ interface VehicleFormProps {
   onSave: (vehicle: Vehicle) => void;
   vehicleTypes?: VehicleType[];
   driverUsers?: DriverUserOption[];
-  sugarTypes?: string[];
+  Types?: string[];
 }
 
 const statusOptions = ["active", "inactive", "maintenance"] as const;
@@ -47,7 +47,7 @@ export function VehicleForm({
   onSave,
   vehicleTypes = [],
   driverUsers = [],
-  sugarTypes = [],
+  Types = [],
 }: VehicleFormProps) {
   const t = useTranslations("vehicle.form");
   const [vehicleCode, setVehicleCode] = useState(
@@ -65,7 +65,7 @@ export function VehicleForm({
   const [status, setStatus] = useState<"active" | "inactive" | "maintenance">(
     initialData?.status || "active"
   );
-  const [sugarType, setSugarType] = useState(initialData?.sugarType || "");
+  const [Type, setType] = useState(initialData?.Type || "");
   const [sackRows, setSackRows] = useState<number[]>(
     initialData?.sackRows && initialData.sackRows.length > 0
       ? initialData.sackRows
@@ -139,7 +139,7 @@ export function VehicleForm({
       maxLoadWeightTon,
       driverUserId: selectedDriverUserId,
       driverName: selectedDriverLabel,
-      sugarType: sugarType || "",
+      Type: Type || "",
       sackRows,
       totalSacks,
       status,
@@ -258,17 +258,17 @@ export function VehicleForm({
 
       <div>
         <label className="block font-semibold mb-1">
-          {t("sugarType", { defaultValue: "ชนิดน้ำตาล" })}
+          {t("Type", { defaultValue: "ชนิด" })}
         </label>
         <select
-          value={sugarType}
-          onChange={(e) => setSugarType(e.target.value)}
+          value={Type}
+          onChange={(e) => setType(e.target.value)}
           className="w-full border border-gray-300 rounded px-3 py-2"
         >
           <option value="">
-            {t("selectSugarType", { defaultValue: "เลือกชนิดน้ำตาล" })}
+            {t("selectType", { defaultValue: "เลือกชนิด" })}
           </option>
-          {sugarTypes.map((type) => (
+          {Types.map((type) => (
             <option key={type} value={type}>
               {type}
             </option>

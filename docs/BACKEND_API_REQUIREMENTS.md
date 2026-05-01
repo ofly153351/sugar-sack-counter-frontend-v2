@@ -1,7 +1,7 @@
 # Backend API Requirements for Image Upload Feature
 
 ## Overview
-Frontend application requires backend API endpoints for image upload functionality in the Sugar Sack Counter system. Currently, frontend is using mock responses because these endpoints don't exist.
+Frontend application requires backend API endpoints for image upload functionality in the  Sack Counter system. Currently, frontend is using mock responses because these endpoints don't exist.
 
 ## Required Endpoints
 
@@ -54,7 +54,7 @@ Frontend application requires backend API endpoints for image upload functionali
   - `rowNumber` (Number): Row number (also in URL path)
   - `description` (String, optional): Description of the image
   - `vehicleId` (String/Number, optional): Vehicle ID
-  - `sugarTypeId` (String/Number, optional): Sugar type ID
+  - `TypeId` (String/Number, optional):  type ID
 
 **Response (200 OK):**
 ```json
@@ -86,7 +86,7 @@ Frontend application requires backend API endpoints for image upload functionali
   - `rowNumber` (Number): Row number
   - `sessionId` (String/Number, optional): Session ID (if not provided in other ways)
   - `vehicleId` (String/Number, optional): Vehicle ID
-  - `sugarTypeId` (String/Number, optional): Sugar type ID
+  - `TypeId` (String/Number, optional):  type ID
   - `description` (String, optional): Description of the image
 
 **Response (200 OK):**

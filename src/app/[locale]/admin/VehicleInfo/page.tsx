@@ -14,14 +14,14 @@ import {
   useVehicleTypesManager,
 } from "@/hooks/useVehicles";
 import { useUsers } from "@/hooks/useUsers";
-import { useSugarTypes } from "@/hooks/useCount";
+import { useTypes } from "@/hooks/useCount";
 import type {
   Vehicle,
   VehicleFormData,
 } from "@/utils/admin/vehicles/vehicle-api";
 
 interface VehicleWithExtras extends Vehicle {
-  sugarType?: string;
+  Type?: string;
   totalSacks?: number;
   sackRows?: number[];
 }
@@ -36,7 +36,7 @@ export default function VehicleInfoPage() {
     Record<
       string,
       {
-        sugarType: string;
+        Type: string;
         weightTons: number;
         totalSacks: number;
         sackRows: number[];
@@ -58,13 +58,13 @@ export default function VehicleInfoPage() {
   const vehiclesManager = useVehiclesManager();
   const vehicleTypesManager = useVehicleTypesManager();
   const usersQuery = useUsers();
-  const sugarTypesQuery = useSugarTypes();
+  const TypesQuery = useTypes();
 
   const saveExtrasToStorage = (
     nextMap: Record<
       string,
       {
-        sugarType: string;
+        Type: string;
         weightTons: number;
         totalSacks: number;
         sackRows: number[];
@@ -130,7 +130,7 @@ export default function VehicleInfoPage() {
         const nextMap = {
           ...vehicleExtrasMap,
           [key]: {
-            sugarType: vehicle.sugarType || "",
+            Type: vehicle.Type || "",
             weightTons: Number(vehicle.maxLoadWeightTon || 0),
             totalSacks: Number(vehicle.totalSacks || 0),
             sackRows: Array.isArray(vehicle.sackRows)
@@ -149,7 +149,7 @@ export default function VehicleInfoPage() {
           const nextMap = {
             ...vehicleExtrasMap,
             [key]: {
-              sugarType: vehicle.sugarType || "",
+              Type: vehicle.Type || "",
               weightTons: Number(vehicle.maxLoadWeightTon || 0),
               totalSacks: Number(vehicle.totalSacks || 0),
               sackRows: Array.isArray(vehicle.sackRows)
@@ -211,8 +211,8 @@ export default function VehicleInfoPage() {
           .trim() ||
         vehicle.driver?.username ||
         "-",
-      sugarType:
-        vehicleExtrasMap[String(vehicle.id ?? "")]?.sugarType || "",
+      Type:
+        vehicleExtrasMap[String(vehicle.id ?? "")]?.Type || "",
       totalSacks:
         Number(vehicle.totalSacks || 0) ||
         vehicleExtrasMap[String(vehicle.id ?? "")]?.totalSacks ||
@@ -234,7 +234,7 @@ export default function VehicleInfoPage() {
     };
   });
   const vehicleTypeNames = vehicleTypesManager.vehicleTypes.map((type) => type.name);
-  const sugarTypeNames = (sugarTypesQuery.data || []).map((type) => type.name);
+  const TypeNames = (TypesQuery.data || []).map((type) => type.name);
 
   if (vehiclesManager.isLoading) {
     return (
@@ -292,7 +292,7 @@ export default function VehicleInfoPage() {
         onSave={handleSave}
         vehicleTypes={vehicleTypesManager.vehicleTypes}
         driverUsers={driverUsers}
-        sugarTypes={sugarTypeNames}
+        Types={TypeNames}
       />
 
       <VehicleTypeModal

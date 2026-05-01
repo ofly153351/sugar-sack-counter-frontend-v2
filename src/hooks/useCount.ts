@@ -27,8 +27,8 @@ import {
   // Related Data
   fetchActiveVehicles,
   fetchVehicles,
-  fetchSugarTypes,
-  createSugarType,
+  fetchTypes,
+  createType,
   getCurrentUser,
 
   // Utility Functions
@@ -55,7 +55,7 @@ import {
   type BoxRow,
   type BoxRowFormData,
   type Vehicle,
-  type SugarType,
+  type Type,
   type User,
 } from "@/utils/types";
 import Swal from "sweetalert2";
@@ -154,12 +154,12 @@ export const useVehicles = () => {
 };
 
 /**
- * Hook สำหรับดึงข้อมูลประเภทน้ำตาล
+ * Hook สำหรับดึงข้อมูลประเภท
  */
-export const useSugarTypes = () => {
+export const useTypes = () => {
   return useQuery({
-    queryKey: ["sugarTypes"],
-    queryFn: fetchSugarTypes,
+    queryKey: ["Types"],
+    queryFn: fetchTypes,
     staleTime: 10 * 60 * 1000, // 10 นาที (ไม่ค่อยเปลี่ยนบ่อย)
     gcTime: 30 * 60 * 1000, // 30 นาที
   });
@@ -177,52 +177,52 @@ export const useCurrentUser = () => {
   });
 };
 
-// ========== Sugar Type Mutations ==========
+// ==========  Type Mutations ==========
 
 /**
- * Hook สำหรับสร้าง sugar type ใหม่
+ * Hook สำหรับสร้าง  type ใหม่
  */
-export const useCreateSugarType = () => {
+export const useCreateType = () => {
   const queryClient = useQueryClient();
   const t = useTranslations("count");
 
   return useMutation({
-    mutationFn: createSugarType,
-    onSuccess: (data: SugarType) => {
-      // อัปเดต cache สำหรับ sugar types
-      queryClient.invalidateQueries({ queryKey: ["sugarTypes"] });
+    mutationFn: createType,
+    onSuccess: (data: Type) => {
+      // อัปเดต cache สำหรับ  types
+      queryClient.invalidateQueries({ queryKey: ["Types"] });
 
-      // เพิ่ม sugar type ใหม่เข้าไปใน cache
-      queryClient.setQueryData(["sugarTypes", data.id], data);
+      // เพิ่ม  type ใหม่เข้าไปใน cache
+      queryClient.setQueryData(["Types", data.id], data);
 
       // แสดงข้อความสำเร็จ
       Swal.fire({
-        title: t("sugarTypeManagement.successTitle", {
+        title: t("TypeManagement.successTitle", {
           defaultValue: "สำเร็จ!",
         }),
-        text: t("sugarTypeManagement.addSuccess", {
-          defaultValue: "เพิ่มชนิดน้ำตาลเรียบร้อยแล้ว",
+        text: t("TypeManagement.addSuccess", {
+          defaultValue: "เพิ่มชนิดเรียบร้อยแล้ว",
         }),
         icon: "success",
-        confirmButtonText: t("sugarTypeManagement.ok", {
+        confirmButtonText: t("TypeManagement.ok", {
           defaultValue: "ตกลง",
         }),
         confirmButtonColor: "#3085d6",
       });
     },
     onError: (error: Error) => {
-      console.error("❌ Error creating sugar type:", error);
+      console.error("❌ Error creating  type:", error);
       Swal.fire({
-        title: t("sugarTypeManagement.errorTitle", {
+        title: t("TypeManagement.errorTitle", {
           defaultValue: "เกิดข้อผิดพลาด",
         }),
         text:
           error.message ||
-          t("sugarTypeManagement.createErrorMessage", {
-            defaultValue: "ไม่สามารถเพิ่มชนิดน้ำตาลได้",
+          t("TypeManagement.createErrorMessage", {
+            defaultValue: "ไม่สามารถเพิ่มชนิดได้",
           }),
         icon: "error",
-        confirmButtonText: t("sugarTypeManagement.ok", {
+        confirmButtonText: t("TypeManagement.ok", {
           defaultValue: "ตกลง",
         }),
         confirmButtonColor: "#3085d6",
@@ -682,41 +682,41 @@ export const useCompleteBoxCountingWorkflow = () => {
 export const useCountManager = () => {
   // Queries
   const vehiclesQuery = useActiveVehicles();
-  const sugarTypesQuery = useSugarTypes();
+  const TypesQuery = useTypes();
   const currentUserQuery = useCurrentUser();
 
   // Mutations
   const completeSackWorkflowMutation = useCompleteSackCountingWorkflow();
   const completeBoxWorkflowMutation = useCompleteBoxCountingWorkflow();
-  const createSugarTypeMutation = useCreateSugarType();
+  const createTypeMutation = useCreateType();
 
   return {
     // Queries
     vehicles: vehiclesQuery.data || [],
-    sugarTypes: sugarTypesQuery.data || [],
+    Types: TypesQuery.data || [],
     currentUser: currentUserQuery.data,
 
     // Query statuses
     isLoadingVehicles: vehiclesQuery.isLoading,
-    isLoadingSugarTypes: sugarTypesQuery.isLoading,
+    isLoadingTypes: TypesQuery.isLoading,
     isLoadingCurrentUser: currentUserQuery.isLoading,
     isLoading:
       vehiclesQuery.isLoading ||
-      sugarTypesQuery.isLoading ||
+      TypesQuery.isLoading ||
       currentUserQuery.isLoading,
 
     // Query errors
     vehiclesError: vehiclesQuery.error,
-    sugarTypesError: sugarTypesQuery.error,
+    TypesError: TypesQuery.error,
     currentUserError: currentUserQuery.error,
     isError:
       vehiclesQuery.isError ||
-      sugarTypesQuery.isError ||
+      TypesQuery.isError ||
       currentUserQuery.isError,
 
     // Query refetch functions
     refetchVehicles: vehiclesQuery.refetch,
-    refetchSugarTypes: sugarTypesQuery.refetch,
+    refetchTypes: TypesQuery.refetch,
     refetchCurrentUser: currentUserQuery.refetch,
 
     // Workflow mutations
@@ -728,19 +728,19 @@ export const useCountManager = () => {
     completeBoxCountingAsync: completeBoxWorkflowMutation.mutateAsync,
     isCompletingBoxCounting: completeBoxWorkflowMutation.isPending,
 
-    // Sugar type mutations
-    createSugarType: createSugarTypeMutation.mutate,
-    createSugarTypeAsync: createSugarTypeMutation.mutateAsync,
-    isCreatingSugarType: createSugarTypeMutation.isPending,
+    //  type mutations
+    createType: createTypeMutation.mutate,
+    createTypeAsync: createTypeMutation.mutateAsync,
+    isCreatingType: createTypeMutation.isPending,
 
     // Combined status
     isPending:
       vehiclesQuery.isLoading ||
-      sugarTypesQuery.isLoading ||
+      TypesQuery.isLoading ||
       currentUserQuery.isLoading ||
       completeSackWorkflowMutation.isPending ||
       completeBoxWorkflowMutation.isPending ||
-      createSugarTypeMutation.isPending,
+      createTypeMutation.isPending,
   };
 };
 
@@ -829,7 +829,7 @@ export const useCountPageState = () => {
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | number>(
     ""
   );
-  const [selectedSugarTypeId, setSelectedSugarTypeId] = useState<
+  const [selectedTypeId, setSelectedTypeId] = useState<
     string | number
   >("");
   const [rows, setRows] = useState<number[]>([1]);
@@ -853,8 +853,8 @@ export const useCountPageState = () => {
     setCurrentTab,
     selectedVehicleId,
     setSelectedVehicleId,
-    selectedSugarTypeId,
-    setSelectedSugarTypeId,
+    selectedTypeId,
+    setSelectedTypeId,
     rows,
     setRows,
     isClient,

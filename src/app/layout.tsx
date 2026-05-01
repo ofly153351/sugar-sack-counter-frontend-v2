@@ -21,8 +21,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sugar Sack Counter",
-  description: "Sugar sack counting application",
+  title: " Sack Counter",
+  description: " sack counting application",
   icons: {
     icon: "/images/new-logo.png",
     shortcut: "/images/new-logo.png",
