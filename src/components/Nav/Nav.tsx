@@ -8,10 +8,7 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { API_CONFIG } from "@/utils/config";
 import { api } from "@/utils/api-client";
-import {
-  useUserStore,
-  initializeUserFromToken,
-} from "@/store/user-store";
+import { useUserStore, initializeUserFromToken } from "@/store/user-store";
 
 // Static import HeroUI components
 import {
@@ -50,8 +47,11 @@ export default function Nav() {
   });
 
   // Get user from Zustand store
-  const { user: currentUser, clearUser, updateUser: updateStoreUser } =
-    useUserStore();
+  const {
+    user: currentUser,
+    clearUser,
+    updateUser: updateStoreUser,
+  } = useUserStore();
 
   // Compute locale directly to avoid hydration mismatch
   const getCurrentLocale = () => {
@@ -281,7 +281,7 @@ export default function Nav() {
         <NavbarBrand className="flex items-center gap-2">
           <Logo width={40} height={40} />
           <p className="font-bold text-2xl text-mp-green-800 hidden sm:block">
-            
+            Sack Counter
           </p>
         </NavbarBrand>
 
