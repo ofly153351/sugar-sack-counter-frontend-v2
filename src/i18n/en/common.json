@@ -361,6 +361,11 @@
       "createdBy": "Created By",
       "Type": " Type",
       "amount": "Amount",
+      "manualCount": "Manual Count",
+      "aiCount": "AI Count",
+      "manualTotal": "Manual Total",
+      "aiTotal": "AI Total",
+      "totalSummary": "Manual Total | AI Total",
       "actions": "Actions"
     }
   },
