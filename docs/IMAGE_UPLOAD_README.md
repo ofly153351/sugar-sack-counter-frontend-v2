@@ -1,7 +1,7 @@
 # Image Upload Feature Documentation
 
 ## Overview
-ระบบอัปโหลดรูปภาพถูกเพิ่มเข้ามาในแอปพลิเคชัน Sugar Sack Counter Frontend v2 เพื่อให้ผู้ใช้สามารถอัปโหลดรูปภาพสำหรับการนับกล่องและกระสอบน้ำตาลได้
+ระบบอัปโหลดรูปภาพถูกเพิ่มเข้ามาในแอปพลิเคชัน  Sack Counter Frontend v2 เพื่อให้ผู้ใช้สามารถอัปโหลดรูปภาพสำหรับการนับกล่องและกระสอบได้
 
 ## Components ที่เพิ่มเข้ามา
 
@@ -20,7 +20,7 @@
 
 ## การใช้งาน
 
-### ในหน้า SugarBoxsInfo และ SugarBagsInfo
+### ในหน้า BoxsInfo และ BagsInfo
 
 #### 1. เพิ่มปุ่มอัปโหลดในตาราง
 ตารางในทั้งสองหน้าจะมีปุ่มอัปโหลดรูปภาพเพิ่มเข้ามา (ไอคอน 📤) ถัดจากปุ่มแก้ไขและลบ
@@ -94,7 +94,7 @@ npm run dev
 ```
 
 ### 2. ทดสอบฟังก์ชัน
-1. ไปที่หน้า SugarBoxsInfo หรือ SugarBagsInfo
+1. ไปที่หน้า BoxsInfo หรือ BagsInfo
 2. คลิกปุ่มอัปโหลดรูปภาพในตาราง
 3. เลือกรูปภาพทดสอบ
 4. ตรวจสอบว่ามีข้อความสำเร็จปรากฏ
@@ -150,8 +150,8 @@ import Swal from "sweetalert2";
 
 1. `src/components/image-upload/ImageUploadModal.tsx`
 2. `src/components/table/table.tsx`
-3. `src/app/[locale]/admin/SugarBoxsInfo/page.tsx`
-4. `src/app/[locale]/admin/SugarBagsInfo/page.tsx`
+3. `src/app/[locale]/admin/BoxsInfo/page.tsx`
+4. `src/app/[locale]/admin/BagsInfo/page.tsx`
 5. `src/components/count/BagRow.tsx`
 6. `src/components/count/BoxRow.tsx`
 7. `src/utils/count/count-api.ts`

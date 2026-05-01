@@ -53,15 +53,9 @@ export default function AdminSidebar({ dict }: AdminSidebarProps) {
       icon: LayoutDashboard,
     },
     {
-      key: "SugarBagsInfo",
-      label: dict.dashboard.sidebar.SugarBagsInfo,
+      key: "BagsInfo",
+      label: dict.dashboard.sidebar.BagsInfo,
       href: `/${locale}/admin/SugarBagsInfo`,
-      icon: FileText,
-    },
-    {
-      key: "SugarBoxsInfo",
-      label: dict.dashboard.sidebar.SugarBoxsInfo,
-      href: `/${locale}/admin/SugarBoxsInfo`,
       icon: FileText,
     },
     {

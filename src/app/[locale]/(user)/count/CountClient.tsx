@@ -24,16 +24,14 @@ interface CountPageProps {
 }
 
 // CountPage
-export default function CountPage({ initialTab = "bags" }: CountPageProps) {
+export default function CountPage({ initialTab: _initialTab = "bags" }: CountPageProps) {
   const t = useTranslations("count");
   const router = useRouter();
   const pathname = usePathname();
   const locale = pathname.split("/")[1] || "th";
-  const [currentTab, setCurrentTab] = useState<"bags" | "boxes">(
-    initialTab === "boxes" ? "boxes" : "bags"
-  );
+  const [currentTab, setCurrentTab] = useState<"bags" | "boxes">("bags");
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>("");
-  const [selectedSugarTypeId, setSelectedSugarTypeId] = useState<string>("");
+  const [selectedTypeId, setSelectedTypeId] = useState<string>("");
   const [rows, setRows] = useState<number[]>([1]);
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -52,7 +50,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     Record<
       string,
       {
-        sugarType: string;
+        Type: string;
         weightTons: number;
         totalSacks: number;
         sackRows: number[];
@@ -60,7 +58,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     >
   >({});
   const vehicleInitializedRef = useRef(false);
-  const sugarTypeInitializedRef = useRef(false);
+  const TypeInitializedRef = useRef(false);
   const prevTabRef = useRef(currentTab);
   const countingSessionIdRef = useRef("");
 
@@ -71,6 +69,12 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (currentTab === "boxes") {
+      setCurrentTab("bags");
+    }
+  }, [currentTab]);
 
   // Load vehicle extras from VehicleInfo page storage
   useEffect(() => {
@@ -107,36 +111,36 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   useEffect(() => {
     if (
       isClient &&
-      countManager.sugarTypes.length > 0 &&
-      !sugarTypeInitializedRef.current
+      countManager.Types.length > 0 &&
+      !TypeInitializedRef.current
     ) {
-      const sugarTypeId = countManager.sugarTypes[0]?.id;
+      const sugarTypeId = countManager.Types[0]?.id;
       if (sugarTypeId !== undefined) {
-        setSelectedSugarTypeId(sugarTypeId.toString());
-        sugarTypeInitializedRef.current = true;
+        setSelectedTypeId(sugarTypeId.toString());
+        TypeInitializedRef.current = true;
       }
     }
-  }, [isClient, countManager.sugarTypes.length]);
+  }, [isClient, countManager.Types.length]);
 
-  // Sync sugar type from selected vehicle extras (VehicleInfo)
+  // Sync  type from selected vehicle extras (VehicleInfo)
   useEffect(() => {
-    if (!isClient || !selectedVehicleId || countManager.sugarTypes.length === 0) {
+    if (!isClient || !selectedVehicleId || countManager.Types.length === 0) {
       return;
     }
     const extras = vehicleExtrasMap[selectedVehicleId];
-    if (!extras?.sugarType) return;
+    if (!extras?.Type) return;
 
-    const matched = countManager.sugarTypes.find(
-      (type) => type.name.trim() === extras.sugarType.trim()
+    const matched = countManager.Types.find(
+      (type) => type.name.trim() === extras.Type.trim()
     );
     if (matched?.id !== undefined) {
-      setSelectedSugarTypeId(matched.id.toString());
+      setSelectedTypeId(matched.id.toString());
     }
   }, [
     isClient,
     selectedVehicleId,
     vehicleExtrasMap,
-    countManager.sugarTypes,
+    countManager.Types,
   ]);
 
   // Reset countingSessionId when tab changes (only if session already started)
@@ -169,21 +173,21 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     }
   }, [countingSessionId]);
 
-  // Create counting session when vehicle and sugar type are selected
+  // Create counting session when vehicle and  type are selected
   useEffect(() => {
     const createCountingSessionIfReady = async () => {
       if (
         isClient &&
         isSessionStarted &&
         selectedVehicleId &&
-        selectedSugarTypeId &&
+        selectedTypeId &&
         countManager.currentUser &&
         !countingSessionId
       ) {
         try {
           console.log("๐” [DEBUG] Creating counting session with:", {
             vehicleId: selectedVehicleId,
-            sugarTypeId: selectedSugarTypeId,
+            sugarTypeId: selectedTypeId,
             userId: countManager.currentUser.id,
             sessionType: currentTab === "bags" ? "sack" : "box",
           });
@@ -195,10 +199,10 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
               type: typeof selectedVehicleId,
               isEmpty: !selectedVehicleId,
             },
-            selectedSugarTypeId: {
-              value: selectedSugarTypeId,
-              type: typeof selectedSugarTypeId,
-              isEmpty: !selectedSugarTypeId,
+            selectedTypeId: {
+              value: selectedTypeId,
+              type: typeof selectedTypeId,
+              isEmpty: !selectedTypeId,
             },
             userId: {
               value: countManager.currentUser.id,
@@ -215,7 +219,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
             sessionType: currentTab === "bags" ? "sack" : "box",
             userId: countManager.currentUser.id,
             vehicleId: selectedVehicleId,
-            sugarTypeId: selectedSugarTypeId,
+            sugarTypeId: selectedTypeId,
             countingDate: new Date().toISOString(),
             status: "in_progress" as const,
           };
@@ -248,7 +252,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     isClient,
     isSessionStarted,
     selectedVehicleId,
-    selectedSugarTypeId,
+    selectedTypeId,
     countManager.currentUser,
     currentTab,
     countingSessionId,
@@ -441,20 +445,20 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
     XLSX.utils.book_append_sheet(
       workbook,
       worksheet,
-      currentTab === "bags" ? "SugarBags" : "SugarBoxes"
+      currentTab === "bags" ? "Bags" : "Boxes"
     );
     XLSX.writeFile(
       workbook,
       `${
-        selectedVehicle?.licensePlate || (currentTab === "bags" ? "sugar-bags" : "sugar-boxes")
+        selectedVehicle?.licensePlate || (currentTab === "bags" ? "-bags" : "-boxes")
       }-${new Date().toISOString().slice(0, 10)}.xlsx`
     );
   };
 
   const buildExportRows = (): Array<Record<string, string | number>> => {
     const currentRowsMap = currentTab === "bags" ? sackRowsData : boxRowsData;
-    const selectedSugarType = countManager.sugarTypes.find(
-      (sugarType) => sugarType.id?.toString() === selectedSugarTypeId
+    const selectedType = countManager.Types.find(
+      (Type) => Type.id?.toString() === selectedTypeId
     );
     const currentUser = countManager.currentUser as
       | {
@@ -507,7 +511,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
           "ทะเบียนรถ": selectedVehicle?.licensePlate || "-",
           "วันเวลา": new Date().toLocaleString("th-TH"),
           "ผู้บันทึก": userDisplayName,
-          "ชนิดน้ำตาล": selectedSugarType?.name || selectedVehicleExtras?.sugarType || "-",
+          "ชนิด": selectedType?.name || selectedVehicleExtras?.Type || "-",
           "จำนวนที่นับได้": Number(row.finalCount ?? row.aiCount ?? 0),
           "ชื่อไฟล์รูป annotate": annotatedFilename,
           "ชื่อไฟล์รูป original": originalFilename,
@@ -599,14 +603,14 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   const handleSave = async () => {
     if (
       !selectedVehicleId ||
-      !selectedSugarTypeId ||
+      !selectedTypeId ||
       !countManager.currentUser
     ) {
       Swal.fire({
         title: t("validation.requiredFields", {
           defaultValue: "เธเนเธญเธกเธนเธฅเนเธกเนเธเธฃเธเธ–เนเธงเธ",
         }),
-        text: t("validation.selectVehicleAndSugarType", {
+        text: t("validation.selectVehicleAndType", {
           defaultValue: "เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธฃเธ–เธเธเธชเนเธเนเธฅเธฐเธเธฃเธฐเน€เธ เธ—เธเนเธณเธ•เธฒเธฅ",
         }),
         icon: "warning",
@@ -691,7 +695,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
         sessionType: currentTab === "bags" ? "sack" : "box",
         userId: countManager.currentUser.id,
         vehicleId: selectedVehicleId,
-        sugarTypeId: selectedSugarTypeId,
+        sugarTypeId: selectedTypeId,
         countingDate: new Date().toISOString(),
         status: "in_progress",
       };
@@ -897,7 +901,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
   if (
     !isClient ||
     countManager.isLoadingVehicles ||
-    countManager.isLoadingSugarTypes ||
+    countManager.isLoadingTypes ||
     countManager.isLoadingCurrentUser
   ) {
     return (
@@ -933,13 +937,13 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
             </p>
             <p>
               {countManager.vehiclesError?.message ||
-                countManager.sugarTypesError?.message ||
+                countManager.TypesError?.message ||
                 "Unknown error"}
             </p>
             <button
               onClick={() => {
                 countManager.refetchVehicles();
-                countManager.refetchSugarTypes();
+                countManager.refetchTypes();
               }}
               className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
             >
@@ -1011,7 +1015,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
       ? `${selectedVehicle.licensePlate || "-"} ${
           selectedVehicle.vehicleType?.name || "-"
         } ${selectedVehicle.driverName || "-"} ${
-          selectedVehicleExtras?.sugarType || "-"
+          selectedVehicleExtras?.Type || "-"
         } ${Number(selectedVehicleExtras?.weightTons || 0).toFixed(2)} ตัน`
       : t("summary.notSelected", { defaultValue: "เนเธกเนเนเธ”เนเน€เธฅเธทเธญเธ" });
   const exportPreviewRows = buildExportRows();
@@ -1026,7 +1030,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
             {t("title")}
           </h1>
           <p className="text-center text-sm text-gray-500 mt-2">
-            ตั้งค่าการนับ โดยเลือกประเภทการนับ รถขนส่ง และน้ำตาลก่อนเริ่ม
+            ตั้งค่าการนับ โดยเลือกประเภทการนับ รถขนส่ง และก่อนเริ่ม
           </p>
         </div>
 
@@ -1042,7 +1046,11 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
 
             {/* Tabs */}
             <div className="mb-6">
-              <Tabs currentTab={currentTab} setCurrentTab={setCurrentTab} />
+              <Tabs
+                currentTab={currentTab}
+                setCurrentTab={setCurrentTab}
+                disableBoxes={true}
+              />
             </div>
 
             {/* เธฃเธ–เธเธเธชเนเธ + เธเธฃเธฐเน€เธ เธ—เธเนเธณเธ•เธฒเธฅ */}
@@ -1057,7 +1065,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                     label: `${vehicle.licensePlate || "-"} ${
                       vehicle.vehicleType?.name || "-"
                     } ${vehicle.driverName || "-"} ${
-                      vehicleExtrasMap[vehicle.id?.toString() || ""]?.sugarType || "-"
+                      vehicleExtrasMap[vehicle.id?.toString() || ""]?.Type || "-"
                     } ${Number(
                       vehicleExtrasMap[vehicle.id?.toString() || ""]?.weightTons || 0
                     ).toFixed(2)} ตัน`,
@@ -1126,11 +1134,11 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                       handleSackRowDataChange(rowNumber, data)
                     }
                     vehicleId={selectedVehicleId}
-                    sugarTypeId={selectedSugarTypeId}
+                    sugarTypeId={selectedTypeId}
                     expectedSackCount={selectedVehicleSackRowsMap[rowNumber]}
                     countingSessionId={getSessionIdForAI()}
                     resetTrigger={resetTrigger}
-                    disabled={!selectedVehicleId || !selectedSugarTypeId}
+                    disabled={!selectedVehicleId || !selectedTypeId}
                   />
                 ) : (
                   <BoxRow
@@ -1141,10 +1149,10 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                       handleBoxRowDataChange(rowNumber, data)
                     }
                     vehicleId={selectedVehicleId}
-                    sugarTypeId={selectedSugarTypeId}
+                    sugarTypeId={selectedTypeId}
                     countingSessionId={getSessionIdForAI()}
                     resetTrigger={resetTrigger}
-                    disabled={!selectedVehicleId || !selectedSugarTypeId}
+                    disabled={!selectedVehicleId || !selectedTypeId}
                   />
                 )
               )}
@@ -1155,7 +1163,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                   className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={
                     !selectedVehicleId ||
-                    !selectedSugarTypeId ||
+                    !selectedTypeId ||
                     !getSessionIdForAI()
                   }
                 >
@@ -1185,7 +1193,7 @@ export default function CountPage({ initialTab = "bags" }: CountPageProps) {
                 disabled={
                   isSaving ||
                   !selectedVehicleId ||
-                  !selectedSugarTypeId ||
+                  !selectedTypeId ||
                   !countingSessionId ||
                   rows.length === 0 ||
                   hasMissingRowData ||

@@ -52,18 +52,18 @@
     "successToast": "Registration successful"
   },
   "home": {
-    "title": "Smart Sugar Sack Counting System",
+    "title": "Smart Sack Counting System",
     "description": "Enhance inventory inspection efficiency with AI technology",
     "startButton": "Start Using the System",
-    "footer": "© 2025 |  Sugar Sack Counting System"
+    "footer": "© 2025 |   Sack Counting System"
   },
   "dashboard": {
     "title": "Dashboard",
     "sidebar": {
       "dashboard": "Dashboard",
-      "count": "Count Sugar Sacks",
-      "SugarBagsInfo": "Sugar Bags Information",
-      "SugarBoxsInfo": "Sugar Boxes Information",
+      "count": "Count  Sacks",
+      "BagsInfo": " Bags Information",
+      "BoxsInfo": " Boxes Information",
       "VehicleInfo": "VehicleInfo",
       "Users": "Manage Users",
       "Products": "Products",
@@ -92,18 +92,18 @@
     "welcomeMessage": "Welcome to the admin dashboard. Only authenticated users can access this page."
   },
   "count": {
-    "title": "Count Sugar",
+    "title": "Count ",
     "tabs": {
       "bags": "Count Bags",
       "boxes": "Count Boxes"
     },
     "transportation": "Transportation",
-    "sugarType": "Sugar Type",
+    "Type": " Type",
     "addRow": "Add Row",
     "saveButton": "Save",
-    "addSugarType": "Add Sugar Type",
+    "addType": "Add  Type",
     "transportationOptions": ["Truck 1", "Truck 2", "Select from list"],
-    "sugarTypeOptions": ["White Sugar", "Brown Sugar", "Select from list"],
+    "TypeOptions": ["White ", "Brown ", "Select from list"],
     "bagRow": {
       "row": "Row",
       "weight": "Weight",
@@ -124,7 +124,7 @@
     },
     "validation": {
       "requiredFields": "Incomplete information",
-      "selectVehicleAndSugarType": "Please select transportation vehicle and sugar type",
+      "selectVehicleAndType": "Please select transportation vehicle and  type",
       "missingData": "Counting data is incomplete",
       "missingRowData": "Please complete row(s) {missingRows} before saving"
     },
@@ -146,7 +146,7 @@
     "summary": {
       "title": "Summary Information",
       "vehicle": "Transportation Vehicle",
-      "sugarType": "Sugar Type",
+      "Type": " Type",
       "rowCount": "Number of Rows",
       "rows": "rows",
       "sessionType": "Counting Type",
@@ -155,7 +155,7 @@
       "notSelected": "Not selected"
     },
     "startHeader": "Counting Setup",
-    "startDescription": "Choose your tab, vehicle, and sugar type before starting.",
+    "startDescription": "Choose your tab, vehicle, and  type before starting.",
     "startCounting": "Start Counting",
     "startCountingHint": "Click to create a counting session and begin.",
     "startCountingButton": "Start",
@@ -170,9 +170,9 @@
     "leaveWarningConfirm": "Leave page",
     "leaveWarningCancel": "Stay",
     "selectVehicle": "Select transportation vehicle",
-    "selectSugarType": "Select sugar type",
+    "selectType": "Select  type",
     "noVehiclesAvailable": "No available transportation vehicles",
-    "noSugarTypesAvailable": "No sugar types available",
+    "noTypesAvailable": "No  types available",
     "workflow": {
       "sackCompleteErrorTitle": "Sack Counting Error",
       "sackCompleteErrorMessage": "Unable to save sack counting",
@@ -186,7 +186,7 @@
       "successMessage": "Counting saved successfully",
       "validation": {
         "requiredFields": "Incomplete information",
-        "selectVehicleAndSugarType": "Please select vehicle and sugar type",
+        "selectVehicleAndType": "Please select vehicle and  type",
         "missingData": "Incomplete information",
         "missingRowData": "Please enter data for row(s) {missingRows}"
       }
@@ -198,7 +198,7 @@
       "vehicleCode": "Vehicle Code",
       "datetime": "Date & Time",
       "createdBy": "Created By",
-      "sugarType": "Sugar Type",
+      "Type": " Type",
       "amount": "Amount",
       "manualCount": "Manual Count",
       "aiCount": "AI Count",
@@ -214,7 +214,7 @@
       "vehicleCode": "Vehicle Code",
       "datetime": "Date & Time",
       "createdBy": "Created By",
-      "sugarType": "Sugar Type",
+      "Type": " Type",
       "amount": "Amount",
       "manualCount": "Manual Count",
       "aiCount": "AI Count",
@@ -224,28 +224,28 @@
       "actions": "Actions"
     }
   },
-  "sugarTypeManagement": {
-    "addSugarType": "Add Sugar Type",
-    "editSugarType": "Edit Sugar Type",
-    "sugarTypeName": "Sugar Type Name",
-    "sugarTypeDescription": "Description",
+  "TypeManagement": {
+    "addType": "Add  Type",
+    "editType": "Edit  Type",
+    "TypeName": " Type Name",
+    "TypeDescription": "Description",
     "save": "Save",
     "cancel": "Cancel",
     "requiredFields": "Please fill in all required fields",
-    "confirmAdd": "Do you want to add this sugar type?",
-    "confirmEdit": "Do you want to edit this sugar type?",
+    "confirmAdd": "Do you want to add this  type?",
+    "confirmEdit": "Do you want to edit this  type?",
     "successTitle": "Success!",
-    "addSuccess": "Sugar type added successfully",
-    "editSuccess": "Sugar type edited successfully",
+    "addSuccess": " type added successfully",
+    "editSuccess": " type edited successfully",
     "ok": "OK",
     "unsavedChangesTitle": "Unsaved changes",
     "unsavedChangesMessage": "You have unsaved changes. Do you want to close this window?",
     "yesClose": "Yes, close window",
     "noStay": "No, stay here",
     "errorTitle": "Error",
-    "createErrorMessage": "Failed to add sugar type",
-    "updateErrorMessage": "Failed to edit sugar type",
-    "deleteErrorMessage": "Failed to delete sugar type"
+    "createErrorMessage": "Failed to add  type",
+    "updateErrorMessage": "Failed to edit  type",
+    "deleteErrorMessage": "Failed to delete  type"
   },
   "vehicle": {
     "manage": "Manage Vehicles",
@@ -324,8 +324,8 @@
       "ok": "OK",
       "createVehicleTypeButton": "Create Vehicle Type",
       "creatingVehicleType": "Creating...",
-      "sugarType": "Sugar Type",
-      "selectSugarType": "Select sugar type",
+      "Type": " Type",
+      "selectType": "Select  type",
       "sackRowsEditor": "Sacks by row",
       "rowLabel": "Row",
       "addRow": "Add row",
@@ -340,12 +340,12 @@
       "licensePlate": "License Plate",
       "vehicleType": "Vehicle Type",
       "driver": "Driver",
-      "sugarType": "Sugar Type",
+      "Type": " Type",
       "weightTons": "Weight (tons)",
       "maxLoadWeightTon": "Max load weight (tons)",
       "totalSacks": "Total Sacks",
       "sackRowsEditor": "Sacks by Row",
-      "selectSugarType": "Select sugar type",
+      "selectType": "Select  type",
       "addRow": "Add row",
       "removeRow": "Remove row",
       "rowLabel": "Row",
@@ -359,7 +359,7 @@
       "vehicleCode": "Vehicle Code",
       "datetime": "Date & Time",
       "createdBy": "Created By",
-      "sugarType": "Sugar Type",
+      "Type": " Type",
       "amount": "Amount",
       "actions": "Actions"
     }
@@ -370,7 +370,7 @@
       "vehicleCode": "Vehicle Code",
       "datetime": "Date & Time",
       "createdBy": "Created By",
-      "sugarType": "Sugar Type",
+      "Type": " Type",
       "amount": "Amount",
       "actions": "Actions"
     }

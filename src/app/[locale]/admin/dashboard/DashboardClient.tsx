@@ -48,9 +48,6 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
   const currentMonthSacks =
     summary?.sacks?.thisMonth ??
     getMonthTotal(summary?.sacks?.last12Months, currentMonthKey);
-  const currentMonthBoxes =
-    summary?.boxes?.thisMonth ??
-    getMonthTotal(summary?.boxes?.last12Months, currentMonthKey);
 
   const formatMonthLabel = (monthNumber: string) => {
     const month = Number(monthNumber);
@@ -65,7 +62,6 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
   const chartData = Array.from({ length: 12 }, (_, i) => ({
     month: String(i + 1),
     sacks: 0,
-    boxes: 0,
   }));
 
   (summary?.sacks?.last12Months || []).forEach((item) => {
@@ -75,28 +71,17 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
     }
   });
 
-  (summary?.boxes?.last12Months || []).forEach((item) => {
-    const monthNumber = Number(item.month.split("-")[1]);
-    if (monthNumber >= 1 && monthNumber <= 12) {
-      chartData[monthNumber - 1].boxes = item.total;
-    }
-  });
-
   const chartConfig = {
     sacks: {
       label: "กระสอบต่อเดือน",
       color: "#2563eb",
     },
-    boxes: {
-      label: "กล่องต่อเดือน",
-      color: "#16a34a",
-    },
   } satisfies ChartConfig;
 
   const latest = chartData[chartData.length - 1];
   const previous = chartData[chartData.length - 2];
-  const latestTotal = (latest?.sacks || 0) + (latest?.boxes || 0);
-  const previousTotal = (previous?.sacks || 0) + (previous?.boxes || 0);
+  const latestTotal = latest?.sacks || 0;
+  const previousTotal = previous?.sacks || 0;
   const trendPercent =
     previousTotal > 0 ? ((latestTotal - previousTotal) / previousTotal) * 100 : 0;
 
@@ -127,7 +112,7 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
       )}
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-blue-800">
@@ -139,20 +124,6 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
           </div>
           <p className="text-4xl font-bold text-blue-700 mb-3">
             {currentMonthSacks}
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-white p-6 rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-green-800">
-              กล่องต่อเดือน
-            </h3>
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-              <span className="text-green-600 font-bold text-sm">BOX</span>
-            </div>
-          </div>
-          <p className="text-4xl font-bold text-green-700 mb-3">
-            {currentMonthBoxes}
           </p>
         </div>
 
@@ -213,11 +184,6 @@ export default function DashboardClient({ dict }: DashboardClientProps) {
                 <ChartTooltip
                   cursor={false}
                   content={<ChartTooltipContent indicator="line" />}
-                />
-                <Bar
-                  dataKey="boxes"
-                  fill="var(--color-boxes)"
-                  radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="sacks"

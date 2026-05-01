@@ -18,7 +18,7 @@ const CONFIG = {
   minioEndpoint: 'http://localhost:9000',
   minioUIEndpoint: 'http://localhost:9001',
   aiServiceEndpoint: 'http://localhost:8082',
-  bucketName: 'sugar-sack-images',
+  bucketName: '-sack-images',
   accessKey: 'minioadmin',
   secretKey: 'minioadmin',
 };
@@ -204,7 +204,7 @@ async function checkAIService() {
     if (error.code === 'ECONNREFUSED') {
       logInfo('AI Service might not be running');
       logInfo('Check AI Service: ps aux | grep "python3 main.py"');
-      logInfo('Start AI Service: cd sugar-sack-counter-ai-service && python3 main.py');
+      logInfo('Start AI Service: cd -sack-counter-ai-service && python3 main.py');
     }
     return false;
   }
@@ -317,7 +317,7 @@ async function provideSolutions() {
   console.log(`   docker exec minio mc policy set public minio/${CONFIG.bucketName}`);
 
   console.log('\n' + colors.yellow + '3. AI Service not running:' + colors.reset);
-  console.log('   cd sugar-sack-counter-ai-service');
+  console.log('   cd -sack-counter-ai-service');
   console.log('   python3 -m venv venv');
   console.log('   source venv/bin/activate');
   console.log('   pip install -r requirements.txt');

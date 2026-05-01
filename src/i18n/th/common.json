@@ -28,19 +28,19 @@
     "successToast": "สมัครสมาชิกสำเร็จ"
   },
   "home": {
-    "title": "ระบบนับกระสอบน้ำตาลอัจฉริยะ",
+    "title": "ระบบนับกระสอบอัจฉริยะ",
     "description": "ยกระดับประสิทธิภาพการตรวจสอบสินค้าคงคลัง ด้วยเทคโนโลยี AI",
     "startButton": "เริ่มต้นใช้งานระบบ",
-    "footer": "© 2025 |  ระบบนับกระสอบน้ำตาล"
+    "footer": "© 2025 |  ระบบนับกระสอบ"
   },
   "dashboard": {
     "title": "แดชบอร์ด",
     "sidebar": {
       "dashboard": "แดชบอร์ด",
-      "count": "นับกระสอบน้ำตาล",
+      "count": "นับกระสอบ",
       "VehicleInfo": "ข้อมูลรถขนส่ง",
-      "SugarBagsInfo": "ข้อมูลการนับกระสอบน้ำตาล",
-      "SugarBoxsInfo": "ข้อมูลการนับกล่องน้ำตาล",
+      "BagsInfo": "ข้อมูลการนับกระสอบ",
+      "BoxsInfo": "ข้อมูลการนับกล่อง",
       "Users": "จัดการข้อมูลผู้ใช้",
       "Products": "สินค้า",
       "EmployeeInfo": "ข้อมูลพนักงาน"
@@ -93,18 +93,18 @@
     "phonePlaceholder": "กรอกเบอร์โทรศัพท์"
   },
   "count": {
-    "title": "นับจำนวนน้ำตาล",
+    "title": "นับจำนวน",
     "tabs": {
       "bags": "นับกระสอบ",
       "boxes": "นับกล่อง"
     },
     "transportation": "รถขนส่ง",
-    "sugarType": "ชนิดน้ำตาล",
+    "Type": "ชนิด",
     "addRow": "เพิ่มแถว",
     "saveButton": "บันทึก",
-    "addSugarType": "เพิ่มชนิดน้ำตาล",
+    "addType": "เพิ่มชนิด",
     "transportationOptions": ["รถบรรทุก 1", "รถบรรทุก 2", "เลือกจากรายการ"],
-    "sugarTypeOptions": ["น้ำตาลทรายขาว", "น้ำตาลทรายแดง", "เลือกจากรายการ"],
+    "TypeOptions": ["ทรายขาว", "ทรายแดง", "เลือกจากรายการ"],
     "bagRow": {
       "row": "แถวที่",
       "weight": "น้ำหนัก",
@@ -125,7 +125,7 @@
     },
     "validation": {
       "requiredFields": "ข้อมูลไม่ครบถ้วน",
-      "selectVehicleAndSugarType": "กรุณาเลือกรถขนส่งและประเภทน้ำตาล",
+      "selectVehicleAndType": "กรุณาเลือกรถขนส่งและประเภท",
       "missingData": "ข้อมูลการนับยังไม่ครบ",
       "missingRowData": "กรุณากรอกข้อมูลแถวที่ {missingRows} ให้ครบก่อนบันทึก"
     },
@@ -147,7 +147,7 @@
     "summary": {
       "title": "สรุปข้อมูล",
       "vehicle": "รถขนส่ง",
-      "sugarType": "ประเภทน้ำตาล",
+      "Type": "ประเภท",
       "rowCount": "จำนวนแถว",
       "rows": "แถว",
       "sessionType": "ประเภทการนับ",
@@ -156,7 +156,7 @@
       "notSelected": "ไม่ได้เลือก"
     },
     "startHeader": "ตั้งค่าการนับ",
-    "startDescription": "เลือกประเภทการนับ รถขนส่ง และน้ำตาลก่อนเริ่ม",
+    "startDescription": "เลือกประเภทการนับ รถขนส่ง และก่อนเริ่ม",
     "startCounting": "เริ่มการนับ",
     "startCountingHint": "กดเพื่อสร้างเซสชันและเริ่มนับ",
     "startCountingButton": "เริ่มนับ",
@@ -171,9 +171,9 @@
     "leaveWarningConfirm": "ออกจากหน้านี้",
     "leaveWarningCancel": "อยู่ต่อ",
     "selectVehicle": "เลือกรถขนส่ง",
-    "selectSugarType": "เลือกประเภทน้ำตาล",
+    "selectType": "เลือกประเภท",
     "noVehiclesAvailable": "ไม่มีรถขนส่งที่ใช้งานได้",
-    "noSugarTypesAvailable": "ไม่มีประเภทน้ำตาล",
+    "noTypesAvailable": "ไม่มีประเภท",
     "workflow": {
       "sackCompleteErrorTitle": "เกิดข้อผิดพลาดในการนับกระสอบ",
       "sackCompleteErrorMessage": "ไม่สามารถบันทึกการนับกระสอบได้",
@@ -187,34 +187,34 @@
       "successMessage": "บันทึกการนับเรียบร้อยแล้ว",
       "validation": {
         "requiredFields": "ข้อมูลไม่ครบถ้วน",
-        "selectVehicleAndSugarType": "กรุณาเลือกรถขนส่งและประเภทน้ำตาล",
+        "selectVehicleAndType": "กรุณาเลือกรถขนส่งและประเภท",
         "missingData": "ข้อมูลไม่ครบถ้วน",
         "missingRowData": "กรุณากรอกข้อมูลสำหรับแถวที่ {missingRows}"
       }
     }
   },
-  "sugarTypeManagement": {
-    "addSugarType": "เพิ่มชนิดน้ำตาล",
-    "editSugarType": "แก้ไขชนิดน้ำตาล",
-    "sugarTypeName": "ชื่อชนิดน้ำตาล",
-    "sugarTypeDescription": "คำอธิบาย",
+  "TypeManagement": {
+    "addType": "เพิ่มชนิด",
+    "editType": "แก้ไขชนิด",
+    "TypeName": "ชื่อชนิด",
+    "TypeDescription": "คำอธิบาย",
     "save": "บันทึก",
     "cancel": "ยกเลิก",
     "requiredFields": "กรุณากรอกข้อมูลให้ครบ",
-    "confirmAdd": "คุณต้องการเพิ่มชนิดน้ำตาลนี้ใช่หรือไม่?",
-    "confirmEdit": "คุณต้องการแก้ไขชนิดน้ำตาลนี้ใช่หรือไม่?",
+    "confirmAdd": "คุณต้องการเพิ่มชนิดนี้ใช่หรือไม่?",
+    "confirmEdit": "คุณต้องการแก้ไขชนิดนี้ใช่หรือไม่?",
     "successTitle": "สำเร็จ!",
-    "addSuccess": "เพิ่มชนิดน้ำตาลเรียบร้อยแล้ว",
-    "editSuccess": "แก้ไขชนิดน้ำตาลเรียบร้อยแล้ว",
+    "addSuccess": "เพิ่มชนิดเรียบร้อยแล้ว",
+    "editSuccess": "แก้ไขชนิดเรียบร้อยแล้ว",
     "ok": "ตกลง",
     "unsavedChangesTitle": "มีข้อมูลที่ยังไม่ได้บันทึก",
     "unsavedChangesMessage": "คุณมีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างนี้ใช่หรือไม่?",
     "yesClose": "ใช่, ปิดหน้าต่าง",
     "noStay": "ไม่, อยู่ต่อ",
     "errorTitle": "เกิดข้อผิดพลาด",
-    "createErrorMessage": "ไม่สามารถเพิ่มชนิดน้ำตาลได้",
-    "updateErrorMessage": "ไม่สามารถแก้ไขชนิดน้ำตาลได้",
-    "deleteErrorMessage": "ไม่สามารถลบชนิดน้ำตาลได้"
+    "createErrorMessage": "ไม่สามารถเพิ่มชนิดได้",
+    "updateErrorMessage": "ไม่สามารถแก้ไขชนิดได้",
+    "deleteErrorMessage": "ไม่สามารถลบชนิดได้"
   },
   "vehicle": {
     "manage": "จัดการข้อมูลรถขนส่ง",
@@ -293,8 +293,8 @@
       "ok": "ตกลง",
       "createVehicleTypeButton": "สร้างประเภทรถ",
       "creatingVehicleType": "กำลังสร้าง...",
-      "sugarType": "ชนิดน้ำตาล",
-      "selectSugarType": "เลือกชนิดน้ำตาล",
+      "Type": "ชนิด",
+      "selectType": "เลือกชนิด",
       "sackRowsEditor": "กรอกกระสอบแต่ละแถว",
       "rowLabel": "แถว",
       "addRow": "เพิ่มแถว",
@@ -309,12 +309,12 @@
       "licensePlate": "ทะเบียนรถ",
       "vehicleType": "ประเภทรถ",
       "driver": "คนขับ",
-      "sugarType": "ชนิดน้ำตาล",
+      "Type": "ชนิด",
       "weightTons": "น้ำหนัก (ตัน)",
       "maxLoadWeightTon": "น้ำหนักบรรทุกสูงสุด (ตัน)",
       "totalSacks": "จำนวนรวมกระสอบ",
       "sackRowsEditor": "กรอกกระสอบแต่ละแถว",
-      "selectSugarType": "เลือกชนิดน้ำตาล",
+      "selectType": "เลือกชนิด",
       "addRow": "เพิ่มแถว",
       "removeRow": "ลบแถว",
       "rowLabel": "แถว",
@@ -328,7 +328,7 @@
       "vehicleCode": "รหัสรถ",
       "datetime": "วันที่เวลา",
       "createdBy": "ผู้บันทึก",
-      "sugarType": "ชนิดน้ำตาล",
+      "Type": "ชนิด",
       "amount": "จำนวน",
       "manualCount": "จำนวน (Manual)",
       "aiCount": "จำนวน (AI)",
@@ -344,7 +344,7 @@
       "vehicleCode": "รหัสรถ",
       "datetime": "วันที่เวลา",
       "createdBy": "ผู้บันทึก",
-      "sugarType": "ชนิดน้ำตาล",
+      "Type": "ชนิด",
       "amount": "จำนวน",
       "manualCount": "จำนวน (Manual)",
       "aiCount": "จำนวน (AI)",

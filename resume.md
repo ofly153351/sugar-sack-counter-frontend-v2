@@ -1,12 +1,12 @@
 # Resume Project Description
 
-## Sugar Sack Counter Frontend v2
+##  Sack Counter Frontend v2
 **Role:** Frontend Developer  
-**Project Type:** Internal web application for sugar sack/box counting and operational management  
+**Project Type:** Internal web application for  sack/box counting and operational management  
 **Tech Stack:** Next.js (App Router), React, TypeScript, Tailwind CSS, React Query, Axios, Zustand, next-intl/i18next
 
 ### Project Summary
-Developed a multilingual (Thai/English) frontend application for sugar warehouse operations, covering user authentication, counting workflows, and admin management modules (users, products, vehicles, dashboard).
+Developed a multilingual (Thai/English) frontend application for  warehouse operations, covering user authentication, counting workflows, and admin management modules (users, products, vehicles, dashboard).
 
 ### Key Responsibilities & Contributions
 - Built and maintained a modular frontend architecture using Next.js App Router with clear separation of route groups for `auth`, `user`, and `admin` experiences.

@@ -7,7 +7,7 @@ import { API_CONFIG } from "../config";
 /**
  * Fix image paths to use countingSessionId instead of sessionId
  * Converts: original/sack_session_1769999331332_24o52nz6h/20260203_015953_034dc05b.webp
- * To: sugar-sacks/original/sack/{countingSessionId}/20260203_015953_034dc05b.webp
+ * To: -sacks/original/sack/{countingSessionId}/20260203_015953_034dc05b.webp
  */
 export const fixImagePathForCountingSession = (
   imagePath: string,
@@ -35,7 +35,7 @@ export const fixImagePathForCountingSession = (
   const folderType = isAnnotated ? "annotated" : "original";
 
   // Build new path with countingSessionId
-  return `sugar-sacks/${folderType}/${objectType}/${countingSessionId}/${filename}`;
+  return `-sacks/${folderType}/${objectType}/${countingSessionId}/${filename}`;
 };
 
 /**
@@ -91,11 +91,11 @@ export const testBackendApi = async (): Promise<{
       count: vehiclesResponse.data?.length || 0,
     });
 
-    // Test 3: Test sugar-types endpoint
-    const sugarTypesResponse = await api.get("/sugar-types");
-    console.log("✅ [DEBUG] Sugar types endpoint works:", {
-      status: sugarTypesResponse.status,
-      count: sugarTypesResponse.data?.length || 0,
+    // Test 3: Test -types endpoint
+    const TypesResponse = await api.get("/sugar-types");
+    console.log("✅ [DEBUG]  types endpoint works:", {
+      status: TypesResponse.status,
+      count: TypesResponse.data?.length || 0,
     });
 
     // Test 4: Test counting-sessions GET endpoint
@@ -110,7 +110,7 @@ export const testBackendApi = async (): Promise<{
       message: "Backend API is working correctly",
       data: {
         vehicles: vehiclesResponse.data?.length || 0,
-        sugarTypes: sugarTypesResponse.data?.length || 0,
+        Types: TypesResponse.data?.length || 0,
         sessions: sessionsResponse.data?.length || 0,
       },
     };
@@ -165,12 +165,12 @@ export const testCreateSimpleSession = async (): Promise<{
 
     // Get first available data
     const vehiclesResponse = await api.get("/vehicles");
-    const sugarTypesResponse = await api.get("/sugar-types");
+    const TypesResponse = await api.get("/sugar-types");
 
-    if (!vehiclesResponse.data?.length || !sugarTypesResponse.data?.length) {
+    if (!vehiclesResponse.data?.length || !TypesResponse.data?.length) {
       return {
         success: false,
-        message: "No vehicles or sugar types available for testing",
+        message: "No vehicles or  types available for testing",
       };
     }
 
@@ -178,7 +178,7 @@ export const testCreateSimpleSession = async (): Promise<{
       sessionType: "sack",
       userId: "test-user-id", // This might need to be a real user ID
       vehicleId: vehiclesResponse.data[0].id,
-      sugarTypeId: sugarTypesResponse.data[0].id,
+      sugarTypeId: TypesResponse.data[0].id,
       countingDate: new Date().toISOString(),
       status: "in_progress",
       totalCount: 0,
@@ -242,7 +242,7 @@ import {
   BoxRow,
   BoxRowFormData,
   Vehicle,
-  SugarType,
+  Type,
   User,
 } from "../types";
 
@@ -820,23 +820,23 @@ export const fetchVehicles = async (): Promise<Vehicle[]> => {
 };
 
 /**
- * Fetch sugar types
+ * Fetch  types
  */
-export const fetchSugarTypes = async (): Promise<SugarType[]> => {
+export const fetchTypes = async (): Promise<Type[]> => {
   try {
-    const response = await api.get<SugarType[]>("/sugar-types");
+    const response = await api.get<Type[]>("/sugar-types");
     return response.data;
   } catch (error) {
-    console.error("Error fetching sugar types:", error);
+    console.error("Error fetching  types:", error);
     // Fallback to mock data for development
     if (process.env.NODE_ENV === "development") {
-      console.log("Using mock sugar types for development");
+      console.log("Using mock  types for development");
       return [
-        { id: 1, name: "น้ำตาลทรายขาว", description: "น้ำตาลทรายขาวบริสุทธิ์" },
-        { id: 2, name: "น้ำตาลทรายแดง", description: "น้ำตาลทรายแดงธรรมชาติ" },
-        { id: 3, name: "น้ำตาลทรายดิบ", description: "น้ำตาลทรายดิบ" },
-        { id: 4, name: "น้ำตาลปี๊บ", description: "น้ำตาลปี๊บ" },
-        { id: 5, name: "น้ำตาลก้อน", description: "น้ำตาลก้อน" },
+        { id: 1, name: "ทรายขาว", description: "ทรายขาวบริสุทธิ์" },
+        { id: 2, name: "ทรายแดง", description: "ทรายแดงธรรมชาติ" },
+        { id: 3, name: "ทรายดิบ", description: "ทรายดิบ" },
+        { id: 4, name: "ปี๊บ", description: "ปี๊บ" },
+        { id: 5, name: "ก้อน", description: "ก้อน" },
       ];
     }
     throw error;
@@ -844,17 +844,17 @@ export const fetchSugarTypes = async (): Promise<SugarType[]> => {
 };
 
 /**
- * Create a new sugar type
+ * Create a new  type
  */
-export const createSugarType = async (sugarTypeData: {
+export const createType = async (TypeData: {
   name: string;
   description?: string;
-}): Promise<SugarType> => {
+}): Promise<Type> => {
   try {
-    const response = await api.post<SugarType>("/sugar-types", sugarTypeData);
+    const response = await api.post<Type>("/sugar-types", TypeData);
     return response.data;
   } catch (error: unknown) {
-    let errorMessage = "Failed to create sugar type";
+    let errorMessage = "Failed to create  type";
     if (
       typeof error === "object" &&
       error !== null &&
@@ -1025,7 +1025,7 @@ export const validateCountingSessionData = (
   }
 
   if (!data.sugarTypeId) {
-    errors.sugarTypeId = "Sugar type ID is required";
+    errors.sugarTypeId = " type ID is required";
   }
 
   if (!data.countingDate) {

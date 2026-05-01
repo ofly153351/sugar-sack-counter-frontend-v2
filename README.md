@@ -1,153 +1,129 @@
-# Sugar Sack Counter Frontend v2
+#  Sack Counter Frontend
 
-Frontend project for the Sugar Sack Counter system, built with Next.js (App Router), TypeScript, and multi-language support (Thai/English).
+This is a [Next.js](https://nextjs.org) project for the  Sack Counter application, built with internationalization support and modern authentication.
 
-## Tech Stack
+## Environment Configuration
 
-- `Next.js 16` (App Router)
-- `React 19` + `TypeScript`
-- `Tailwind CSS 4`
-- `next-intl` / `i18next` for i18n
-- `@tanstack/react-query` for server-state/data fetching
-- `axios` for API requests
-- `zustand` for client-side state
+Before running the application, you need to set up the environment variables:
 
-## Project File Structure
-
-```text
-.
-├── src/
-│   ├── app/                         # Next.js App Router routes and layouts
-│   │   ├── [locale]/                # Locale-based routes (th, en)
-│   │   │   ├── (auth)/              # Login/register pages
-│   │   │   ├── (user)/              # User pages (home, count)
-│   │   │   └── admin/               # Admin pages and dashboard
-│   │   ├── layout.tsx               # Root app layout
-│   │   ├── client-layout.tsx        # Client wrapper for browser-only logic
-│   │   ├── globals.css              # Global styles
-│   │   └── page.tsx                 # Root page
-│   │
-│   ├── components/                  # UI components grouped by domain
-│   │   ├── users/                   # User management tables/forms/modals
-│   │   ├── vehicles/                # Vehicle management tables/forms/modals
-│   │   ├── products/                # Product management tables/forms/modals
-│   │   ├── count/                   # Counting flow UI (bag/box/upload/tabs)
-│   │   ├── image-upload/            # Image upload modal + AI detection result
-│   │   ├── sidebar/                 # Admin sidebar
-│   │   ├── Nav/                     # Navigation component
-│   │   ├── ui/                      # Base UI components (chart/card)
-│   │   └── ...                      # Other reusable components
-│   │
-│   ├── hooks/                       # Custom hooks per module
-│   │   ├── useUsers.ts
-│   │   ├── useVehicles.ts
-│   │   ├── useProducts.ts
-│   │   ├── useDashboardSummary.ts
-│   │   └── useCount.ts
-│   │
-│   ├── utils/                       # Utilities, API layer, and shared types
-│   │   ├── api-client.ts            # Shared Axios client
-│   │   ├── config.ts                # Centralized env/config reader
-│   │   ├── types.ts                 # Shared types
-│   │   ├── login/                   # Login auth/api/form logic
-│   │   ├── register/                # Register api/validation logic
-│   │   ├── admin/                   # Admin API helpers (users/products/vehicles/dashboard)
-│   │   ├── count/                   # Count module API helpers
-│   │   ├── ai/                      # AI integration API helpers
-│   │   └── diagnostics/             # System diagnostics (for example MinIO)
-│   │
-│   ├── i18n/                        # Localization setup and dictionaries
-│   │   ├── en/common.json           # English translations
-│   │   ├── th/common.json           # Thai translations
-│   │   ├── settings.ts              # Locale defaults
-│   │   ├── request.ts               # i18n request config
-│   │   └── dictionaries.ts          # Dictionary loading helpers
-│   │
-│   ├── providers/                   # Global providers
-│   │   └── ReactQueryProvider.tsx   # React Query provider
-│   │
-│   ├── store/
-│   │   └── user-store.ts            # Zustand user store
-│   │
-│   └── middleware.ts                # Next.js middleware (locale/auth guard)
-│
-├── public/                          # Static assets
-│   ├── images/                      # App images
-│   └── *.svg, *.png                 # Other static files
-│
-├── docs/                            # Project documentation
-│   ├── README.md                    # Documentation index
-│   ├── BACKEND_API_REQUIREMENTS.md  # Backend API contract expected by frontend
-│   ├── AI_INTEGRATION_README.md     # AI integration guide
-│   ├── IMAGE_UPLOAD_README.md       # Image upload flow details
-│   ├── MINIO_TROUBLESHOOTING.md     # MinIO troubleshooting notes
-│   └── TASK.md                      # Task notes
-│
-├── check-minio.js                   # MinIO connectivity check script
-├── next.config.ts                   # Next.js configuration
-├── eslint.config.mjs                # ESLint configuration
-├── postcss.config.mjs               # PostCSS/Tailwind configuration
-├── tsconfig.json                    # TypeScript configuration
-├── package.json                     # Dependencies and scripts
-├── .env.example                     # Example environment variables
-└── README.md                        # This file
-```
-
-## Routing Overview
-
-Main route groups under `src/app/[locale]`:
-
-- `(auth)`
-  - `/[locale]/login`
-  - `/[locale]/register`
-- `(user)`
-  - `/[locale]/home`
-  - `/[locale]/count`
-- `admin`
-  - `/[locale]/admin`
-  - `/[locale]/admin/dashboard`
-  - `/[locale]/admin/Users`
-  - `/[locale]/admin/Products`
-  - `/[locale]/admin/VehicleInfo`
-  - `/[locale]/admin/EmployeeInfo`
-  - `/[locale]/admin/SugarBagsInfo`
-  - `/[locale]/admin/SugarBoxsInfo`
-
-## Environment Variables
-
-Copy the example file first:
-
+1. Copy the example environment file:
 ```bash
 cp .env.example .env
 ```
 
-Commonly used variables:
+2. Edit the `.env` file and configure the following variables:
 
-- `NEXT_PUBLIC_API_URL` Backend API base URL
-- `NEXT_PUBLIC_DEFAULT_LOCALE` Default application locale
-- `NEXT_PUBLIC_AUTH_TOKEN_KEY` Client token key
-- `NEXT_PUBLIC_ENABLE_ADMIN_PANEL` Enable/disable admin menu
+```env
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 
-## Run the Project
+# Authentication Configuration
+NEXT_PUBLIC_AUTH_TOKEN_KEY=authToken
+NEXT_PUBLIC_USER_ROLE_KEY=userRole
+NEXT_PUBLIC_COOKIE_AUTH_TOKEN=authToken
 
-```bash
-npm install
-npm run dev
+# Application Configuration
+NEXT_PUBLIC_APP_NAME= Sack Counter
+NEXT_PUBLIC_APP_VERSION=1.0.0
+NEXT_PUBLIC_DEFAULT_LOCALE=th
+
+# Development Configuration
+NEXT_PUBLIC_DEBUG=true
+
+# Feature Flags
+NEXT_PUBLIC_ENABLE_REGISTRATION=true
+NEXT_PUBLIC_ENABLE_ADMIN_PANEL=true
 ```
 
-Open `http://localhost:3000`
+**Note:** The `.env` file contains sensitive data and should not be committed to version control. The `.env.example` file serves as a template for required environment variables.
 
-## Scripts
+## Getting Started
 
-- `npm run dev` Start development server
-- `npm run build` Build for production
-- `npm run start` Start production server
-- `npm run lint` Run lint checks
+First, install dependencies and run the development server:
 
-## Additional Documentation
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+The application supports multiple languages and includes:
+- User authentication (login/register)
+- Multi-language support (English/Thai)
+- Responsive design
+- Admin panel (if enabled)
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+## Documentation
+
+Project documentation has been organized under `docs/`:
 
 - [Documentation Index](./docs/README.md)
-- [Backend API Requirements](./docs/BACKEND_API_REQUIREMENTS.md)
 - [AI Integration Guide](./docs/AI_INTEGRATION_README.md)
+- [Backend API Requirements](./docs/BACKEND_API_REQUIREMENTS.md)
 - [Image Upload Guide](./docs/IMAGE_UPLOAD_README.md)
 - [MinIO Troubleshooting](./docs/MINIO_TROUBLESHOOTING.md)
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js app router pages
+│   ├── [locale]/          # Internationalized routes
+│   │   ├── (auth)/        # Authentication pages
+│   │   └── admin/         # Admin panel
+├── components/            # Reusable React components
+├── i18n/                 # Internationalization files
+├── utils/                # Utility functions
+│   ├── login/            # Login utilities
+│   ├── register/         # Registration utilities
+│   └── config.ts         # Environment configuration
+```
+
+## API Integration
+
+The application is configured to work with a backend API. Make sure your backend server is running and accessible at the URL specified in `NEXT_PUBLIC_API_URL`.
+
+Available API endpoints:
+- `/auth/login` - User authentication
+- `/auth/register` - User registration
+- `/auth/validate` - Token validation
+- `/auth/profile` - User profile
+- `/auth/check-username` - Username availability
+- `/auth/check-email` - Email availability
+- `/auth/check-employee-code` - Employee code availability
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

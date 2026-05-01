@@ -4,25 +4,25 @@ import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 
-interface SugarType {
+interface Type {
   id?: string | number;
   name: string;
   description?: string;
 }
 
-interface SugarTypeModalProps {
+interface TypeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: SugarType | null;
-  onSave: (sugarType: SugarType) => void;
+  initialData?: Type | null;
+  onSave: (Type: Type) => void;
 }
 
-export function SugarTypeModal({
+export function TypeModal({
   isOpen,
   onClose,
   initialData,
   onSave,
-}: SugarTypeModalProps) {
+}: TypeModalProps) {
   const t = useTranslations();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -49,7 +49,7 @@ export function SugarTypeModal({
     const newErrors: { name?: string } = {};
 
     if (!name.trim()) {
-      newErrors.name = t("sugarTypeManagement.requiredFields", {
+      newErrors.name = t("TypeManagement.requiredFields", {
         defaultValue: "กรุณากรอกข้อมูลให้ครบ",
       });
     }
@@ -65,14 +65,14 @@ export function SugarTypeModal({
       return;
     }
 
-    const sugarTypeData: SugarType = {
+    const TypeData: Type = {
       ...initialData,
       name: name.trim(),
       description: description.trim() || undefined,
     };
 
     // Call onSave callback - the parent component will handle the API call and SweetAlert
-    onSave(sugarTypeData);
+    onSave(TypeData);
     onClose();
   };
 
@@ -84,7 +84,7 @@ export function SugarTypeModal({
 
     if (hasChanges) {
       const confirmClose = window.confirm(
-        t("sugarTypeManagement.unsavedChangesMessage", {
+        t("TypeManagement.unsavedChangesMessage", {
           defaultValue:
             "คุณมีข้อมูลที่ยังไม่ได้บันทึก ต้องการปิดหน้าต่างนี้ใช่หรือไม่?",
         })
@@ -112,11 +112,11 @@ export function SugarTypeModal({
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">
             {initialData
-              ? t("sugarTypeManagement.editSugarType", {
-                  defaultValue: "แก้ไขชนิดน้ำตาล",
+              ? t("TypeManagement.editType", {
+                  defaultValue: "แก้ไขชนิด",
                 })
-              : t("sugarTypeManagement.addSugarType", {
-                  defaultValue: "เพิ่มชนิดน้ำตาล",
+              : t("TypeManagement.addType", {
+                  defaultValue: "เพิ่มชนิด",
                 })}
           </h2>
           <button
@@ -134,8 +134,8 @@ export function SugarTypeModal({
             {/* Name Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("sugarTypeManagement.sugarTypeName", {
-                  defaultValue: "ชื่อชนิดน้ำตาล",
+                {t("TypeManagement.TypeName", {
+                  defaultValue: "ชื่อชนิด",
                 })}
                 <span className="text-red-500 ml-1">*</span>
               </label>
@@ -148,8 +148,8 @@ export function SugarTypeModal({
                     ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                     : "border-gray-300 focus:border-blue-400"
                 }`}
-                placeholder={t("sugarTypeManagement.sugarTypeName", {
-                  defaultValue: "ชื่อชนิดน้ำตาล",
+                placeholder={t("TypeManagement.TypeName", {
+                  defaultValue: "ชื่อชนิด",
                 })}
               />
               {errors.name && (
@@ -160,7 +160,7 @@ export function SugarTypeModal({
             {/* Description Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("sugarTypeManagement.sugarTypeDescription", {
+                {t("TypeManagement.TypeDescription", {
                   defaultValue: "คำอธิบาย",
                 })}
               </label>
@@ -168,7 +168,7 @@ export function SugarTypeModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
-                placeholder={t("sugarTypeManagement.sugarTypeDescription", {
+                placeholder={t("TypeManagement.TypeDescription", {
                   defaultValue: "คำอธิบาย",
                 })}
                 rows={3}
@@ -183,13 +183,13 @@ export function SugarTypeModal({
               onClick={handleClose}
               className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
             >
-              {t("sugarTypeManagement.cancel", { defaultValue: "ยกเลิก" })}
+              {t("TypeManagement.cancel", { defaultValue: "ยกเลิก" })}
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
             >
-              {t("sugarTypeManagement.save", { defaultValue: "บันทึก" })}
+              {t("TypeManagement.save", { defaultValue: "บันทึก" })}
             </button>
           </div>
         </form>

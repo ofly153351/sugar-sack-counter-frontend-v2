@@ -134,7 +134,7 @@ export const checkMinIOStatusDetailed =
           status = "healthy";
         } else {
           message =
-            "MinIO services are running but bucket 'sugar-sack-images' may not exist.";
+            "MinIO services are running but bucket '-sack-images' may not exist.";
           status = "warning";
         }
       } else {
@@ -327,7 +327,7 @@ export const getMinIOTroubleshootingGuide = (): string => {
     <ul class="list-disc pl-5 text-blue-700 space-y-1">
       <li>เปิดเบราว์เซอร์ไปที่ <a href="http://localhost:9001" target="_blank" class="underline">http://localhost:9001</a></li>
       <li>ล็อกอินด้วย: username: <code>minioadmin</code>, password: <code>minioadmin</code></li>
-      <li>ตรวจสอบว่า bucket "sugar-sack-images" มีอยู่</li>
+      <li>ตรวจสอบว่า bucket "-sack-images" มีอยู่</li>
     </ul>
   </div>
 
@@ -354,7 +354,7 @@ docker run -d -p 9000:9000 -p 9001:9001 \\
   <div class="bg-red-50 p-4 rounded border border-red-200">
     <h4 class="font-semibold text-red-800">4. ปัญหาทั่วไปและวิธีแก้ไข</h4>
     <ul class="list-disc pl-5 text-red-700 space-y-2">
-      <li><strong>Bucket ไม่มีอยู่:</strong> สร้าง bucket "sugar-sack-images" ใน MinIO UI</li>
+      <li><strong>Bucket ไม่มีอยู่:</strong> สร้าง bucket "-sack-images" ใน MinIO UI</li>
       <li><strong>สิทธิ์ไม่พอ:</strong> ตรวจสอบว่า AI service มี MINIO_ACCESS_KEY และ MINIO_SECRET_KEY ถูกต้อง</li>
       <li><strong>CORS error:</strong> ใน MinIO UI ไปที่ Settings → CORS → เพิ่ม rule สำหรับ origin "*"</li>
       <li><strong>Network error:</strong> ตรวจสอบว่า MinIO และ AI service ทำงานใน network เดียวกัน</li>
@@ -407,7 +407,7 @@ export const generateDiagnosticReport = async (): Promise<string> => {
 - ✅ AI Service (${diagnostic.details.endpoints.aiService}): ${
     diagnostic.details.aiService ? "Available" : "Unavailable"
   }
-- ✅ Bucket "sugar-sack-images": ${
+- ✅ Bucket "-sack-images": ${
     diagnostic.details.bucketExists ? "Exists" : "Does not exist"
   }
 - ✅ Files in bucket: ${diagnostic.details.fileCount}
@@ -489,7 +489,7 @@ export const quickHealthCheck = async (): Promise<{
   }
 
   if (!diagnostic.details.bucketExists) {
-    issues.push("Bucket 'sugar-sack-images' does not exist");
+    issues.push("Bucket '-sack-images' does not exist");
   }
 
   if (diagnostic.details.aiServiceDetails) {

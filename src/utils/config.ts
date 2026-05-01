@@ -93,7 +93,7 @@ export const AUTH_CONFIG = {
 
 // Application Configuration
 export const APP_CONFIG = {
-  NAME: process.env.NEXT_PUBLIC_APP_NAME || "Sugar Sack Counter",
+  NAME: process.env.NEXT_PUBLIC_APP_NAME || " Sack Counter",
   VERSION: process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0",
   DEFAULT_LOCALE: process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "th",
 } as const;

@@ -1,7 +1,7 @@
-# AI Integration for Sugar Sack Counter Frontend
+# AI Integration for  Sack Counter Frontend
 
 ## Overview
-This document describes the AI integration for person detection in the Sugar Sack Counter application. The system uses a Python-based AI service with YOLOv8 model for real-time person detection in uploaded images.
+This document describes the AI integration for person detection in the  Sack Counter application. The system uses a Python-based AI service with YOLOv8 model for real-time person detection in uploaded images.
 
 ## Architecture
 
@@ -167,7 +167,7 @@ curl -X POST -F "file=@test_image.jpg" http://localhost:8082/detect
 ```
 
 ### 2. Test Frontend Integration
-1. Navigate to SugarBoxsInfo or SugarBagsInfo page
+1. Navigate to BoxsInfo or BagsInfo page
 2. Click upload button in table
 3. Select an image with people
 4. Click "ตรวจจับบุคคล" button
@@ -318,7 +318,7 @@ Edit `ai-api.ts` to modify:
 
 ## Conclusion
 
-The AI integration provides real-time person detection for uploaded images in the Sugar Sack Counter application. The system is designed for reliability, performance, and ease of use, with fallback mechanisms for when the AI service is unavailable.
+The AI integration provides real-time person detection for uploaded images in the  Sack Counter application. The system is designed for reliability, performance, and ease of use, with fallback mechanisms for when the AI service is unavailable.
 
 For questions or issues, refer to the troubleshooting section or contact the development team.
 

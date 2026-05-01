@@ -121,7 +121,7 @@ export interface CountingSession {
   // Relations (optional, may be included in API response)
   user?: User;
   vehicle?: Vehicle;
-  sugarType?: SugarType;
+  Type?: Type;
   sackSession?: SackCountingSession;
   boxSession?: BoxCountingSession;
 }
@@ -154,7 +154,7 @@ export interface SackCountingSession {
 
   // Relations
   vehicle?: Vehicle;
-  sugarType?: SugarType;
+  Type?: Type;
   user?: User;
   sackRows?: SackRow[];
   countingSession?: CountingSession;
@@ -186,7 +186,7 @@ export interface BoxCountingSession {
 
   // Relations
   vehicle?: Vehicle;
-  sugarType?: SugarType;
+  Type?: Type;
   user?: User;
   boxRows?: BoxRow[];
   countingSession?: CountingSession;
@@ -268,7 +268,7 @@ export interface Vehicle {
   updatedAt?: string;
 }
 
-export interface SugarType {
+export interface Type {
   id: string | number;
   name: string;
   description?: string;
