@@ -940,9 +940,14 @@ export default function BoxRow({
       filename
     )}`;
 
+    const openedWindow = window.open(
+      downloadUrl,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
     if (isLineInAppBrowser) {
-      const popup = window.open(downloadUrl, "_blank", "noopener,noreferrer");
-      if (!popup) {
+      if (!openedWindow) {
         Swal.fire({
           title: "ดาวน์โหลดไม่สำเร็จใน LINE",
           html: `
@@ -982,7 +987,15 @@ export default function BoxRow({
       return;
     }
 
-    window.location.assign(downloadUrl);
+    if (!openedWindow) {
+      window.location.assign(downloadUrl);
+      Swal.fire({
+        title: "กำลังเริ่มดาวน์โหลด",
+        text: "หากไม่เริ่มดาวน์โหลด อาจเป็นการตั้งค่า popup/blocker ของเบราว์เซอร์",
+        icon: "info",
+        confirmButtonText: "ตกลง",
+      });
+    }
   };
 
   return (
