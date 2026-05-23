@@ -1027,10 +1027,15 @@ export default function BagRow({
       filename
     )}`;
 
-    // Redirect ไป URL ไฟล์จริงโดยตรง (ให้ backend เป็นคนกำหนด attachment header)
+    // ใช้ open ก่อนเพื่อให้ทำงานได้ทั้ง browser ปกติและ in-app browser หลายตัว
+    const openedWindow = window.open(
+      downloadUrl,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
     if (isLineInAppBrowser) {
-      const popup = window.open(downloadUrl, "_blank", "noopener,noreferrer");
-      if (!popup) {
+      if (!openedWindow) {
         Swal.fire({
           title: "ดาวน์โหลดไม่สำเร็จใน LINE",
           html: `
@@ -1070,7 +1075,16 @@ export default function BagRow({
       return;
     }
 
-    window.location.assign(downloadUrl);
+    // Browser ปกติ: ถ้า popup โดนบล็อก ให้ fallback ไปหน้าไฟล์โดยตรง
+    if (!openedWindow) {
+      window.location.assign(downloadUrl);
+      Swal.fire({
+        title: "กำลังเริ่มดาวน์โหลด",
+        text: "หากไม่เริ่มดาวน์โหลด อาจเป็นการตั้งค่า popup/blocker ของเบราว์เซอร์",
+        icon: "info",
+        confirmButtonText: "ตกลง",
+      });
+    }
   };
 
   return (
