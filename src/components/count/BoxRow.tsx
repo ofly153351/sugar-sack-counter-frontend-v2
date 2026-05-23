@@ -943,15 +943,20 @@ export default function BoxRow({
         window.location.assign(imageUrl);
       }
       Swal.fire({
-        title: "ดาวน์โหลดผ่าน LINE",
+        title: tCount("lineDownload.titleSingle"),
         html: `
           <div class="text-left">
-            <p class="mb-2">ตามนโยบายความปลอดภัย (policy) ของ LINE in-app browser ระบบอาจบล็อกการดาวน์โหลดอัตโนมัติ</p>
-            <p>กรุณา <strong>กดค้างที่รูป</strong> แล้วเลือกบันทึกรูป</p>
+            <p class="mb-2">${tCount("lineDownload.messageSingle")}</p>
+            <p class="mb-2">${tCount("lineDownload.actionSingle")}</p>
+            <p class="text-xs text-gray-600">${tCount(
+              "lineDownload.referenceLabel"
+            )} <a href="https://developers.line.biz/en/docs/liff/differences-between-liff-browser-and-external-browser/" target="_blank" rel="noopener noreferrer" class="underline">${tCount(
+          "lineDownload.referenceLinkText"
+        )}</a></p>
           </div>
         `,
         icon: "info",
-        confirmButtonText: "ตกลง",
+        confirmButtonText: tCount("buttons.ok"),
       });
       return;
     }

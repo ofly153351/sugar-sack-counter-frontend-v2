@@ -144,6 +144,16 @@
       "ok": "ตกลง",
       "retry": "ลองใหม่"
     },
+    "lineDownload": {
+      "titleSingle": "ดาวน์โหลดผ่าน LINE",
+      "titleAll": "ดาวน์โหลดรูปทั้งหมดผ่าน LINE",
+      "messageSingle": "เนื่องจากข้อจำกัดของ LINE In-App Browser บางเครื่องอาจไม่รองรับการดาวน์โหลดไฟล์อัตโนมัติ (เช่น blob/zip)",
+      "messageAll": "เนื่องจากข้อจำกัดของ LINE In-App Browser บางเครื่องอาจไม่รองรับการดาวน์โหลดไฟล์อัตโนมัติ (เช่น blob/zip)",
+      "actionSingle": "กรุณาเปิดรูปแล้ว <strong>กดค้างที่รูป</strong> เพื่อบันทึก หรือเปิดลิงก์ใน Safari/Chrome เพื่อดาวน์โหลดเต็มรูปแบบ",
+      "actionAll": "กรุณาเปิดรูปทีละรูปแล้ว <strong>กดค้างที่รูป</strong> เพื่อบันทึก หรือเปิดลิงก์ใน Safari/Chrome เพื่อดาวน์โหลดเต็มรูปแบบ",
+      "referenceLabel": "อ้างอิง:",
+      "referenceLinkText": "LINE LIFF Browser vs External Browser"
+    },
     "summary": {
       "title": "สรุปข้อมูล",
       "vehicle": "รถขนส่ง",
