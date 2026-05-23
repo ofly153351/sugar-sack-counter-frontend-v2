@@ -1022,6 +1022,28 @@ export default function BagRow({
     const userAgent = navigator.userAgent || "";
     const isLineInAppBrowser = /Line\//i.test(userAgent);
     const filename = `bag-row-${rowNumber}-annotated.jpg`;
+    const isDataUrl = imageUrl.startsWith("data:");
+
+    // data URL ต้องดาวน์โหลดตรงผ่าน <a download> (ห้าม redirect)
+    if (isDataUrl) {
+      const link = document.createElement("a");
+      link.href = imageUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      if (isLineInAppBrowser) {
+        Swal.fire({
+          title: "กำลังดาวน์โหลดรูปภาพ",
+          text: "หาก LINE ไม่เริ่มดาวน์โหลด ให้กดค้างที่รูปแล้วเลือกบันทึก หรือเปิดใน Safari/Chrome",
+          icon: "info",
+          confirmButtonText: "ตกลง",
+        });
+      }
+      return;
+    }
+
     const separator = imageUrl.includes("?") ? "&" : "?";
     const downloadUrl = `${imageUrl}${separator}download=1&filename=${encodeURIComponent(
       filename
