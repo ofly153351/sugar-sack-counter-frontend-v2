@@ -543,6 +543,9 @@ export default function CountPage({ initialTab: _initialTab = "bags" }: CountPag
     return exportRows;
   };
 
+  const isLineInAppBrowser =
+    isClient && /Line\//i.test(globalThis.navigator?.userAgent || "");
+
   const deleteRow = (rowNumber: number) => {
     setRows((prev) => prev.filter((r) => r !== rowNumber));
     // Remove data for deleted row
@@ -1192,13 +1195,15 @@ export default function CountPage({ initialTab: _initialTab = "bags" }: CountPag
                   <Plus className="w-4 h-4" />
                   {t("addRow", { defaultValue: "เพิ่มแถว" })}
                 </button>
-                <button
-                  onClick={handleDownloadImages}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow"
-                >
-                  <Download className="w-4 h-4" />
-                  ดาวน์โหลดรูปทั้งหมด
-                </button>
+                {!isLineInAppBrowser && (
+                  <button
+                    onClick={handleDownloadImages}
+                    className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow"
+                  >
+                    <Download className="w-4 h-4" />
+                    ดาวน์โหลดรูปทั้งหมด
+                  </button>
+                )}
                 <button
                   onClick={handleExportXlsx}
                   className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-700 rounded-lg hover:bg-green-800 transition shadow"
