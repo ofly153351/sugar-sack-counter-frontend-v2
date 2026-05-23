@@ -327,6 +327,28 @@ export default function CountPage({ initialTab: _initialTab = "bags" }: CountPag
   };
 
   const handleDownloadImages = async () => {
+    const userAgent = navigator.userAgent || "";
+    const isLineInAppBrowser = /Line\//i.test(userAgent);
+
+    if (isLineInAppBrowser) {
+      Swal.fire({
+        title: "ดาวน์โหลดรูปทั้งหมดผ่าน LINE",
+        html: `
+          <div class="text-left">
+            <p class="mb-2">ตามนโยบายความปลอดภัย (policy) ของ LINE in-app browser ระบบอาจบล็อกการดาวน์โหลดหลายไฟล์/ไฟล์ zip อัตโนมัติ</p>
+            <p class="mb-1">วิธีใช้งานที่แนะนำใน LINE:</p>
+            <ul class="list-disc pl-5">
+              <li>เปิดดูรูปทีละรูป</li>
+              <li><strong>กดค้างที่รูป</strong> แล้วเลือกบันทึกรูป</li>
+            </ul>
+          </div>
+        `,
+        icon: "info",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
+
     const rowDataMap = currentTab === "bags" ? sackRowsData : boxRowsData;
     const rowItems = rows
       .map((rowNumber) => ({ rowNumber, row: rowDataMap[rowNumber] }))
