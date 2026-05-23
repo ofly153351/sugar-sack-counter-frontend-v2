@@ -143,6 +143,16 @@
       "ok": "OK",
       "retry": "Retry"
     },
+    "lineDownload": {
+      "titleSingle": "Download via LINE",
+      "titleAll": "Download All Images via LINE",
+      "messageSingle": "Due to LINE In-App Browser limitations, some devices may not support automatic file downloads (such as blob/zip).",
+      "messageAll": "Due to LINE In-App Browser limitations, some devices may not support automatic file downloads (such as blob/zip).",
+      "actionSingle": "Please open the image and <strong>long-press on the image</strong> to save it, or open this link in Safari/Chrome for full download support.",
+      "actionAll": "Please open each image and <strong>long-press on the image</strong> to save it, or open this link in Safari/Chrome for full download support.",
+      "referenceLabel": "Reference:",
+      "referenceLinkText": "LINE LIFF Browser vs External Browser"
+    },
     "summary": {
       "title": "Summary Information",
       "vehicle": "Transportation Vehicle",

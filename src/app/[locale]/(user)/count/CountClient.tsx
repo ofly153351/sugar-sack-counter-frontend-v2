@@ -332,19 +332,20 @@ export default function CountPage({ initialTab: _initialTab = "bags" }: CountPag
 
     if (isLineInAppBrowser) {
       Swal.fire({
-        title: "ดาวน์โหลดรูปทั้งหมดผ่าน LINE",
+        title: t("lineDownload.titleAll"),
         html: `
           <div class="text-left">
-            <p class="mb-2">ตามนโยบายความปลอดภัย (policy) ของ LINE in-app browser ระบบอาจบล็อกการดาวน์โหลดหลายไฟล์/ไฟล์ zip อัตโนมัติ</p>
-            <p class="mb-1">วิธีใช้งานที่แนะนำใน LINE:</p>
-            <ul class="list-disc pl-5">
-              <li>เปิดดูรูปทีละรูป</li>
-              <li><strong>กดค้างที่รูป</strong> แล้วเลือกบันทึกรูป</li>
-            </ul>
+            <p class="mb-2">${t("lineDownload.messageAll")}</p>
+            <p class="mb-2">${t("lineDownload.actionAll")}</p>
+            <p class="text-xs text-gray-600">${t(
+              "lineDownload.referenceLabel"
+            )} <a href="https://developers.line.biz/en/docs/liff/differences-between-liff-browser-and-external-browser/" target="_blank" rel="noopener noreferrer" class="underline">${t(
+          "lineDownload.referenceLinkText"
+        )}</a></p>
           </div>
         `,
         icon: "info",
-        confirmButtonText: "ตกลง",
+        confirmButtonText: t("buttons.ok"),
       });
       return;
     }
