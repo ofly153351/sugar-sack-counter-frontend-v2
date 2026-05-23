@@ -937,6 +937,25 @@ export default function BoxRow({
     const filename = `box-row-${rowNumber}-annotated.jpg`;
     const isDataUrl = imageUrl.startsWith("data:");
 
+    if (isLineInAppBrowser) {
+      const openedWindow = window.open(imageUrl, "_blank", "noopener,noreferrer");
+      if (!openedWindow) {
+        window.location.assign(imageUrl);
+      }
+      Swal.fire({
+        title: "ดาวน์โหลดผ่าน LINE",
+        html: `
+          <div class="text-left">
+            <p class="mb-2">ตามนโยบายความปลอดภัย (policy) ของ LINE in-app browser ระบบอาจบล็อกการดาวน์โหลดอัตโนมัติ</p>
+            <p>กรุณา <strong>กดค้างที่รูป</strong> แล้วเลือกบันทึกรูป</p>
+          </div>
+        `,
+        icon: "info",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
+
     if (isDataUrl) {
       const link = document.createElement("a");
       link.href = imageUrl;
@@ -944,15 +963,6 @@ export default function BoxRow({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      if (isLineInAppBrowser) {
-        Swal.fire({
-          title: "กำลังดาวน์โหลดรูปภาพ",
-          text: "หาก LINE ไม่เริ่มดาวน์โหลด ให้กดค้างที่รูปแล้วเลือกบันทึก หรือเปิดใน Safari/Chrome",
-          icon: "info",
-          confirmButtonText: "ตกลง",
-        });
-      }
       return;
     }
 
@@ -966,47 +976,6 @@ export default function BoxRow({
       "_blank",
       "noopener,noreferrer"
     );
-
-    if (isLineInAppBrowser) {
-      if (!openedWindow) {
-        Swal.fire({
-          title: "ดาวน์โหลดไม่สำเร็จใน LINE",
-          html: `
-            <div class="text-left">
-              <p class="mb-2">LINE Browser อาจบล็อกการเปิดหน้าดาวน์โหลดอัตโนมัติ</p>
-              <p class="mb-1">สาเหตุที่เป็นไปได้:</p>
-              <ul class="list-disc pl-5">
-                <li>นโยบายความปลอดภัยของ LINE บล็อก popup/download</li>
-                <li>Backend ยังไม่ส่ง header <code>Content-Disposition: attachment</code></li>
-                <li>ลิงก์ไฟล์หมดอายุหรือไม่มีสิทธิ์เข้าถึง</li>
-              </ul>
-              <p class="mt-2">แนะนำ: เปิดหน้านี้ด้วย Safari/Chrome แล้วลองใหม่</p>
-            </div>
-          `,
-          icon: "warning",
-          confirmButtonText: "ตกลง",
-        });
-        return;
-      }
-
-      Swal.fire({
-        title: "กำลังเปิดลิงก์ดาวน์โหลด",
-        html: `
-          <div class="text-left">
-            <p class="mb-2">ถ้า LINE ไม่เริ่มโหลดอัตโนมัติ อาจเกิดจาก policy ของ LINE Browser</p>
-            <p class="mb-1">สาเหตุที่เป็นไปได้:</p>
-            <ul class="list-disc pl-5">
-              <li>LINE จำกัดการดาวน์โหลดจาก in-app browser</li>
-              <li>เซิร์ฟเวอร์ไม่ได้ส่งไฟล์แบบ attachment</li>
-            </ul>
-            <p class="mt-2">ให้เปิดลิงก์ใน Safari/Chrome หรือกดค้างที่รูปเพื่อบันทึก</p>
-          </div>
-        `,
-        icon: "info",
-        confirmButtonText: "ตกลง",
-      });
-      return;
-    }
 
     if (!openedWindow) {
       window.location.assign(downloadUrl);
