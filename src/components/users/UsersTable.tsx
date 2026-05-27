@@ -17,7 +17,7 @@ interface UsersTableProps {
   onSortOrderChange: (value: "asc" | "desc") => void;
   onEdit: (user: User) => void;
   onDelete: (user: User) => void;
-  onRoleChange?: (user: User, role: "admin" | "user" | "operator" | "viewer") => void;
+  onRoleChange?: (user: User, role: "admin" | "user") => void;
   isRoleUpdating?: boolean;
   isLoading?: boolean;
 }

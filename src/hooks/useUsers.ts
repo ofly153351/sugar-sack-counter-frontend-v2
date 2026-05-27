@@ -121,7 +121,7 @@ export function useUpdateUserRole() {
       role,
     }: {
       id: string | number;
-      role: "admin" | "user" | "operator" | "viewer";
+      role: "admin" | "user";
     }) => updateUserRole(id, role),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
