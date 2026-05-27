@@ -25,7 +25,7 @@ interface TableProps {
   onDelete?: (item: Record<string, any>) => void;
   onRoleChange?: (
     item: Record<string, any>,
-    role: "admin" | "user" | "operator" | "viewer"
+    role: "admin" | "user"
   ) => void;
   isRoleSelectable?: (item: Record<string, any>) => boolean;
   isRoleUpdating?: boolean;
@@ -44,11 +44,9 @@ export default function Table({
 }: TableProps) {
   const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
-  const roleOptions: Array<"admin" | "user" | "operator" | "viewer"> = [
+  const roleOptions: Array<"admin" | "user"> = [
     "admin",
     "user",
-    "operator",
-    "viewer",
   ];
 
   const [isImagesModalOpen, setIsImagesModalOpen] = useState(false);
@@ -311,7 +309,7 @@ export default function Table({
       onChange={(e) =>
         onRoleChange?.(
           row,
-          e.target.value as "admin" | "user" | "operator" | "viewer"
+          e.target.value as "admin" | "user"
         )
       }
       disabled={
@@ -898,7 +896,6 @@ export default function Table({
     </>
   );
 }
-
 
 
 

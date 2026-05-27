@@ -454,9 +454,7 @@
     },
     "roles": {
       "admin": "Administrator",
-      "user": "User",
-      "operator": "Operator",
-      "viewer": "Viewer"
+      "user": "User"
     },
     "role": {
       "updateSuccess": "Role updated",

@@ -58,7 +58,7 @@ export default function UsersPage() {
 
   const handleRoleChange = (
     user: User,
-    role: "admin" | "user" | "operator" | "viewer"
+    role: "admin" | "user"
   ) => {
     const userId = user.id || user.no;
     usersManager.updateUserRole(

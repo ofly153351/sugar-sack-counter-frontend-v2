@@ -154,7 +154,7 @@ export const updateUserPassword = async (
  */
 export const updateUserRole = async (
   userId: string | number,
-  role: "admin" | "user" | "operator" | "viewer"
+  role: "admin" | "user"
 ): Promise<ApiUser> => {
   try {
     console.log(`🔧 Updating role for user ID: ${userId} -> ${role}`);
