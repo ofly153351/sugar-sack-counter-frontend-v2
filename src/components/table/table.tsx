@@ -243,6 +243,10 @@ export default function Table({
   };
 
   const headers = getTableHeaders();
+  const getColumnClassName = (key: string) =>
+    type === "vehicle" && key === "sackRowsEditor"
+      ? "w-44 max-w-44"
+      : "";
 
   const handleOpenImagesModal = (
     session: Record<string, any>,
@@ -505,7 +509,9 @@ export default function Table({
               {headers.map((h) => (
                 <th
                   key={h.key}
-                  className="px-4 py-3 text-left text-sm font-semibold text-blue-700 tracking-wide whitespace-nowrap"
+                  className={`px-4 py-3 text-left text-sm font-semibold text-blue-700 tracking-wide whitespace-nowrap ${getColumnClassName(
+                    h.key
+                  )}`}
                 >
                   {type === "users" &&
                   h.key === "empCode" &&
@@ -538,7 +544,13 @@ export default function Table({
                       />
                     </button>
                   ) : (
-                    h.label
+                    type === "vehicle" && h.key === "sackRowsEditor" ? (
+                      <span className="block truncate" title={String(h.label)}>
+                        {h.label}
+                      </span>
+                    ) : (
+                      h.label
+                    )
                   )}
                 </th>
               ))}
@@ -577,7 +589,9 @@ export default function Table({
                     {headers.map((h) => (
                       <td
                         key={h.key}
-                        className="px-4 py-3 whitespace-nowrap text-sm text-slate-700"
+                        className={`px-4 py-3 whitespace-nowrap text-sm text-slate-700 ${getColumnClassName(
+                          h.key
+                        )}`}
                       >
                         {type === "vehicle" && h.key === "status" ? (
                           <span
@@ -617,6 +631,13 @@ export default function Table({
                               {row[h.key]}
                             </span>
                           </div>
+                        ) : type === "vehicle" && h.key === "sackRowsEditor" ? (
+                          <span
+                            className="block truncate"
+                            title={String(row[h.key] ?? "")}
+                          >
+                            {row[h.key]}
+                          </span>
                         ) : (
                           row[h.key]
                         )}
@@ -896,6 +917,5 @@ export default function Table({
     </>
   );
 }
-
 
 
