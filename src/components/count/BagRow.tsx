@@ -49,6 +49,7 @@ interface BagRowProps {
   countingSessionId?: string;
   resetTrigger?: number;
   disabled?: boolean;
+  allowDelete?: boolean;
 }
 
 export default function BagRow({
@@ -61,6 +62,7 @@ export default function BagRow({
   countingSessionId,
   resetTrigger,
   disabled,
+  allowDelete = true,
 }: BagRowProps) {
   const t = useTranslations("count.bagRow");
   const tCount = useTranslations("count");
@@ -1107,13 +1109,15 @@ export default function BagRow({
           {t("row")} {rowNumber}
         </label>
         <div className="relative mt-1">
-          <button
-            onClick={onDelete}
-            className="absolute top-0 right-4 z-30 w-8 h-8 flex items-center justify-center bg-orange-500 border-4 border-white text-white rounded-full hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300 transition-colors duration-200 shadow-none"
-            title="ลบแถว"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {allowDelete && (
+            <button
+              onClick={onDelete}
+              className="absolute top-0 right-4 z-30 w-8 h-8 flex items-center justify-center bg-orange-500 border-4 border-white text-white rounded-full hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300 transition-colors duration-200 shadow-none"
+              title="ลบแถว"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
           <div
             className={`bg-white border border-gray-300 w-full md:w-28 h-28 flex items-center justify-center rounded-xl shadow-sm overflow-hidden transition-shadow duration-300 relative z-10 ${
               imagePreview

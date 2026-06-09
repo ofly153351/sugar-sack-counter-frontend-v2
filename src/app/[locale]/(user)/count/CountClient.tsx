@@ -23,6 +23,72 @@ interface CountPageProps {
   initialTab?: "bags" | "boxes";
 }
 
+type RawRowItem = Record<string, unknown>;
+type VehicleExtras = {
+  Type: string;
+  weightTons: number;
+  totalSacks: number;
+  sackRows: number[];
+};
+
+const getObjectArray = (value: unknown): RawRowItem[] =>
+  Array.isArray(value)
+    ? value.filter((item): item is RawRowItem => typeof item === "object" && item !== null)
+    : [];
+
+const buildVehicleSackRowsMap = (
+  vehicle: unknown,
+  extras?: VehicleExtras
+): Record<number, number> => {
+  const map: Record<number, number> = {};
+  const selectedVehicleRecord = vehicle as RawRowItem | undefined;
+  const rawSackRows = selectedVehicleRecord?.sackRows;
+  const rawBagRows = selectedVehicleRecord?.bagRows;
+
+  if (Array.isArray(rawSackRows) && rawSackRows.length > 0) {
+    if (typeof rawSackRows[0] === "number") {
+      rawSackRows.forEach((count: number, index: number) => {
+        map[index + 1] = Number(count || 0);
+      });
+      return map;
+    }
+
+    getObjectArray(rawSackRows).forEach((row) => {
+      const rowNumber = Number(row.rowNumber || 0);
+      const sackCount = Number(row.sackCount || 0);
+      if (rowNumber > 0) {
+        map[rowNumber] = sackCount;
+      }
+    });
+    return map;
+  }
+
+  if (Array.isArray(rawBagRows) && rawBagRows.length > 0) {
+    getObjectArray(rawBagRows).forEach((row) => {
+      const rowNumber = Number(row.rowNumber || 0);
+      const bagCount = Number(row.bagCount || 0);
+      if (rowNumber > 0) {
+        map[rowNumber] = bagCount;
+      }
+    });
+    return map;
+  }
+
+  if (Array.isArray(extras?.sackRows)) {
+    extras.sackRows.forEach((count: number, index: number) => {
+      map[index + 1] = Number(count || 0);
+    });
+  }
+
+  return map;
+};
+
+const getConfiguredRowNumbers = (rowsMap: Record<number, number>): number[] =>
+  Object.keys(rowsMap)
+    .map(Number)
+    .filter((rowNumber) => Number.isInteger(rowNumber) && rowNumber > 0)
+    .sort((a, b) => a - b);
+
 // CountPage
 export default function CountPage({ initialTab: _initialTab = "bags" }: CountPageProps) {
   const t = useTranslations("count");
@@ -61,6 +127,7 @@ export default function CountPage({ initialTab: _initialTab = "bags" }: CountPag
   const TypeInitializedRef = useRef(false);
   const prevTabRef = useRef(currentTab);
   const countingSessionIdRef = useRef("");
+  const prevSelectedVehicleIdRef = useRef("");
 
   // Use count manager hook
   const countManager = useCountManager();
@@ -141,6 +208,57 @@ export default function CountPage({ initialTab: _initialTab = "bags" }: CountPag
     selectedVehicleId,
     vehicleExtrasMap,
     countManager.Types,
+  ]);
+
+  useEffect(() => {
+    if (!isClient || currentTab !== "bags" || !selectedVehicleId) return;
+
+    const isVehicleChanged =
+      prevSelectedVehicleIdRef.current &&
+      prevSelectedVehicleIdRef.current !== selectedVehicleId;
+
+    if (
+      isVehicleChanged
+    ) {
+      setSackRowsData({});
+      setBoxRowsData({});
+      setCountingSessionId("");
+      setTempSessionId("");
+      setResetTrigger((prev) => prev + 1);
+      setHasSaved(false);
+    }
+    prevSelectedVehicleIdRef.current = selectedVehicleId;
+
+    const selectedVehicle = countManager.vehicles.find(
+      (vehicle) => vehicle.id?.toString() === selectedVehicleId
+    );
+    const configuredRows = getConfiguredRowNumbers(
+      buildVehicleSackRowsMap(selectedVehicle, vehicleExtrasMap[selectedVehicleId])
+    );
+    const firstRow = configuredRows[0] || 1;
+    const allowedRows = new Set(configuredRows.length > 0 ? configuredRows : [1]);
+
+    setRows((prev) => {
+      if (isVehicleChanged) {
+        return [firstRow];
+      }
+
+      const trimmedRows = prev.filter((rowNumber) => allowedRows.has(rowNumber));
+      return trimmedRows.length > 0 ? trimmedRows : [firstRow];
+    });
+
+    setSackRowsData((prev) => {
+      const nextData = Object.fromEntries(
+        Object.entries(prev).filter(([rowNumber]) => allowedRows.has(Number(rowNumber)))
+      );
+      return Object.keys(nextData).length === Object.keys(prev).length ? prev : nextData;
+    });
+  }, [
+    isClient,
+    currentTab,
+    selectedVehicleId,
+    countManager.vehicles,
+    vehicleExtrasMap,
   ]);
 
   // Reset countingSessionId when tab changes (only if session already started)
@@ -268,8 +386,46 @@ export default function CountPage({ initialTab: _initialTab = "bags" }: CountPag
     }
   }, [isClient, tempSessionId]);
 
-  const addRow = () =>
+  const showSackRowsLimitMessage = async (configuredRowCount: number) => {
+    const result = await Swal.fire({
+      icon: "info",
+      title: "ไม่สามารถเพิ่มแถวได้",
+      text:
+        configuredRowCount > 0
+          ? `รถคันนี้ถูกกำหนดไว้ ${configuredRowCount} แถวแล้ว หากต้องการเพิ่มจำนวนแถว กรุณาแก้ไขการตั้งค่ารถก่อนเริ่มนับ`
+          : "รถคันนี้ยังไม่ได้กำหนดจำนวนแถวกระสอบ กรุณาไปตั้งค่ารถก่อนเริ่มนับ",
+      showCancelButton: true,
+      confirmButtonText: "ไปตั้งค่ารถ",
+      cancelButtonText: "ปิด",
+      confirmButtonColor: "#2563eb",
+      cancelButtonColor: "#94a3b8",
+    });
+
+    if (result.isConfirmed) {
+      router.push(`/${locale}/admin/VehicleInfo`);
+    }
+  };
+
+  const addRow = async () => {
+    if (currentTab === "bags") {
+      const selectedVehicle = countManager.vehicles.find(
+        (vehicle) => vehicle.id?.toString() === selectedVehicleId
+      );
+      const configuredRows = getConfiguredRowNumbers(
+        buildVehicleSackRowsMap(selectedVehicle, vehicleExtrasMap[selectedVehicleId])
+      );
+
+      if (configuredRows.length === 0 || rows.length >= configuredRows.length) {
+        await showSackRowsLimitMessage(configuredRows.length);
+        return;
+      }
+
+      setRows(configuredRows.slice(0, rows.length + 1));
+      return;
+    }
+
     setRows((prev) => [...prev, (prev[prev.length - 1] || 0) + 1]);
+  };
 
   const resolveImageUrl = (pathOrUrl?: string): string => {
     if (!pathOrUrl) return "";
@@ -987,55 +1143,10 @@ export default function CountPage({ initialTab: _initialTab = "bags" }: CountPag
   const selectedVehicleExtras = selectedVehicleId
     ? vehicleExtrasMap[selectedVehicleId]
     : undefined;
-  type RawRowItem = Record<string, unknown>;
-  const getObjectArray = (value: unknown): RawRowItem[] =>
-    Array.isArray(value)
-      ? value.filter((item): item is RawRowItem => typeof item === "object" && item !== null)
-      : [];
-  const selectedVehicleSackRowsMap: Record<number, number> = (() => {
-    const map: Record<number, number> = {};
-    const selectedVehicleRecord = selectedVehicle as unknown as RawRowItem | undefined;
-    const rawSackRows = selectedVehicleRecord?.sackRows;
-    const rawBagRows = selectedVehicleRecord?.bagRows;
-
-    if (Array.isArray(rawSackRows) && rawSackRows.length > 0) {
-      if (typeof rawSackRows[0] === "number") {
-        rawSackRows.forEach((count: number, index: number) => {
-          map[index + 1] = Number(count || 0);
-        });
-        return map;
-      }
-
-      getObjectArray(rawSackRows).forEach((row) => {
-        const rowNumber = Number(row.rowNumber || 0);
-        const sackCount = Number(row.sackCount || 0);
-        if (rowNumber > 0) {
-          map[rowNumber] = sackCount;
-        }
-      });
-      return map;
-    }
-
-    if (Array.isArray(rawBagRows) && rawBagRows.length > 0) {
-      getObjectArray(rawBagRows).forEach((row) => {
-        const rowNumber = Number(row.rowNumber || 0);
-        const bagCount = Number(row.bagCount || 0);
-        if (rowNumber > 0) {
-          map[rowNumber] = bagCount;
-        }
-      });
-      return map;
-    }
-
-    const fallbackRows = selectedVehicleExtras?.sackRows;
-    if (Array.isArray(fallbackRows)) {
-      fallbackRows.forEach((count: number, index: number) => {
-        map[index + 1] = Number(count || 0);
-      });
-    }
-
-    return map;
-  })();
+  const selectedVehicleSackRowsMap = buildVehicleSackRowsMap(
+    selectedVehicle,
+    selectedVehicleExtras
+  );
   const selectedVehicleSummary =
     selectedVehicle && selectedVehicleId
       ? `${selectedVehicle.licensePlate || "-"} ${
@@ -1165,6 +1276,7 @@ export default function CountPage({ initialTab: _initialTab = "bags" }: CountPag
                     countingSessionId={getSessionIdForAI()}
                     resetTrigger={resetTrigger}
                     disabled={!selectedVehicleId || !selectedTypeId}
+                    allowDelete={false}
                   />
                 ) : (
                   <BoxRow
