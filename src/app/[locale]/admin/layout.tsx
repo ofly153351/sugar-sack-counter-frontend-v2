@@ -22,9 +22,9 @@ export default async function AdminLayout({
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <Nav />
-      <div className="flex-1 flex">
+      <div className="flex-1 flex min-w-0">
         <AdminSidebar dict={dict} />
-        <div className="flex-1 p-6">{children}</div>
+        <div className="flex-1 min-w-0 overflow-x-hidden p-6">{children}</div>
       </div>
     </div>
   );
