@@ -111,7 +111,7 @@
       "takePhoto": "ถ่ายรูป",
       "upload": "อัปโหลด",
       "manualCount": "จำนวนกระสอบ",
-      "aiCount": "จำนวนที่ Ai นับได้",
+      "aiCount": "จำนวนที่ตรวจพบจากภาพ",
       "bags": "กระสอบ"
     },
     "boxRow": {
@@ -120,7 +120,7 @@
       "takePhoto": "ถ่ายรูป",
       "upload": "อัปโหลด",
       "manualCount": "จำนวนกล่องแถวที่",
-      "aiCount": "จำนวนที่ Ai นับได้",
+      "aiCount": "จำนวนที่ตรวจพบจากภาพ",
       "boxes": "กล่อง"
     },
     "validation": {
@@ -341,10 +341,10 @@
       "Type": "ชนิด",
       "amount": "จำนวน",
       "manualCount": "จำนวน (Manual)",
-      "aiCount": "จำนวน (AI)",
+      "aiCount": "จำนวนที่ตรวจพบจากภาพ",
       "manualTotal": "รวม (Manual)",
-      "aiTotal": "รวม (AI)",
-      "totalSummary": "จำนวนรวม (Manual) | จำนวนรวม (AI)",
+      "aiTotal": "รวมจำนวนที่ตรวจพบจากภาพ",
+      "totalSummary": "จำนวนรวม (Manual) | จำนวนรวมที่ตรวจพบจากภาพ",
       "actions": "จัดการ"
     }
   },
@@ -357,10 +357,10 @@
       "Type": "ชนิด",
       "amount": "จำนวน",
       "manualCount": "จำนวน (Manual)",
-      "aiCount": "จำนวน (AI)",
+      "aiCount": "จำนวนที่ตรวจพบจากภาพ",
       "manualTotal": "รวม (Manual)",
-      "aiTotal": "รวม (AI)",
-      "totalSummary": "จำนวนรวม (Manual) | จำนวนรวม (AI)",
+      "aiTotal": "รวมจำนวนที่ตรวจพบจากภาพ",
+      "totalSummary": "จำนวนรวม (Manual) | จำนวนรวมที่ตรวจพบจากภาพ",
       "actions": "จัดการ"
     }
   },

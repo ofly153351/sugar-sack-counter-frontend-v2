@@ -543,7 +543,7 @@ export default function BoxRow({
               `
                   : ""
               }
-              <p class="mb-2">ผลลัพธ์ถูกบันทึกในช่อง AI Count แล้ว</p>
+              <p class="mb-2">ผลลัพธ์ถูกบันทึกในช่องจำนวนที่ตรวจพบจากภาพแล้ว</p>
 
               <p class="mb-4">ความเชื่อมั่นเฉลี่ย: <strong>${
                 result.detections.length > 0
@@ -673,7 +673,7 @@ export default function BoxRow({
               `
                   : ""
               }
-              <p class="mb-2">ผลลัพธ์ถูกบันทึกในช่อง AI Count แล้ว</p>
+              <p class="mb-2">ผลลัพธ์ถูกบันทึกในช่องจำนวนที่ตรวจพบจากภาพแล้ว</p>
 
               <p class="mb-4">ความเชื่อมั่นเฉลี่ย: <strong>${
                 result.detections.length > 0

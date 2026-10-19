@@ -398,7 +398,7 @@ export default function BagRow({
               `
                   : ""
               }
-              <p class="mb-2">ผลลัพธ์ถูกบันทึกในช่อง AI Count แล้ว</p>
+              <p class="mb-2">ผลลัพธ์ถูกบันทึกในช่องจำนวนที่ตรวจพบจากภาพแล้ว</p>
               ${
                 result.storageInfo
                   ? `
@@ -536,7 +536,7 @@ export default function BagRow({
               `
                   : ""
               }
-              <p class="mb-2">ผลลัพธ์ถูกบันทึกในช่อง AI Count แล้ว</p>
+              <p class="mb-2">ผลลัพธ์ถูกบันทึกในช่องจำนวนที่ตรวจพบจากภาพแล้ว</p>
               ${
                 result.storageInfo
                   ? `

@@ -170,7 +170,7 @@ export default function Table({
           },
           {
             key: "aiTotal",
-            label: t("bags.table.aiTotal", { defaultValue: "AI Total" }),
+            label: t("bags.table.aiTotal", { defaultValue: "Detected from Image Total" }),
           },
         ];
       case "box":
@@ -194,7 +194,7 @@ export default function Table({
           },
           {
             key: "aiTotal",
-            label: t("box.table.aiTotal", { defaultValue: "AI Total" }),
+            label: t("box.table.aiTotal", { defaultValue: "Detected from Image Total" }),
           },
         ];
       case "users":
@@ -468,7 +468,7 @@ export default function Table({
                               isSackSession
                                 ? "bags.table.aiCount"
                                 : "box.table.aiCount",
-                              { defaultValue: "AI Count" }
+                              { defaultValue: "Detected from Image" }
                             )}
                             : {childRow.aiCount || 0}
                           </div>
@@ -678,7 +678,7 @@ export default function Table({
                                             isSackSession
                                               ? "bags.table.aiCount"
                                               : "box.table.aiCount",
-                                            { defaultValue: "AI Count" }
+                                            { defaultValue: "Detected from Image" }
                                           )}
                                         </th>
                                         <th className="px-4 py-2 text-left text-xs font-medium text-blue-700">
@@ -804,7 +804,7 @@ export default function Table({
                               <p className="text-sm text-gray-600">
                                 {t(
                                   type === "bags" ? "bags.table.aiCount" : "box.table.aiCount",
-                                  { defaultValue: "AI Count" }
+                                  { defaultValue: "Detected from Image" }
                                 )}: {row.aiCount || 0}
                               </p>
                             </div>
@@ -855,7 +855,7 @@ export default function Table({
                               <p className="text-sm text-gray-600">
                                 {t(
                                   type === "bags" ? "bags.table.aiCount" : "box.table.aiCount",
-                                  { defaultValue: "AI Count" }
+                                  { defaultValue: "Detected from Image" }
                                 )}: {row.aiCount || 0}
                               </p>
                             </div>

@@ -137,7 +137,7 @@ export default function Page({ params }: PageProps) {
         vehicleExtrasMapForExport[String(item.rawSession?.vehicle?.id ?? "")]?.weightTons || 0
       ).toFixed(2),
       ประเภทการนับ: item.sessionType === "box" ? "กล่อง" : "กระสอบ",
-      "รวม (AI)": item.aiTotal,
+      "รวมจำนวนที่ตรวจพบจากภาพ": item.aiTotal,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportRows);

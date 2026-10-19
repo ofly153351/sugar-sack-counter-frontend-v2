@@ -110,7 +110,7 @@
       "takePhoto": "Take Photo",
       "upload": "Upload",
       "manualCount": "Manual Count",
-      "aiCount": "AI Count",
+      "aiCount": "Detected from Image",
       "bags": "bags"
     },
     "boxRow": {
@@ -119,7 +119,7 @@
       "takePhoto": "Take Photo",
       "upload": "Upload",
       "manualCount": "Manual Count",
-      "aiCount": "AI Count",
+      "aiCount": "Detected from Image",
       "boxes": "boxes"
     },
     "validation": {
@@ -211,10 +211,10 @@
       "Type": " Type",
       "amount": "Amount",
       "manualCount": "Manual Count",
-      "aiCount": "AI Count",
+      "aiCount": "Detected from Image",
       "manualTotal": "Manual Total",
-      "aiTotal": "AI Total",
-      "totalSummary": "Total (Manual) | Total (AI)",
+      "aiTotal": "Detected from Image Total",
+      "totalSummary": "Total (Manual) | Detected from Image Total",
       "actions": "Actions"
     }
   },
@@ -227,10 +227,10 @@
       "Type": " Type",
       "amount": "Amount",
       "manualCount": "Manual Count",
-      "aiCount": "AI Count",
+      "aiCount": "Detected from Image",
       "manualTotal": "Manual Total",
-      "aiTotal": "AI Total",
-      "totalSummary": "Total (Manual) | Total (AI)",
+      "aiTotal": "Detected from Image Total",
+      "totalSummary": "Total (Manual) | Detected from Image Total",
       "actions": "Actions"
     }
   },
