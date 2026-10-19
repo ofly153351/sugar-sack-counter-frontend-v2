@@ -66,7 +66,9 @@ export const API_CONFIG = {
 
 // AI Service Configuration
 export const AI_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8082",
+  BASE_URL: (
+    process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8082"
+  ).replace(/\/+$/, ""),
   ENDPOINTS: {
     DETECT: "/detect",
     DETECT_SACKS: "/detect-sacks",
@@ -76,7 +78,10 @@ export const AI_CONFIG = {
     MINIO_STATUS: "/minio-status",
   },
   FALLBACK_ENDPOINTS: [
-    process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8082",
+    (process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8082").replace(
+      /\/+$/,
+      "",
+    ),
     "/api/ai",
     "http://127.0.0.1:8082",
   ],
